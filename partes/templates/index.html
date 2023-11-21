@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block titulo %} Index {% endblock %}
+{% block contenido %} 
+
+<div class="card">
+    <div class="card-header">
+        Listar partes
+    </div>
+    <div class="card-body">
+        <h4 class="card-title">Partes</h4>
+        <table class="table table-striped table-bordered">
+            <thead>
+                <tr>
+                    <th>Agente: </th>
+                    <th>Matrícula: </th>
+                    <th>Mes/Año: </th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for parte in partes %}
+                <tr>
+                    
+    </div>
+    <div class="card-footer text-muted">
+        
+    </div>
+</div>
+
+{% endblock %}
