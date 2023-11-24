@@ -1,4 +1,43 @@
 {% extends "base.html" %}
 
 {% block titulo %} Selección de fecha {% endblock %}
-{% block contenido %} Selección de fecha {% endblock %}
+{% block contenido %}
+<form>
+    <div class="card">
+        <div class="card-header">
+            Seleccionar fecha de planilla
+        </div>
+        <div class="card-body">
+            <h4 class="card-title">Fecha:</h4>
+            <table class="table table-striped table-bordered">
+                <thead>
+                    <tr>
+                        <th>
+                            <label for="mes">Mes:</label>
+                            <select class="w-100" id="mesReporte" name="mesReporte" placeholder="Seleccionar mes" />
+                                {% for mes in nombresMeses %}
+                                    <option value="{{mes.ID}}" {% if mes.ID == mesActual %}selected{% endif %}>{{ mes.Nombre }}</option>
+                                {% endfor %}
+                            </select>
+                        </th>
+                        <th>
+                            <label for="año">Año:</label>
+                            <select class="w-100" id="añoReporte" name="añoReporte" placeholder="Seleccionar año" />
+                                {% for anio in anios %}
+                                    <option value={{anio}} {% if anio == anioActual %}selected{% endif %}>{{anio}}</option>
+                                {% endfor %}
+                            </select>
+                        </th>
+                    </tr>
+                </thead>
+            </table>
+            <div class="text-center">
+                <button class="btn btn-primary">Abrir planilla</button>
+            </div>
+        </div>
+        <div class="card-footer text-muted">
+            Sistema de gestión - Reporte horario
+        </div>
+    </div>
+</form>
+{% endblock %}

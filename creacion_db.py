@@ -5,7 +5,7 @@ cursor = conn.cursor()
 
 sqls = []
 sqls.append("""
-    CREATE TABLE agentes (
+    CREATE TABLE IF NOT EXISTS agentes (
         id_agente INTEGER PRIMARY KEY,
         legajo INTEGER NOT NULL,
         apellidos TEXT NOT NULL,
@@ -18,7 +18,7 @@ sqls.append("""
 """)
 
 sqls.append("""
-    CREATE TABLE planilla (
+    CREATE TABLE IF NOT EXISTS planilla (
         id_planilla INTEGER PRIMARY KEY,
         id_agente INTEGER NOT NULL,
         mes TINYINT NOT NULL,
@@ -29,7 +29,7 @@ sqls.append("""
 """)
 
 sqls.append("""
-    CREATE TABLE registro_diario (
+    CREATE TABLE IF NOT EXISTS registro_diario (
         id_registro_diario INTEGER PRIMARY KEY,
         id_planilla SMALLINT NOT NULL,
         dia TINYINT NOT NULL,
@@ -39,19 +39,20 @@ sqls.append("""
     )    
 """)
 
-for i in range(0, len(sqls)):
-    cursor.execute(sqls[i])
+# for i in range(0, len(sqls)):
+#     cursor.execute(sqls[i])
     # print(sqls[i])
     
 # cursor.execute("INSERT INTO agentes (id_agente, legajo, apellidos, nombres, email_agente, jefe_directo, email_jefe_directo, password) VALUES (NULL, 1234562, \"Guimaraenz\", \"Carlos Roberto\", \"a\", \"b\", \"c\", \"pw\")")
 # cursor.execute("INSERT INTO agentes (id_agente, legajo, apellidos, nombres, email_agente, jefe_directo, email_jefe_directo, password) VALUES (NULL, 1234562, \"Olmos\", \"Carlos Roberto\", \"a\", \"b\", \"c\", \"pw\")")
+# conn.commit()
 
-# cursor.execute("SELECT * FROM agentes")
-# rows = cursor.fetchall()
-# print(rows);
+cursor.execute("SELECT * FROM agentes")
+rows = cursor.fetchall()
+print(rows)
 
-# for row in rows:
-#     print(row)
+for row in rows:
+    print(row)
         
 
     
