@@ -1,12 +1,19 @@
 {% extends "base.html" %}
 
-{% block titulo %} Selección de fecha {% endblock %}
+{% block titulo %} Planilla {% endblock %}
 {% block contenido %}
 <form method="post" action="/planilla">
     {% csrf_token %}
     <div class="card">
         <div class="card-header">
-            Seleccionar fecha de planilla
+            <h3>EMPRESA ABC - REPORTE HORARIO</h3>
+            <h4>{{ mesReporte }} {{ anioReporte }}</h4>
+            <div class="d-flex flex-row mt-4">
+                <h5 class="w-25"><b>Legajo:</b> {{ datosAgente.0 }}</h5>
+                {% with nombre_completo=datosAgente.1|add:" "|add:datosAgente.2 %}
+                <h5 class="w-75"><b>Apellido/s y nombre/s:</b> {{ nombre_completo }}</h5>
+                {% endwith %}
+            </div>
         </div>
         <div class="card-body">
             <h4 class="card-title">Fecha:</h4>
@@ -22,8 +29,8 @@
                             </select>
                         </th>
                         <th>
-                            <label for="anioReporte">Año:</label>
-                            <select class="w-100" id="anioReporte" name="anioReporte" placeholder="Seleccionar año" />
+                            <label for="añoReporte">Año:</label>
+                            <select class="w-100" id="añoReporte" name="aniooReporte" placeholder="Seleccionar año" />
                                 {% for anio in anios %}
                                     <option value={{anio}} {% if anio == anioActual %}selected{% endif %}>{{anio}}</option>
                                 {% endfor %}
@@ -37,7 +44,12 @@
             </div>
         </div>
         <div class="card-footer text-muted">
-            Sistema de gestión - Reporte horario
+            Estado: 
+            {% if datosPlanilla.4 %}
+            Presentado
+            {% else %}
+            Borrador
+            {% endif %}
         </div>
     </div>
 </form>
