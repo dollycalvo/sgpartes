@@ -1,5 +1,6 @@
 import sqlite3
 import datetime
+import calendar
 from django.shortcuts import render
 from django.http import HttpResponse
 
@@ -28,6 +29,7 @@ def planilla(request):
     id_agente = "1" # hard-coded, después lo cambio por el logueado
     mes = request.POST['mesReporte']
     anio = request.POST['anioReporte']
+    dias_del_mes = range(1, calendar.monthrange(int(anio), int(mes))[1] + 1)
     try:
         conn = sqlite3.connect("soportes.db")
         cursor = conn.cursor()
@@ -36,7 +38,6 @@ def planilla(request):
         sqlParams = [id_agente, mes, anio]
         cursor.execute("""SELECT * FROM planilla WHERE id_agente = ? AND mes = ? AND año = ?""", sqlParams)
         datosPlanilla = cursor.fetchone()
-        print(datosPlanilla)
         if datosPlanilla is not None:
             cursor.execute("SELECT * FROM registro_diario WHERE id_planilla = ?", datosPlanilla[0])
             datosDiarios = cursor.fetchall()
@@ -47,7 +48,8 @@ def planilla(request):
                             "datosPlanilla": datosPlanilla,
                             "datosDiarios": datosDiarios,
                             "mesReporte": nombresMeses[int(mes) - 1]["Nombre"],
-                            "anioReporte": anio}
+                            "anioReporte": anio,
+                            "diasDelMes": dias_del_mes}
         cursor.close()
     except sqlite3.Error as error:
         templateParams = None
