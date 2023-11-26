@@ -11,15 +11,17 @@
   <!-- Bootstrap CSS v5.2.1 -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css" rel="stylesheet"
     integrity="sha384-iYQeCzEYFbKjA/T2uDLTpkwGzCiq6soy8tYaI1GyVh/UjpbCx/TYkiZhlZB6+fzT" crossorigin="anonymous">
-  <link rel="stylesheet" type="text/css" href="{% static 'css/sgpartes.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/sgpartes.css' %}">
 </head>
 
 <body>
-    <nav class="navbar navbar-expand navbar-light bg-light">
+    <nav class="navbar navbar-expand navbar-light bg-light d-flex justify-content-between">
         <div class="nav navbar-nav">
             <a class="nav-item nav-link active" href="/" aria-current="page">Inicio<span class="visually-hidden">(current)</span></a>
             <a class="nav-item nav-link" href="seleccionfecha">Planilla</a>
-            {% comment %} <a class="nav-item nav-link" href="ayuda">ayuda</a> {% endcomment %}
+        </div>
+        <div id="infoLogin" class="mr-2rem d-flex flex-row justify-content-center align-items-center">
+            <div class="bi bi-person-standing mr-05rem"></div> <div>Carlos Roberto Guimaraenz</div>
         </div>
     </nav>
 <div class="container">
@@ -38,6 +40,8 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/js/bootstrap.min.js"
     integrity="sha384-7VPbUDkoPSGFnVtYi0QogXtr74QeVeeIs99Qfg5YCF+TidwNdjvaKZX19NZ/e6oz" crossorigin="anonymous">
   </script>
+
+  <script type="text/javascript" src="{% static 'js/sgpartes.js' %}"></script>
 </body>
 
 </html>

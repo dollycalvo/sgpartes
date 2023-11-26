@@ -1,6 +1,11 @@
 import sqlite3
 import datetime
 import calendar
+from partes.models import Agentes, Planilla, RegistroDiario
+from partes.forms import FormSeleccionFecha
+from django.urls import reverse
+from django.http import HttpResponseRedirect
+from django.contrib.auth.hashers import make_password, check_password
 from django.shortcuts import render
 from django.http import HttpResponse
 
@@ -22,52 +27,72 @@ def inicio(request):
     # return HttpResponse("<h1>Bienvenido al sistema SGPARTES</h1>")
     return render(request, 'index.html');
 
-def ayuda(request):
-    return render(request,'ayuda.html')
+
 
 def planilla(request):
+    print(request.method)
+    acciones_submit = ['guardar', 'presentar']
     id_agente = "1" # hard-coded, después lo cambio por el logueado
-    mes = request.POST['mesReporte']
-    anio = request.POST['anioReporte']
-    dias_del_mes = range(1, calendar.monthrange(int(anio), int(mes))[1] + 1)
-    try:
-        conn = sqlite3.connect("soportes.db")
-        cursor = conn.cursor()
-        cursor.execute("SELECT legajo, apellidos, nombres FROM agentes WHERE id_agente = ?", id_agente)
-        datosAgente = cursor.fetchone()
-        sqlParams = [id_agente, mes, anio]
-        cursor.execute("""SELECT * FROM planilla WHERE id_agente = ? AND mes = ? AND año = ?""", sqlParams)
-        datosPlanilla = cursor.fetchone()
-        if datosPlanilla is not None:
-            cursor.execute("SELECT * FROM registro_diario WHERE id_planilla = ?", datosPlanilla[0])
-            datosDiarios = cursor.fetchall()
-        else:
-            datosPlanilla = [0, id_agente, mes, anio, False]
-            datosDiarios = None
-        templateParams = {  "datosAgente": datosAgente,
-                            "datosPlanilla": datosPlanilla,
-                            "datosDiarios": datosDiarios,
-                            "mesReporte": nombresMeses[int(mes) - 1]["Nombre"],
-                            "anioReporte": anio,
-                            "diasDelMes": dias_del_mes}
-        cursor.close()
-    except sqlite3.Error as error:
-        templateParams = None
-        print("Han existido errores en la conexión a la base de datos", error)
-    finally:
-        if (conn):
-            conn.close()
+    if request.method == "POST":
+        print(request.POST['accion_submit'])
+        mes = request.POST['mesReporte']
+        anio = request.POST['anioReporte']
+    else:
+        accion_submit = acciones_submit[0]
+        if not 'mesReporte' in request.session:
+            return HttpResponseRedirect("/error")
+        mes = request.session['mesReporte']
+        anio = request.session['anioReporte']
+        del request.session['mesReporte']
+        del request.session['anioReporte']
+        dias_del_mes = range(1, calendar.monthrange(int(anio), int(mes))[1] + 1)
+    datosAgente = Agentes.objects.filter(id=id_agente)
+    datosPlanilla = Planilla.objects.filter(agente_id=id_agente, mes=mes, anio=anio)
+    if len(datosPlanilla) == 1:
+        datosDiarios = RegistroDiario.objects.filter(planilla_id=datosPlanilla[0].id)
+    else:
+        datosPlanilla = [0, id_agente, mes, anio, False]
+        datosDiarios = None
+    templateParams = {  "accion_submit": accion_submit,
+                        "acciones_submit": acciones_submit[0] + "#" + acciones_submit[1],
+                        "datosAgente": datosAgente[0],
+                        "datosPlanilla": datosPlanilla,
+                        "datosDiarios": datosDiarios,
+                        "mesReporte": nombresMeses[int(mes) - 1]["Nombre"],
+                        "anioReporte": anio,
+                        "diasDelMes": dias_del_mes}
     return render(request, 'planilla.html', templateParams)
 
+
+
 def seleccionfecha(request):
+    if request.method == 'POST':
+        form = FormSeleccionFecha(request.POST)
+        if form.is_valid():
+            request.session['mesReporte'] = request.POST['mesReporte']
+            request.session['anioReporte'] = request.POST['anioReporte']
+            return HttpResponseRedirect('/planilla')
+    else:
+        form = FormSeleccionFecha()
     fechaActual = datetime.datetime.now()
     mesActual = fechaActual.month
     anioActual = fechaActual.year
     anios = list(range(anioActual - 3, anioActual + 2))
-    return render(request, 'seleccionfecha.html', {"anios": anios, "nombresMeses": nombresMeses, "mesActual": mesActual, "anioActual": anioActual})
+    return render(request, 'seleccionfecha.html', {"form": form, 
+                                                   "anios": anios, 
+                                                   "nombresMeses": nombresMeses, 
+                                                   "mesActual": mesActual, 
+                                                   "anioActual": anioActual})
+
+
 
 def login(request):
     if (request.GET.get('email') == "carlosguimaraenz@yahoo.com.ar"):
         return render(request,'index.html')
     else:
         return render(request,'ayuda.html')
+    
+    
+
+def error(request):
+    return render(request, 'error.html')

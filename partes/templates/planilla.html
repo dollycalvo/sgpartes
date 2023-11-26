@@ -1,22 +1,24 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block titulo %} Planilla {% endblock %}
 {% block contenido %}
-<form method="post" action="/planilla">
+<form method="post" action="/planilla" id="formPlanilla">
     {% csrf_token %}
+    <input type="hidden" opciones="{{ acciones_submit }}" name="accion_submit" id="hdnAccionSubmit" value="{{ accion_submit }}">
     <div class="card mb-4">
         <div class="card-header">
             <h3>EMPRESA ABC - REPORTE HORARIO</h3>
             <h4>{{ mesReporte }} {{ anioReporte }}</h4>
             <div class="d-flex flex-row mt-4">
-                <h5 class="w-25"><b>Legajo:</b> {{ datosAgente.0 }}</h5>
-                {% with nombre_completo=datosAgente.1|add:", "|add:datosAgente.2 %}
-                <h5 class="w-75"><b>Apellido/s y nombre/s:</b> {{ nombre_completo }}</h5>
+                <h5 class="w-25"><b>Legajo:</b> {{ datosAgente.legajo }}</h5>
+                {% with nombre_completo=datosAgente.apellidos|add:", "|add:datosAgente.nombres %}
+                <h5 class="w-75"><b>Apellido(s) y nombre(s):</b> {{ nombre_completo }}</h5>
                 {% endwith %}
             </div>
         </div>
         <div class="card-body">
-            <table class="table table-striped table-bordered w-100">
+            <table class="table table-striped table-bordered w-0">
                 <thead>
                     <tr>
                         <th>
@@ -34,26 +36,45 @@
                     {% for i in diasDelMes %}
                         <tr>
                             <td class="text-center">{{ i }}</td>
-                            <td class="text-center">S</td>
-                            <td>Alguna observación pertinente</td>
+                            <td class="text-center">
+                                {% if not datosPlanilla.4 %}
+                                <select class="w-100 input-registro-diario">
+                                    <option value="sn">S/N</option>
+                                    <option value="v">V</option>
+                                    <option value="cs">CS</option>
+                                    <option value="sa">SA</option>
+                                </select>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if not datosPlanilla.4 %}
+                                <input class="w-100 input-registro-diario" placeholder="Seleccione para editar" type="text" name="observacion_{{i}}" id="observacion_{{i}}">
+                                {% else %}
+                                Sin novedad (traer info de la DB)
+                                {% endif %}
+                            </td>
                         </tr>
                     {% endfor %}
                 </tbody>
             </table>
             {% if not datosPlanilla.4 %}
-            <div class="text-center">
-                <button class="btn btn-primary">Presentar planilla</button>
+            <div class="d-flex flex-row w-100 justify-content-center">
+                <button id="btnLimpiarForm" class="btn btn-danger" type="button">Limpiar formulario</button>
+                <button id="btnGuardarCambios" class="btn btn-primary ml-1rem" type="button">Guardar cambios</button>
+                <button id="btnPresentarPlanilla" class="btn btn-success ml-1rem" type="submit">Presentar planilla</button>
             </div>
             {% endif %}
         </div>
-        <div class="card-footer text-muted">
-            Estado: 
-            {% if datosPlanilla.4 %}
-            Presentado
-            {% else %}
-            Borrador
-            {% endif %}
+        {% if datosPlanilla.4 %}
+        <div class="card-footer text-success">
+            Estado: Presentado
+        {% else %}
+        <div class="card-footer text-danger">
+            Estado: Borrador
+        {% endif %}
         </div>
     </div>
 </form>
+
+<script type="text/javascript" src="{% static 'js/planilla.js' %}"></script>
 {% endblock %}

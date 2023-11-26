@@ -2,7 +2,7 @@
 
 {% block titulo %} Selección de fecha {% endblock %}
 {% block contenido %}
-<form method="post" action="/planilla">
+<form method="post" action="/seleccionfecha">
     {% csrf_token %}
     <div class="card">
         <div class="card-header">
@@ -14,16 +14,16 @@
                 <thead>
                     <tr>
                         <th>
-                            <label for="mesReporte">Mes:</label>
-                            <select class="w-100" id="mesReporte" name="mesReporte" placeholder="Seleccionar mes" />
+                            <label for="{{ form.mesReporte.id_for_label}}">Mes:</label>
+                            <select class="w-100" id="{{ form.mesReporte.id_for_label}}" name="{{ form.mesReporte.name}}" placeholder="Seleccionar mes" />
                                 {% for mes in nombresMeses %}
                                     <option value="{{mes.ID}}" {% if mes.ID == mesActual %}selected{% endif %}>{{ mes.Nombre }}</option>
                                 {% endfor %}
                             </select>
                         </th>
                         <th>
-                            <label for="anioReporte">Año:</label>
-                            <select class="w-100" id="anioReporte" name="anioReporte" placeholder="Seleccionar año" />
+                            <label for="{{ form.anioReporte.id_for_label}}">Año:</label>
+                            <select class="w-100" id="{{ form.anioReporte.id_for_label}}" name="{{ form.anioReporte.name }}" placeholder="Seleccionar año" />
                                 {% for anio in anios %}
                                     <option value={{anio}} {% if anio == anioActual %}selected{% endif %}>{{anio}}</option>
                                 {% endfor %}
