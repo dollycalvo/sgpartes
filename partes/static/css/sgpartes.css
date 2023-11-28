@@ -50,3 +50,17 @@
     background-color: transparent;
     border: none;
 }
+
+@keyframes removeAfter10seconds {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+        display: none;
+    }
+}
+
+.auto-hide-5s {
+    animation: removeAfter10seconds 1s linear 5s 1 normal forwards;
+}

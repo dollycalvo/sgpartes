@@ -21,7 +21,9 @@ btnGuardarCambios.addEventListener("click", event => {
 });
 
 btnPresentarPlanilla.addEventListener("click", () => {
-    hdnAccionSubmit.value = opcionesAccionesSubmit[1];
-    formPlanilla.submit();
+    if (confirm("¿Confirma que desea presentar la planilla?\nUna vez presentada, los datos se enviarán a su supervisor y no podrá ser modificada.")) {
+        hdnAccionSubmit.value = opcionesAccionesSubmit[1];
+        formPlanilla.submit();
+    }
 });
 

@@ -9,11 +9,13 @@
     <input type="hidden" name="mesReporte" value="{{ mesReporte }}">
     <input type="hidden" name="anioReporte" value="{{ anioReporte }}">
     {% if mostrarMensaje %}
+    <div class="alert alert-success auto-hide-5s" role="alert">
         {% if presentado == True %}
-        SE PRESENTÓ CON ÉXITO
+        La planilla se presentó exitosamente
         {% else %}
-        SE GUARDÓ CON ÉXITO
+        Los cambios en la planilla se han guardado exitosamente
         {% endif %}
+    </div>
     {% endif %}
     <div class="card mb-4">
         <div class="card-header">
