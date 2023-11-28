@@ -15,12 +15,12 @@ btnLimpiarForm.addEventListener("click", () => {
 });
 
 btnGuardarCambios.addEventListener("click", event => {
+    event.preventDefault();
     hdnAccionSubmit.value = opcionesAccionesSubmit[0];
     formPlanilla.submit();
 });
 
-btnPresentarPlanilla.addEventListener("click", event => {
-    event.preventDefault();
+btnPresentarPlanilla.addEventListener("click", () => {
     hdnAccionSubmit.value = opcionesAccionesSubmit[1];
     formPlanilla.submit();
 });

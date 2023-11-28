@@ -30,6 +30,7 @@ def inicio(request):
 
 
 def planilla(request):
+    SIN_NOVEDAD = "Sin novedad"
     acciones_submit = ['guardar', 'presentar', 'sin_accion']
     id_agente = "1" # hard-coded, después lo cambio por el logueado
     datosAgente = Agentes.objects.filter(id=id_agente)
@@ -40,11 +41,14 @@ def planilla(request):
         dias_del_mes = range(1, calendar.monthrange(int(anio), int(mes))[1] + 1)
         presentado = request.POST['accion_submit'] == acciones_submit[1]
         # Ya existe una planilla para este mes y agente?
-        planillas = Planilla.objects.filter(id=id_agente, anio=anio, mes=mes)
+        planillas = Planilla.objects.filter(agente_id=id_agente, anio=anio, mes=mes)
+        print(id_agente, anio, mes)
         if (len(planillas) == 1):
+            print("LEN PLANILLAS = 1")
             planilla = planillas[0]
             planilla.presentado = presentado
         else:
+            print("CREO UNA NUEVA")
             planilla = Planilla(agente_id = id_agente,
                                 mes = mes,
                                 anio = anio,
@@ -52,17 +56,33 @@ def planilla(request):
         # Guardamos los cambios en la existente o la nueva según corresponda
         planilla.save()
         print("ID de planilla: " + str(planilla.id))
+        # Obtengo todos los registros existentes para esa planilla, para evitar consultar por cada registro individualmente
+        registrosCoincidentes = RegistroDiario.objects.filter(planilla_id = planilla.id)
         # Con el ID de la planilla, ahora creamos un registro para cada día
         nuevosRegistros = []
         i = 1
         listaCodigos = request.POST.getlist("codigos")
         for observacion in request.POST.getlist("observaciones"):
-            registro = RegistroDiario(planilla_id = planilla.id,
-                                      dia = i, # día
-                                      codigo = listaCodigos[i - 1],
-                                      observaciones = observacion)
-            registro.save()
-            nuevosRegistros.append(registro)
+            rcIndex = 0
+            while rcIndex < len(registrosCoincidentes) and registrosCoincidentes[rcIndex].dia != i:
+                rcIndex += 1
+            # Si ya existe en la base de datos, lo actualizamos, contenga lo que contenga
+            if rcIndex < len(registrosCoincidentes):
+                registro = registrosCoincidentes[rcIndex]
+                registro.codigo = listaCodigos[i - 1]
+                registro.observaciones = observacion
+                registro.save()
+                nuevosRegistros.append(registro)
+            else: # Sino, creamos uno nuevo siempre y cuando sea sin novedad
+                if observacion.strip() != SIN_NOVEDAD:
+                    registro = RegistroDiario(planilla_id = planilla.id,
+                                            dia = i, # día
+                                            codigo = listaCodigos[i - 1],
+                                            observaciones = observacion)
+                    registro.save()
+                    nuevosRegistros.append(registro)
+                else:
+                    nuevosRegistros.append(None)    # En caso de no existir ni ser creado, hacemos un dummy 
             i += 1
         templateParams = {  "accion_submit": acciones_submit[2],
                             "acciones_submit": acciones_submit[0] + "#" + acciones_submit[1],
@@ -74,7 +94,8 @@ def planilla(request):
                             "anioReporte": anio,
                             "diasDelMes": dias_del_mes,
                             "presentado": presentado,
-                            "mostrarMensaje": True}
+                            "mostrarMensaje": True,
+                            "textoSinNovedad": SIN_NOVEDAD}
         
         return render(request, 'planilla.html', templateParams)
     else:   # Sino, al ser GET viene redireccionado desde la selección de fecha
@@ -102,7 +123,8 @@ def planilla(request):
                         "mesReporte": int(mes),
                         "nombreMesReporte": nombresMeses[int(mes) - 1]["Nombre"],
                         "anioReporte": anio,
-                        "diasDelMes": dias_del_mes}
+                        "diasDelMes": dias_del_mes,
+                        "textoSinNovedad": SIN_NOVEDAD}
     return render(request, 'planilla.html', templateParams)
 
 

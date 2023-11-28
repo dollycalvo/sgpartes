@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand, CommandError
-from partes.models import Agentes, RegistroDiario
+from partes.models import Agentes, RegistroDiario, Planilla
 from django.contrib.auth.hashers import make_password
 
 class Command(BaseCommand):
@@ -9,10 +9,17 @@ class Command(BaseCommand):
     #     parser.add_argument('poll_ids', nargs='+', type=int)
 
     def handle(self, *args, **options):
+        # RegistroDiario.objects.all().delete()
+        # Planilla.objects.all().delete()
+        # return
+        pl = Planilla.objects.all()
+        for p in pl:
+            print(str(p.id) + " " + str(p.mes) + " " + str(p.anio) + " " + str(p.agente_id) + " " + str(p.presentado))
+        print()
         regs = RegistroDiario.objects.all()
         for reg in regs:
-            # if reg.codigo == "v":
-            print(reg.codigo + " " + reg.observaciones)
+            if reg.codigo != "sn":
+                print(str(reg.planilla_id) + " " + str(reg.dia) + " " + reg.codigo + " " + reg.observaciones)
         return
         nuevosAgentes = [
             Agentes(legajo = 12345,
