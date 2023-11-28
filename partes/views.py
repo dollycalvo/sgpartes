@@ -3,7 +3,7 @@ import calendar
 from partes.models import Agentes, Planilla, RegistroDiario
 from partes.forms import FormSeleccionFecha
 from django.http import HttpResponseRedirect
-from django.contrib.auth.hashers import make_password, check_password
+from django.contrib.auth.hashers import check_password
 from django.shortcuts import render
 
 # Create your views here.
@@ -27,6 +27,11 @@ def inicio(request):
 
 
 def planilla(request):
+    # Cláusula de guarda
+    if 'usuario' not in request.session:
+        request.session['mensaje_unauth'] = "Se requiere iniciar sesión para acceder a esta sección"
+        return HttpResponseRedirect("/error")
+
     SIN_NOVEDAD = "Sin novedad"
     acciones_submit = ['guardar', 'presentar', 'sin_accion']
     id_agente = "1" # hard-coded, después lo cambio por el logueado
@@ -129,6 +134,11 @@ def planilla(request):
 
 
 def seleccionfecha(request):
+    # Cláusula de guarda
+    if 'usuario' not in request.session:
+        request.session['mensaje_unauth'] = "Se requiere iniciar sesión para acceder a esta sección"
+        return HttpResponseRedirect("/error")
+    
     if request.method == 'POST':
         form = FormSeleccionFecha(request.POST)
         if form.is_valid():
@@ -150,12 +160,58 @@ def seleccionfecha(request):
 
 
 def login(request):
-    if (request.GET.get('email') == "carlosguimaraenz@yahoo.com.ar"):
-        return render(request,'index.html')
-    else:
-        return render(request,'ayuda.html')
-    
+    MAX_LOGINS_INCORRECTOS = 3
+    if (request.method == "GET"):
+        mensaje = ""
+        if 'logout' in request.GET:
+            del request.session['usuario']
+            del request.session['nombre_usuario']
+            del request.session['logins_incorrectos']
+            mensaje = "La sesión se ha cerrado correctamente"
+        if 'logins_incorrectos' not in request.session:
+            request.session['logins_incorrectos'] = MAX_LOGINS_INCORRECTOS
+        return render(request, 'login.html', {"mensaje": mensaje})
+    else: #method POST, deberíamos tener datos de usuario
+        usuario = request.POST['login_username'].strip()
+        password = request.POST['login_password']
+        if usuario.find("@") != -1:
+            agentes = Agentes.objects.filter(email_agente = usuario)
+        elif usuario.isnumeric():
+            agentes = Agentes.objects.filter(legajo = usuario)
+        else:
+            request.session['logins_incorrectos'] -= 1
+            if request.session['logins_incorrectos'] == 0:
+                return HttpResponseRedirect("/error?cod=1")
+            mensaje_error = f"Los datos de inicio de sesión son incorrectos. Restan {request.session['logins_incorrectos']} intentos."
+            return render(request, 'login.html', {"mensaje_error": mensaje_error, "usuario_previo": usuario})
+        if len(agentes) == 1:   # encontramos al usuario?
+            if check_password(password, agentes[0].password):
+                request.session['usuario'] = agentes[0].legajo
+                request.session['nombre_usuario'] = agentes[0].apellidos + ", " + agentes[0].nombres
+                return HttpResponseRedirect("/seleccionfecha")
+            else:   # volvemos a pedir login y aumentamos la cantidad de logins incorrectos
+                request.session['logins_incorrectos'] -= 1
+                if request.session['logins_incorrectos'] == 0:
+                    return HttpResponseRedirect("/error?cod=1")
+                mensaje_error = f"Los datos de inicio de sesión son incorrectos. Restan {request.session['logins_incorrectos']} intentos."
+                return render(request, 'login.html', {"mensaje_error": mensaje_error, "usuario_previo": usuario})
+        else:
+            request.session['logins_incorrectos'] -= 1
+            if request.session['logins_incorrectos'] == 0:
+                return HttpResponseRedirect("/error?cod=1")
+            mensaje_error = f"Los datos de inicio de sesión son incorrectos. Restan {request.session['logins_incorrectos']} intentos."
+            return render(request, 'login.html', {"mensaje_error": mensaje_error, "usuario_previo": usuario})
     
 
 def error(request):
-    return render(request, 'error.html')
+    mensaje = "Se ha producido un error"
+    if request.method == 'GET':
+        if 'mensaje_unauth' in request.session:
+            mensaje = request.session['mensaje_unauth']
+            del request.session['mensaje_unauth']
+        if 'logins_incorrectos' in request.session:
+            del request.session['logins_incorrectos']
+        if 'cod' in request.GET:
+            if request.GET['cod'] == "1":
+                mensaje = "Demasiados intentos incorrectos de inicio de sesión"
+    return render(request, 'error.html', {"mensaje": mensaje})

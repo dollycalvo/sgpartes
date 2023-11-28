@@ -4,40 +4,38 @@
 {% block contenido %}
 <form method="post" action="/login">
     {% csrf_token %}
-    <div class="card">
-        <div class="card-header">
-            Inicio de sesión
-        </div>
-        <div class="card-body">
-            <h4 class="card-title">Fecha:</h4>
-            <table class="table table-striped table-bordered">
-                <thead>
-                    <tr>
-                        <th>
-                            <label for="{{ form.mesReporte.id_for_label}}">Mes:</label>
-                            <select class="w-100" id="{{ form.mesReporte.id_for_label}}" name="{{ form.mesReporte.name}}" placeholder="Seleccionar mes" />
-                                {% for mes in nombresMeses %}
-                                    <option value="{{mes.ID}}" {% if mes.ID == mesActual %}selected{% endif %}>{{ mes.Nombre }}</option>
-                                {% endfor %}
-                            </select>
-                        </th>
-                        <th>
-                            <label for="{{ form.anioReporte.id_for_label}}">Año:</label>
-                            <select class="w-100" id="{{ form.anioReporte.id_for_label}}" name="{{ form.anioReporte.name }}" placeholder="Seleccionar año" />
-                                {% for anio in anios %}
-                                    <option value={{anio}} {% if anio == anioActual %}selected{% endif %}>{{anio}}</option>
-                                {% endfor %}
-                            </select>
-                        </th>
-                    </tr>
-                </thead>
-            </table>
-            <div class="text-center">
-                <button class="btn btn-primary">Abrir planilla</button>
+    {% if mensaje and mensaje != "NADA" %}
+    <div class="alert alert-success auto-hide-5s" role="success">
+        {{ mensaje }}
+    </div>
+    {% endif %}
+    <div class="d-flex justify-content-center">
+        <div class="card card-login">
+            <div class="card-header">
+                Empresa ABC - Control de horas
             </div>
-        </div>
-        <div class="card-footer text-muted">
-            Sistema de gestión - Reporte horario
+            <div class="card-body">
+                <h4 class="card-title">Iniciar sesión</h4>
+                <div class="d-flex flex-column">
+                    <div class="d-flex flex-column mt-1rem">
+                        <label for="txtUsername">E-mail o legajo:</label>
+                        <input {% if usuario_previo %}value="{{usuario_previo}}" {% endif %}id="txtUsername" type="text" name="login_username" placeholder="E-mail o legajo" class="px-05rem" required>
+                    </div>
+                    <div class="d-flex flex-column mt-1rem">
+                        <label for="txtPassword">Contraseña:</label>
+                        <input id="txtPassword" type="password" name="login_password" placeholder="Contraseña" class="px-05rem" required>
+                    </div>
+                </div>
+                <div class="mensaje-error-login">
+                    {{ mensaje_error }}
+                </div>
+                <div class="text-center mt-2rem">
+                    <button class="btn btn-primary">Iniciar sesión</button>
+                </div>
+            </div>
+            <div class="card-footer text-muted">
+                Sistema de gestión - Reporte horario
+            </div>
         </div>
     </div>
 </form>

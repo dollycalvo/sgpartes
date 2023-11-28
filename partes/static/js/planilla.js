@@ -26,4 +26,3 @@ btnPresentarPlanilla.addEventListener("click", () => {
         formPlanilla.submit();
     }
 });
-

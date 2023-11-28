@@ -19,12 +19,25 @@
     margin-left: 1rem;
 }
 
+.mt-1rem {
+    margin-top: 1rem;
+}
+
+.mt-2rem {
+    margin-top: 2rem;
+}
+
 .mr-05rem {
     margin-right: 0.5rem;
 }
 
 .mr-2rem {
     margin-right: 2rem;
+}
+
+.px-05rem {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
 }
 
 .bi {
@@ -37,12 +50,11 @@
     cursor: pointer;
 }
 
-#infoLogin > div:nth-child(2) {
+#infoLogin > div:nth-child(3) {
     transition: transform 0.3s;
 }
 
-#infoLogin:hover > div:nth-child(2) {
-    /* transform: scale(1.1); */
+#infoLogin:hover > div:nth-child(3) {
     color: var(--color-frambuesa);
 }
 
@@ -63,4 +75,40 @@
 
 .auto-hide-5s {
     animation: removeAfter10seconds 1s linear 5s 1 normal forwards;
+}
+
+.card-login {
+    min-width: 20rem;
+    width: 50dvw;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+}
+
+.popup-cerrar-sesion {
+    position: absolute;
+    padding: 1rem 1rem;
+    background-color: #fff;
+    margin-top: 1rem;
+    text-wrap: nowrap;
+    z-index: 99;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.4);
+    border-radius: 0.2rem;
+    display: none;
+}
+
+.popup-cerrar-sesion:hover {
+    background-color: var(--color-frambuesa);
+    text-shadow: 0 0 5px white;
+    box-shadow: 0 0 1rem white inset;
+    color: #fff;
+}
+
+.popup-cerrar-sesion-mostrar {
+    display: block;    
+}
+
+.mensaje-error-login {
+    color: #ff0000;
+    font-weight: bold;
+    margin-top: 0.5rem;
+    width: 100%;
 }

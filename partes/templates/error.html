@@ -1,4 +1,8 @@
 {% extends "base.html" %}
 
 {% block titulo %} Error {% endblock %}
-{% block contenido %} Error {% endblock %}
+{% block contenido %}
+<div class="alert alert-danger" role="alert">
+    {{ mensaje }}
+</div>
+{% endblock %}
