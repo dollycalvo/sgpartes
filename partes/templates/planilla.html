@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load static %}
+{% load filters %}
 
 {% block titulo %} Planilla {% endblock %}
 {% block contenido %}
@@ -48,27 +49,29 @@
                         <tr>
                             <td class="text-center">{{ forloop.counter }}</td>
                             <td class="text-center">
-                                {% if not datosPlanilla.4 %}
+                                {% if not datosPlanilla.presentado %}
                                 <select class="w-100 input-registro-diario" name="codigos">
                                     <option value="sn" {% if datoDiario.codigo == "sn" %}{{"selected"}}{%endif%}>S/N</option>
                                     <option value="v" {% if datoDiario.codigo == "v" %}{{"selected"}}{%endif%}>V</option>
                                     <option value="cs" {% if datoDiario.codigo == "cs" %}{{"selected"}}{%endif%}>CS</option>
                                     <option value="sa" {% if datoDiario.codigo == "sa" %}{{"selected"}}{%endif%}>SA</option>
                                 </select>
+                                {% else %}
+                                {{ datoDiario.codigo|etiqueta_codigo }}
                                 {% endif %}
                             </td>
                             <td>
-                                {% if not datosPlanilla.4 %}
+                                {% if not datosPlanilla.presentado %}
                                 <input class="w-100 input-registro-diario" placeholder="{{ textoSinNovedad }}" type="text" name="observaciones" id="observacion_{{i}}" value="{{datoDiario.observaciones}}">
                                 {% else %}
-                                {{ datoDiario.observaciones }}
+                                {% if datoDiario.observaciones == "" %}{{ textoSinNovedad }}{% else %}{{ datoDiario.observaciones }}{% endif %}
                                 {% endif %}
                             </td>
                         </tr>
                     {% endfor %}
                 </tbody>
             </table>
-            {% if not datosPlanilla.4 %}
+            {% if not datosPlanilla.presentado %}
             <div class="d-flex flex-row w-100 justify-content-center">
                 <button id="btnLimpiarForm" class="btn btn-danger" type="button">Limpiar formulario</button>
                 <button id="btnGuardarCambios" class="btn btn-primary ml-1rem" type="submit">Guardar cambios</button>
@@ -76,7 +79,7 @@
             </div>
             {% endif %}
         </div>
-        {% if datosPlanilla.4 %}
+        {% if datosPlanilla.presentado %}
         <div class="card-footer text-success">
             Estado: Presentado
         {% else %}

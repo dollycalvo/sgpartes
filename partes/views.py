@@ -1,13 +1,10 @@
-import sqlite3
 import datetime
 import calendar
 from partes.models import Agentes, Planilla, RegistroDiario
 from partes.forms import FormSeleccionFecha
-from django.urls import reverse
 from django.http import HttpResponseRedirect
 from django.contrib.auth.hashers import make_password, check_password
 from django.shortcuts import render
-from django.http import HttpResponse
 
 # Create your views here.
 nombresMeses = [{"ID": 1, "Nombre": "Enero"},
@@ -42,13 +39,10 @@ def planilla(request):
         presentado = request.POST['accion_submit'] == acciones_submit[1]
         # Ya existe una planilla para este mes y agente?
         planillas = Planilla.objects.filter(agente_id=id_agente, anio=anio, mes=mes)
-        print(id_agente, anio, mes)
         if (len(planillas) == 1):
-            print("LEN PLANILLAS = 1")
             planilla = planillas[0]
             planilla.presentado = presentado
         else:
-            print("CREO UNA NUEVA")
             planilla = Planilla(agente_id = id_agente,
                                 mes = mes,
                                 anio = anio,
@@ -109,11 +103,16 @@ def planilla(request):
         dias_del_mes = range(1, calendar.monthrange(int(anio), int(mes))[1] + 1)
     datosPlanilla = Planilla.objects.filter(agente_id=id_agente, mes=mes, anio=anio)
     if len(datosPlanilla) == 1:
-        datosDiarios = RegistroDiario.objects.filter(planilla_id=datosPlanilla[0].id)
+        datosPlanilla = datosPlanilla[0]
+        datosDiarios = RegistroDiario.objects.filter(planilla_id=datosPlanilla.id)
         if len(datosDiarios) == 0:
             datosDiarios = [None] * len(dias_del_mes)
     else:
-        datosPlanilla = [0, id_agente, mes, anio, False]
+        # datosPlanilla = [0, id_agente, mes, anio, False]
+        datosPlanilla = Planilla(agente_id = id_agente,
+                            mes = mes,
+                            anio = anio,
+                            presentado = False)
         datosDiarios = [None] * len(dias_del_mes)
     templateParams = {  "accion_submit": accion_submit,
                         "acciones_submit": acciones_submit[0] + "#" + acciones_submit[1],

@@ -1,4 +1,44 @@
 {% extends "base.html" %}
 
 {% block titulo %} Login {% endblock %}
-{% block contenido %} Login {% endblock %}
+{% block contenido %}
+<form method="post" action="/login">
+    {% csrf_token %}
+    <div class="card">
+        <div class="card-header">
+            Inicio de sesión
+        </div>
+        <div class="card-body">
+            <h4 class="card-title">Fecha:</h4>
+            <table class="table table-striped table-bordered">
+                <thead>
+                    <tr>
+                        <th>
+                            <label for="{{ form.mesReporte.id_for_label}}">Mes:</label>
+                            <select class="w-100" id="{{ form.mesReporte.id_for_label}}" name="{{ form.mesReporte.name}}" placeholder="Seleccionar mes" />
+                                {% for mes in nombresMeses %}
+                                    <option value="{{mes.ID}}" {% if mes.ID == mesActual %}selected{% endif %}>{{ mes.Nombre }}</option>
+                                {% endfor %}
+                            </select>
+                        </th>
+                        <th>
+                            <label for="{{ form.anioReporte.id_for_label}}">Año:</label>
+                            <select class="w-100" id="{{ form.anioReporte.id_for_label}}" name="{{ form.anioReporte.name }}" placeholder="Seleccionar año" />
+                                {% for anio in anios %}
+                                    <option value={{anio}} {% if anio == anioActual %}selected{% endif %}>{{anio}}</option>
+                                {% endfor %}
+                            </select>
+                        </th>
+                    </tr>
+                </thead>
+            </table>
+            <div class="text-center">
+                <button class="btn btn-primary">Abrir planilla</button>
+            </div>
+        </div>
+        <div class="card-footer text-muted">
+            Sistema de gestión - Reporte horario
+        </div>
+    </div>
+</form>
+{% endblock %}
