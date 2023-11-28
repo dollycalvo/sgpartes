@@ -34,7 +34,7 @@ def planilla(request):
 
     SIN_NOVEDAD = "Sin novedad"
     acciones_submit = ['guardar', 'presentar', 'sin_accion']
-    id_agente = "1" # hard-coded, después lo cambio por el logueado
+    id_agente = request.session['id_agente']
     datosAgente = Agentes.objects.filter(id=id_agente)
     # Si recibimos desde la planilla el POST
     if request.method == "POST":
@@ -186,6 +186,7 @@ def login(request):
             return render(request, 'login.html', {"mensaje_error": mensaje_error, "usuario_previo": usuario})
         if len(agentes) == 1:   # encontramos al usuario?
             if check_password(password, agentes[0].password):
+                request.session['id_agente'] = agentes[0].id
                 request.session['usuario'] = agentes[0].legajo
                 request.session['nombre_usuario'] = agentes[0].apellidos + ", " + agentes[0].nombres
                 return HttpResponseRedirect("/seleccionfecha")
