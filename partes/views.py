@@ -30,14 +30,54 @@ def inicio(request):
 
 
 def planilla(request):
-    print(request.method)
-    acciones_submit = ['guardar', 'presentar']
+    acciones_submit = ['guardar', 'presentar', 'sin_accion']
     id_agente = "1" # hard-coded, después lo cambio por el logueado
+    datosAgente = Agentes.objects.filter(id=id_agente)
+    # Si recibimos desde la planilla el POST
     if request.method == "POST":
-        print(request.POST['accion_submit'])
         mes = request.POST['mesReporte']
         anio = request.POST['anioReporte']
-    else:
+        dias_del_mes = range(1, calendar.monthrange(int(anio), int(mes))[1] + 1)
+        presentado = request.POST['accion_submit'] == acciones_submit[1]
+        # Ya existe una planilla para este mes y agente?
+        planillas = Planilla.objects.filter(id=id_agente, anio=anio, mes=mes)
+        if (len(planillas) == 1):
+            planilla = planillas[0]
+            planilla.presentado = presentado
+        else:
+            planilla = Planilla(agente_id = id_agente,
+                                mes = mes,
+                                anio = anio,
+                                presentado = presentado)
+        # Guardamos los cambios en la existente o la nueva según corresponda
+        planilla.save()
+        print("ID de planilla: " + str(planilla.id))
+        # Con el ID de la planilla, ahora creamos un registro para cada día
+        nuevosRegistros = []
+        i = 1
+        listaCodigos = request.POST.getlist("codigos")
+        for observacion in request.POST.getlist("observaciones"):
+            registro = RegistroDiario(planilla_id = planilla.id,
+                                      dia = i, # día
+                                      codigo = listaCodigos[i - 1],
+                                      observaciones = observacion)
+            registro.save()
+            nuevosRegistros.append(registro)
+            i += 1
+        templateParams = {  "accion_submit": acciones_submit[2],
+                            "acciones_submit": acciones_submit[0] + "#" + acciones_submit[1],
+                            "datosAgente": datosAgente[0],
+                            "datosPlanilla": planilla,
+                            "datosDiarios": nuevosRegistros,
+                            "mesReporte": int(mes),
+                            "nombreMesReporte": nombresMeses[int(mes) - 1]["Nombre"],
+                            "anioReporte": anio,
+                            "diasDelMes": dias_del_mes,
+                            "presentado": presentado,
+                            "mostrarMensaje": True}
+        
+        return render(request, 'planilla.html', templateParams)
+    else:   # Sino, al ser GET viene redireccionado desde la selección de fecha
         accion_submit = acciones_submit[0]
         if not 'mesReporte' in request.session:
             return HttpResponseRedirect("/error")
@@ -46,19 +86,21 @@ def planilla(request):
         del request.session['mesReporte']
         del request.session['anioReporte']
         dias_del_mes = range(1, calendar.monthrange(int(anio), int(mes))[1] + 1)
-    datosAgente = Agentes.objects.filter(id=id_agente)
     datosPlanilla = Planilla.objects.filter(agente_id=id_agente, mes=mes, anio=anio)
     if len(datosPlanilla) == 1:
         datosDiarios = RegistroDiario.objects.filter(planilla_id=datosPlanilla[0].id)
+        if len(datosDiarios) == 0:
+            datosDiarios = [None] * len(dias_del_mes)
     else:
         datosPlanilla = [0, id_agente, mes, anio, False]
-        datosDiarios = None
+        datosDiarios = [None] * len(dias_del_mes)
     templateParams = {  "accion_submit": accion_submit,
                         "acciones_submit": acciones_submit[0] + "#" + acciones_submit[1],
                         "datosAgente": datosAgente[0],
                         "datosPlanilla": datosPlanilla,
                         "datosDiarios": datosDiarios,
-                        "mesReporte": nombresMeses[int(mes) - 1]["Nombre"],
+                        "mesReporte": int(mes),
+                        "nombreMesReporte": nombresMeses[int(mes) - 1]["Nombre"],
                         "anioReporte": anio,
                         "diasDelMes": dias_del_mes}
     return render(request, 'planilla.html', templateParams)

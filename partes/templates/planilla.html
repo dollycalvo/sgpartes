@@ -6,10 +6,19 @@
 <form method="post" action="/planilla" id="formPlanilla">
     {% csrf_token %}
     <input type="hidden" opciones="{{ acciones_submit }}" name="accion_submit" id="hdnAccionSubmit" value="{{ accion_submit }}">
+    <input type="hidden" name="mesReporte" value="{{ mesReporte }}">
+    <input type="hidden" name="anioReporte" value="{{ anioReporte }}">
+    {% if mostrarMensaje %}
+        {% if presentado == True %}
+        SE PRESENTÓ CON ÉXITO
+        {% else %}
+        SE GUARDÓ CON ÉXITO
+        {% endif %}
+    {% endif %}
     <div class="card mb-4">
         <div class="card-header">
             <h3>EMPRESA ABC - REPORTE HORARIO</h3>
-            <h4>{{ mesReporte }} {{ anioReporte }}</h4>
+            <h4>{{ nombreMesReporte }} {{ anioReporte }}</h4>
             <div class="d-flex flex-row mt-4">
                 <h5 class="w-25"><b>Legajo:</b> {{ datosAgente.legajo }}</h5>
                 {% with nombre_completo=datosAgente.apellidos|add:", "|add:datosAgente.nombres %}
@@ -33,24 +42,24 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for i in diasDelMes %}
+                    {% for datoDiario in datosDiarios %}
                         <tr>
-                            <td class="text-center">{{ i }}</td>
+                            <td class="text-center">{{ forloop.counter }}</td>
                             <td class="text-center">
                                 {% if not datosPlanilla.4 %}
-                                <select class="w-100 input-registro-diario">
-                                    <option value="sn">S/N</option>
-                                    <option value="v">V</option>
-                                    <option value="cs">CS</option>
-                                    <option value="sa">SA</option>
+                                <select class="w-100 input-registro-diario" name="codigos">
+                                    <option value="sn" {% if datoDiario.codigo == "sn" %}{{"selected"}}{%endif%}>S/N</option>
+                                    <option value="v" {% if datoDiario.codigo == "v" %}{{"selected"}}{%endif%}>V</option>
+                                    <option value="cs" {% if datoDiario.codigo == "cs" %}{{"selected"}}{%endif%}>CS</option>
+                                    <option value="sa" {% if datoDiario.codigo == "sa" %}{{"selected"}}{%endif%}>SA</option>
                                 </select>
                                 {% endif %}
                             </td>
                             <td>
                                 {% if not datosPlanilla.4 %}
-                                <input class="w-100 input-registro-diario" placeholder="Seleccione para editar" type="text" name="observacion_{{i}}" id="observacion_{{i}}">
+                                <input class="w-100 input-registro-diario" placeholder="Seleccione para editar" type="text" name="observaciones" id="observacion_{{i}}" value="{{datoDiario.observaciones}}">
                                 {% else %}
-                                Sin novedad (traer info de la DB)
+                                {{ datoDiario.observaciones }}
                                 {% endif %}
                             </td>
                         </tr>
