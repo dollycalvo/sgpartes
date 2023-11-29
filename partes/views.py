@@ -25,8 +25,7 @@ nombresMeses = [{"ID": 1, "Nombre": "Enero"},
 def inicio(request):
     if "errores_intentos" in request.session:
         del request.session['errores_intentos']
-    return render(request, 'index.html')
-
+    return render(request, 'login.html')
 
 
 def planilla(request):
