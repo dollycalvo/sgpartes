@@ -12,15 +12,17 @@ class Command(BaseCommand):
         # RegistroDiario.objects.all().delete()
         # Planilla.objects.all().delete()
         # return
-        pl = Planilla.objects.all()
-        for p in pl:
-            print(str(p.id) + " " + str(p.mes) + " " + str(p.anio) + " " + str(p.agente_id) + " " + str(p.presentado))
-        print()
-        regs = RegistroDiario.objects.all()
-        for reg in regs:
-            if reg.codigo != "sn":
-                print(str(reg.planilla_id) + " " + str(reg.dia) + " " + reg.codigo + " " + reg.observaciones)
-        return
+
+        # pl = Planilla.objects.all()
+        # for p in pl:
+        #     print(str(p.id) + " " + str(p.mes) + " " + str(p.anio) + " " + str(p.agente_id) + " " + str(p.presentado))
+        # print()
+        # regs = RegistroDiario.objects.all()
+        # for reg in regs:
+        #     if reg.codigo != "sn":
+        #         print(str(reg.planilla_id) + " " + str(reg.dia) + " " + reg.codigo + " " + reg.observaciones)
+        # return
+
         nuevosAgentes = [
             Agentes(legajo = 12345,
                     apellidos = "Calvo",
@@ -34,14 +36,14 @@ class Command(BaseCommand):
                     nombres = "Carlos Roberto",
                     email_agente = "calito83@gmail.com",
                     jefe_directo = "Pablo López",
-                    email_jefe_directo = "plopez@gmail.com",
+                    email_jefe_directo = "carlosguimaraenz@yahoo.com.ar",
                     password = make_password("xyx456")),
             Agentes(legajo = 77777,
                     apellidos = "Olmos",
                     nombres = "Andrea",
                     email_agente = "andrea@gmail.com",
                     jefe_directo = "Pablo López",
-                    email_jefe_directo = "plopez@gmail.com",
+                    email_jefe_directo = "calito83@gmail.com",
                     password = make_password("123ggg"))
         ]
         agentesDB = Agentes.objects.all()
@@ -51,8 +53,15 @@ class Command(BaseCommand):
                 i += 1
             if i >= len(agentesDB):
                 nuevoAgente.save()
+            else:
+                agentesDB[i].apellidos = nuevoAgente.apellidos
+                agentesDB[i].nombres = nuevoAgente.nombres
+                agentesDB[i].email_agente = nuevoAgente.email_agente
+                agentesDB[i].jefe_directo = nuevoAgente.jefe_directo
+                agentesDB[i].email_jefe_directo = nuevoAgente.email_jefe_directo
+                agentesDB[i].save()
         # Verificamos
         agentesDB = Agentes.objects.all()
         for agenteDB in agentesDB:
-            print(str(agenteDB.id) + ": " + str(agenteDB.legajo) + " " + agenteDB.apellidos)
+            print(str(agenteDB.id) + ": " + str(agenteDB.legajo) + " " + agenteDB.apellidos + " " + agenteDB.email_jefe_directo)
         

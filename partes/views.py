@@ -5,6 +5,7 @@ from partes.forms import FormSeleccionFecha
 from django.http import HttpResponseRedirect
 from django.contrib.auth.hashers import check_password
 from django.shortcuts import render
+from django.core.mail import send_mail
 
 # Create your views here.
 nombresMeses = [{"ID": 1, "Nombre": "Enero"},
@@ -21,8 +22,7 @@ nombresMeses = [{"ID": 1, "Nombre": "Enero"},
                 {"ID": 12, "Nombre": "Diciembre"}]
 
 def inicio(request):
-    # return HttpResponse("<h1>Bienvenido al sistema SGPARTES</h1>")
-    return render(request, 'index.html');
+    return render(request, 'index.html')
 
 
 
@@ -58,10 +58,12 @@ def planilla(request):
         # Obtengo todos los registros existentes para esa planilla, para evitar consultar por cada registro individualmente
         registrosCoincidentes = RegistroDiario.objects.filter(planilla_id = planilla.id)
         # Con el ID de la planilla, ahora creamos un registro para cada día
+        observaciones_para_email = "\n"
         nuevosRegistros = []
         i = 1
         listaCodigos = request.POST.getlist("codigos")
         for observacion in request.POST.getlist("observaciones"):
+            observaciones_para_email += "\nDía " + str(i) + ": " + listaCodigos[i - 1] + ": " + (observacion.strip() if observacion.strip() != "" else SIN_NOVEDAD) 
             rcIndex = 0
             while rcIndex < len(registrosCoincidentes) and registrosCoincidentes[rcIndex].dia != i:
                 rcIndex += 1
@@ -83,6 +85,23 @@ def planilla(request):
                 else:
                     nuevosRegistros.append(None)    # En caso de no existir ni ser creado, hacemos un dummy 
             i += 1
+        # Enviamos e-mail
+        if presentado:
+            agente = datosAgente[0]
+            nombre_completo_agente = agente.apellidos + ", " + agente.nombres
+            mensaje_email = "Fecha: " + nombresMeses[int(mes) - 1]["Nombre"] + " " + anio
+            mensaje_email += "\nAgente: " + nombre_completo_agente + " (legajo: " + str(agente.legajo) + ")"
+            mensaje_email += observaciones_para_email
+            send_mail(
+                "Planilla presentada: " + nombre_completo_agente,
+                mensaje_email,
+                # agente.email_agente,
+                # [agente.email_jefe_directo, agente.email_agente],
+                'webmaster@cguimaraenz.com',
+                ['webmaster@cguimaraenz.com'],
+                fail_silently=False,
+            )
+        # Nos preparamos para renderizar la página
         templateParams = {  "accion_submit": acciones_submit[2],
                             "acciones_submit": acciones_submit[0] + "#" + acciones_submit[1],
                             "datosAgente": datosAgente[0],
@@ -94,8 +113,7 @@ def planilla(request):
                             "diasDelMes": dias_del_mes,
                             "presentado": presentado,
                             "mostrarMensaje": True,
-                            "textoSinNovedad": SIN_NOVEDAD}
-        
+                            "textoSinNovedad": SIN_NOVEDAD}        
         return render(request, 'planilla.html', templateParams)
     else:   # Sino, al ser GET viene redireccionado desde la selección de fecha
         accion_submit = acciones_submit[0]
@@ -164,9 +182,12 @@ def login(request):
     if (request.method == "GET"):
         mensaje = ""
         if 'logout' in request.GET:
-            del request.session['usuario']
-            del request.session['nombre_usuario']
-            del request.session['logins_incorrectos']
+            if 'usuario' in request.session:
+                del request.session['usuario']
+            if 'nombre_usuario' in request.session:
+                del request.session['nombre_usuario']
+            if 'logins_incorrectos' in request.session:
+                del request.session['logins_incorrectos']
             mensaje = "La sesión se ha cerrado correctamente"
         if 'logins_incorrectos' not in request.session:
             request.session['logins_incorrectos'] = MAX_LOGINS_INCORRECTOS

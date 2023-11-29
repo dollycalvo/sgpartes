@@ -9,3 +9,10 @@ El modo de ejecutar este comando es desde la línea de comandos de la siguiente 
 # Códigos en la planilla
 Para ausencias y motivos especiales, existe un código en la base de datos y otro como etiqueta para el usuario.
 En el archivo **/partes/templatetags/filters.py** se encontrará un filtro personalizado que se usa en el template HTML, el cual devuelve la etiqueta para mostrar al usuario a partir del código en la base de datos. Cuando se agregue un nuevo código, además de modificar el template HTML, habrá que modificar este filtro para incluirlo.
+
+# Envío de e-mail al presentar planilla
+Para pruebas locales se configuró un servidor con la aplicación de Windows hMailServer (código abierto).
+La configuración fue realizada siguiendo este tutorial:
+https://medium.com/@coffmans/setup-your-own-simple-smtp-server-how-to-c9159cfc7934
+Como domain se utilizó cguimaraenz.com, y como e-mail webmaster@cguimaraenz.com
+Éstos han sido hard-codeados en el archivo views.py para las pruebas, y fueron comentadas las líneas en las que debería tomar las direcciones de e-mail de agentes y jefes. 
