@@ -6,5 +6,6 @@ urlpatterns = [
     path('seleccionfecha', views.seleccionfecha, name='seleccionfecha'),
     path('login', views.login, name='login'),
     path('planilla', views.planilla, name="planilla"),
-    path('error', views.error, name="error")
+    path('error', views.error, name="error"),
+    path('regenerar', views.regenerar, name="regenerar")
 ]

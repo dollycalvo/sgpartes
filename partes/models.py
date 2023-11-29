@@ -21,3 +21,7 @@ class RegistroDiario(models.Model):
     dia = models.SmallIntegerField()
     codigo = models.CharField(max_length=3)
     observaciones = models.TextField()
+
+class RegeneracionPW(models.Model):
+    agente = models.ForeignKey(Agentes, on_delete=models.DO_NOTHING, default=None)
+    codigo = models.CharField(max_length=64)

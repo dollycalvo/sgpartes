@@ -15,4 +15,5 @@ Para pruebas locales se configuró un servidor con la aplicación de Windows hMa
 La configuración fue realizada siguiendo este tutorial:
 https://medium.com/@coffmans/setup-your-own-simple-smtp-server-how-to-c9159cfc7934
 Como domain se utilizó cguimaraenz.com, y como e-mail webmaster@cguimaraenz.com
-Éstos han sido hard-codeados en el archivo views.py para las pruebas, y fueron comentadas las líneas en las que debería tomar las direcciones de e-mail de agentes y jefes. 
+Éstos han sido hard-codeados en el archivo views.py para las pruebas, y fueron comentadas las líneas en las que debería tomar las direcciones de e-mail de agentes y jefes.
+Los e-mails se podrán ver en la carpeta "C:\Program Files (x86)\hMailServer\Data\cguimaraenz.com\webmaster\XX" (según la configuración mencionada anteriormente). Los archivos son de extensión .eml y se puede ver en cualquier editor de texto.

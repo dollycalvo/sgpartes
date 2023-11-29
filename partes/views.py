@@ -1,9 +1,10 @@
-import datetime
+import hashlib
 import calendar
-from partes.models import Agentes, Planilla, RegistroDiario
+from datetime import datetime
+from partes.models import Agentes, Planilla, RegistroDiario, RegeneracionPW
 from partes.forms import FormSeleccionFecha
 from django.http import HttpResponseRedirect
-from django.contrib.auth.hashers import check_password
+from django.contrib.auth.hashers import make_password, check_password
 from django.shortcuts import render
 from django.core.mail import send_mail
 
@@ -22,6 +23,8 @@ nombresMeses = [{"ID": 1, "Nombre": "Enero"},
                 {"ID": 12, "Nombre": "Diciembre"}]
 
 def inicio(request):
+    if "errores_intentos" in request.session:
+        del request.session['errores_intentos']
     return render(request, 'index.html')
 
 
@@ -165,7 +168,7 @@ def seleccionfecha(request):
             return HttpResponseRedirect('/planilla')
     else:
         form = FormSeleccionFecha()
-    fechaActual = datetime.datetime.now()
+    fechaActual = datetime.now()
     mesActual = fechaActual.month
     anioActual = fechaActual.year
     anios = list(range(anioActual - 3, anioActual + 2))
@@ -237,3 +240,104 @@ def error(request):
             if request.GET['cod'] == "1":
                 mensaje = "Demasiados intentos incorrectos de inicio de sesión"
     return render(request, 'error.html', {"mensaje": mensaje})
+
+
+
+def regenerar(request):
+    MAX_ERRORES = 2
+    acciones = ["pedir_email", "form_regenerar", "crear_pw"]
+    if request.method == 'POST':
+        # En el POST hay dos posibilidades:
+        if "accion" in request.POST:
+            # Tomamos el email y generamos el código para enviarle el link
+            if request.POST["accion"] == acciones[0]:
+                usuario = request.POST['username'].strip()
+                if usuario.find("@") != -1:
+                    agentes = Agentes.objects.filter(email_agente = usuario)
+                elif usuario.isnumeric():
+                    agentes = Agentes.objects.filter(legajo = usuario)
+                else:
+                    mensaje_error = "La información ingresada no corresponde a ningún usuario activo"
+                    return render(request, "regenerar.html", {"mensaje_error": mensaje_error, "acciones": acciones, "accion": acciones[0]})
+                # Al llegar aquí, deberíamos tener la consulta hecha (aunque no haya coincidencias)
+                if len(agentes) == 1:
+                    agente = agentes[0]
+                    # Primero verificamos que no exista otro previo, o sino lo actualizamos
+                    RegeneracionPW.objects.filter(agente_id = agente.id).delete()
+                    # Creamos el link y lo enviamos por e-mail
+                    str2hash = agente.email_agente + str(datetime.now())
+                    nuevo_codigo = hashlib.sha256(str2hash.encode()).hexdigest()
+                    regPW = RegeneracionPW(agente_id = agente.id, codigo = nuevo_codigo)
+                    regPW.save()
+                    # Enviamos el e-mail
+                    base_url = request.build_absolute_uri('/')[:-1].strip("/")
+                    cuerpo_email = "Estimado(a) " + agente.nombres + " " + agente.apellidos + ",\n"
+                    cuerpo_email += "por favor, ingrese al siguiente link (si no funciona, copie y pegue en su navegador), "
+                    cuerpo_email += "e ingrese su e-mail o legajo, nueva contraseña y confirmación.\n\n" + base_url
+                    cuerpo_email += "/regenerar?codigo=" + str(regPW.codigo) + "\n\nAdministradores del Sistema"
+                    send_mail(
+                        "Instrucciones para regenerar su contraseña",
+                        cuerpo_email,
+                        # webmaster@sistema.com,
+                        # [agente.email_agente],
+                        'webmaster@cguimaraenz.com',
+                        ['webmaster@cguimaraenz.com'],
+                        fail_silently=False)
+                    # Y redireccionamos con el mensaje de éxito
+                    mensaje = "Se ha envíado un correo electrónico a su casilla con información para regenerar su contraseña"
+                    return render(request, "regenerar.html", {"mensaje": mensaje})
+                else:
+                    mensaje_error = "La información ingresada no corresponde a ningún usuario activo"
+                    return render(request, "regenerar.html", {"mensaje_error": mensaje_error, "acciones": acciones, "accion": acciones[0]})
+            else:
+                # O tomamos el mail, el nuevo password, la confirmación, y verificamos que coincida con el codigo
+                codigo = request.POST["codigo"]
+                pw = request.POST["password"]
+                confirmar_pw = request.POST["confirmar_password"]
+                if pw != confirmar_pw:
+                    mensaje_error = "La contraseña y la confirmación no coinciden"
+                    return render(request, 'regenerar.html', {"mensaje_error": mensaje_error, "acciones": acciones, "accion": acciones[1], "codigo": request.POST["codigo"]})
+                usuario = request.POST['username'].strip()
+                if usuario.find("@") != -1:
+                    agentes = Agentes.objects.filter(email_agente = usuario)
+                elif usuario.isnumeric():
+                    agentes = Agentes.objects.filter(legajo = usuario)
+                if len(agentes) == 1:
+                    # Si hay un usuario, seguimos con la verificación
+                    agente = agentes[0]
+                    regsPW = RegeneracionPW.objects.filter(agente_id = agente.id)
+                    if len(regsPW) == 1:
+                        if regsPW[0].codigo == codigo:
+                            # Regeneramos el password
+                            agente.password = make_password(pw)
+                            agente.save()
+                            # Elimino el código para que no se vuelva a utilizar
+                            regsPW.delete()
+                            mensaje = "La contraseña se ha regenerado correctamente. Ya puede utilizarla para iniciar sesión"
+                            return render(request, 'regenerar.html', {"mensaje": mensaje, "acciones": acciones, "accion": acciones[2], "codigo": request.POST["codigo"]})
+                        else:
+                            mensaje_error = "Hay un error en el código suministrado. Verifique que el correo electrónico desde el cual siguió el link sea el más reciente."
+                            return render(request, 'regenerar.html', {"mensaje_error": mensaje_error, "acciones": acciones, "accion": acciones[2], "codigo": request.POST["codigo"]})
+                    else:
+                        mensaje_error = "No existe ningún pedido de regeneración de contraseña para este usuario!"
+                        return render(request, 'regenerar.html', {"mensaje_error": mensaje_error, "acciones": acciones, "accion": acciones[2], "codigo": request.POST["codigo"]})
+                else:
+                    # Sino, mensaje de error
+                    if 'errores_intentos' in request.session:
+                        if request.session['errores_intentos'] > 1:
+                            request.session['errores_intentos'] -= 1
+                            mensaje_error = "Los datos de usuario ingresados son incorrectos. Restan " + str(request.session['errores_intentos']) + " intentos"
+                            return render(request, 'regenerar.html', {"mensaje_error": mensaje_error, "acciones": acciones, "accion": acciones[1], "codigo": request.POST["codigo"], "errores_intentos": request.session['errores_intentos']})
+                        else:
+                            del request.session['errores_intentos']
+                            return render(request, "error.html", {"mensaje": "Demasiados intentos incorrectos para regenerar la contraseña"})
+                    else:
+                        request.session['errores_intentos'] = MAX_ERRORES
+                        mensaje_error = "Los datos de usuario ingresados son incorrectos. Restan " + str(request.session['errores_intentos']) + " intentos"
+                        return render(request, 'regenerar.html', {"mensaje_error": mensaje_error, "acciones": acciones, "accion": acciones[1], "codigo": request.POST["codigo"], "errores_intentos": request.session['errores_intentos']})
+        return render(request, "error.html")
+    else: # GET method
+        if 'codigo' in request.GET: # si viene desde el link enviado a su email
+            return render(request, 'regenerar.html', {"acciones": acciones, "accion": acciones[1], "codigo": request.GET["codigo"]})
+        else: # si viene desde el login, simplemente mostramos el formulario con el campo email
+            return render(request, 'regenerar.html', {"acciones": acciones, "accion": acciones[0]})

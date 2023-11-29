@@ -4,7 +4,7 @@
 {% block contenido %}
 <form method="post" action="/login">
     {% csrf_token %}
-    {% if mensaje and mensaje != "NADA" %}
+    {% if mensaje and mensaje != "" %}
     <div class="alert alert-success auto-hide-5s" role="success">
         {{ mensaje }}
     </div>
@@ -25,6 +25,9 @@
                         <label for="txtPassword">Contraseña:</label>
                         <input id="txtPassword" type="password" name="login_password" placeholder="Contraseña" class="px-05rem" required>
                     </div>
+                </div>
+                <div class="regenerar-pw">
+                    <a class="nav-item nav-link link-regenerar" href="regenerar">Hacé click acá para regenerar tu contraseña</a>
                 </div>
                 <div class="mensaje-error-login">
                     {{ mensaje_error }}

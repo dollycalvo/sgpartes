@@ -112,3 +112,12 @@
     margin-top: 0.5rem;
     width: 100%;
 }
+
+.link-regenerar {
+    margin-top: 1rem;
+}
+
+.link-regenerar:hover {
+    text-decoration: underline;
+    color: var(--color-frambuesa);
+}

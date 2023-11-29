@@ -3,7 +3,7 @@ from partes.models import Agentes, RegistroDiario, Planilla
 from django.contrib.auth.hashers import make_password
 
 class Command(BaseCommand):
-    help = 'Closes the specified poll for voting'
+    help = 'Agrega o actualiza usuarios al sistema'
 
     # def add_arguments(self, parser):
     #     parser.add_argument('poll_ids', nargs='+', type=int)
