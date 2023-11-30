@@ -202,7 +202,10 @@ def login(request):
         elif usuario.isnumeric():
             agentes = Agentes.objects.filter(legajo = usuario)
         else:
-            request.session['logins_incorrectos'] -= 1
+            if 'logins_incorrectos' in request.session:
+                request.session['logins_incorrectos'] -= 1
+            else:
+                request.session['logins_incorrectos'] = MAX_LOGINS_INCORRECTOS
             if request.session['logins_incorrectos'] == 0:
                 return HttpResponseRedirect("/error?cod=1")
             mensaje_error = f"Los datos de inicio de sesión son incorrectos. Restan {request.session['logins_incorrectos']} intentos."
@@ -214,13 +217,19 @@ def login(request):
                 request.session['nombre_usuario'] = agentes[0].apellidos + ", " + agentes[0].nombres
                 return HttpResponseRedirect("/seleccionfecha")
             else:   # volvemos a pedir login y aumentamos la cantidad de logins incorrectos
-                request.session['logins_incorrectos'] -= 1
+                if 'logins_incorrectos' in request.session:
+                    request.session['logins_incorrectos'] -= 1
+                else:
+                    request.session['logins_incorrectos'] = MAX_LOGINS_INCORRECTOS
                 if request.session['logins_incorrectos'] == 0:
                     return HttpResponseRedirect("/error?cod=1")
                 mensaje_error = f"Los datos de inicio de sesión son incorrectos. Restan {request.session['logins_incorrectos']} intentos."
                 return render(request, 'login.html', {"mensaje_error": mensaje_error, "usuario_previo": usuario})
         else:
-            request.session['logins_incorrectos'] -= 1
+            if 'logins_incorrectos' in request.session:
+                request.session['logins_incorrectos'] -= 1
+            else:
+                request.session['logins_incorrectos'] = MAX_LOGINS_INCORRECTOS
             if request.session['logins_incorrectos'] == 0:
                 return HttpResponseRedirect("/error?cod=1")
             mensaje_error = f"Los datos de inicio de sesión son incorrectos. Restan {request.session['logins_incorrectos']} intentos."
