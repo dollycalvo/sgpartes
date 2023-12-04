@@ -1,7 +1,7 @@
 import hashlib
 import calendar
 from datetime import datetime
-from partes.models import Agentes, Planilla, RegistroDiario, RegeneracionPW
+from partes.models import Empleado, Planilla, RegistroDiario, RegeneracionPW
 from partes.forms import FormSeleccionFecha
 from django.http import HttpResponseRedirect
 from django.contrib.auth.hashers import make_password, check_password
@@ -36,21 +36,21 @@ def planilla(request):
 
     SIN_NOVEDAD = "Sin novedad"
     acciones_submit = ['guardar', 'presentar', 'sin_accion']
-    id_agente = request.session['id_agente']
-    datosAgente = Agentes.objects.filter(id=id_agente)
+    id_empleado = request.session['id_empleado']
+    datosEmpleado = Empleado.objects.filter(id=id_empleado)
     # Si recibimos desde la planilla el POST
     if request.method == "POST":
         mes = request.POST['mesReporte']
         anio = request.POST['anioReporte']
         dias_del_mes = range(1, calendar.monthrange(int(anio), int(mes))[1] + 1)
         presentado = request.POST['accion_submit'] == acciones_submit[1]
-        # Ya existe una planilla para este mes y agente?
-        planillas = Planilla.objects.filter(agente_id=id_agente, anio=anio, mes=mes)
+        # Ya existe una planilla para este mes y empleado?
+        planillas = Planilla.objects.filter(empleado_id=id_empleado, anio=anio, mes=mes)
         if (len(planillas) == 1):
             planilla = planillas[0]
             planilla.presentado = presentado
         else:
-            planilla = Planilla(agente_id = id_agente,
+            planilla = Planilla(empleado_id = id_empleado,
                                 mes = mes,
                                 anio = anio,
                                 presentado = presentado)
@@ -89,16 +89,17 @@ def planilla(request):
             i += 1
         # Enviamos e-mail
         if presentado:
-            agente = datosAgente[0]
-            nombre_completo_agente = agente.apellidos + ", " + agente.nombres
+            empleado = datosEmpleado[0]
+            nombre_completo_empleado = empleado.apellidos + ", " + empleado.nombres
             mensaje_email = "Fecha: " + nombresMeses[int(mes) - 1]["Nombre"] + " " + anio
-            mensaje_email += "\nAgente: " + nombre_completo_agente + " (legajo: " + str(agente.legajo) + ")"
+            mensaje_email += "\nEmpleado: " + nombre_completo_empleado + " (legajo: " + str(empleado.legajo) + ")"
             mensaje_email += observaciones_para_email
+            print("Mail a " + empleado.jefe_directo.email)
             send_mail(
-                "Planilla presentada: " + nombre_completo_agente,
+                "Planilla presentada: " + nombre_completo_empleado,
                 mensaje_email,
-                # agente.email_agente,
-                # [agente.email_jefe_directo, agente.email_agente],
+                # empleado.email,
+                # [empleado.email_jefe_directo, empleado.email],
                 'webmaster@cguimaraenz.com',
                 ['webmaster@cguimaraenz.com'],
                 fail_silently=False,
@@ -106,7 +107,7 @@ def planilla(request):
         # Nos preparamos para renderizar la página
         templateParams = {  "accion_submit": acciones_submit[2],
                             "acciones_submit": acciones_submit[0] + "#" + acciones_submit[1],
-                            "datosAgente": datosAgente[0],
+                            "datosEmpleado": datosEmpleado[0],
                             "datosPlanilla": planilla,
                             "datosDiarios": nuevosRegistros,
                             "mesReporte": int(mes),
@@ -126,22 +127,22 @@ def planilla(request):
         del request.session['mesReporte']
         del request.session['anioReporte']
         dias_del_mes = range(1, calendar.monthrange(int(anio), int(mes))[1] + 1)
-    datosPlanilla = Planilla.objects.filter(agente_id=id_agente, mes=mes, anio=anio)
+    datosPlanilla = Planilla.objects.filter(empleado_id=id_empleado, mes=mes, anio=anio)
     if len(datosPlanilla) == 1:
         datosPlanilla = datosPlanilla[0]
         datosDiarios = RegistroDiario.objects.filter(planilla_id=datosPlanilla.id)
         if len(datosDiarios) == 0:
             datosDiarios = [None] * len(dias_del_mes)
     else:
-        # datosPlanilla = [0, id_agente, mes, anio, False]
-        datosPlanilla = Planilla(agente_id = id_agente,
+        # datosPlanilla = [0, id_empleado, mes, anio, False]
+        datosPlanilla = Planilla(empleado_id = id_empleado,
                             mes = mes,
                             anio = anio,
                             presentado = False)
         datosDiarios = [None] * len(dias_del_mes)
     templateParams = {  "accion_submit": accion_submit,
                         "acciones_submit": acciones_submit[0] + "#" + acciones_submit[1],
-                        "datosAgente": datosAgente[0],
+                        "datosEmpleado": datosEmpleado[0],
                         "datosPlanilla": datosPlanilla,
                         "datosDiarios": datosDiarios,
                         "mesReporte": int(mes),
@@ -198,9 +199,9 @@ def login(request):
         usuario = request.POST['login_username'].strip()
         password = request.POST['login_password']
         if usuario.find("@") != -1:
-            agentes = Agentes.objects.filter(email_agente = usuario)
+            empleados = Empleado.objects.filter(email = usuario)
         elif usuario.isnumeric():
-            agentes = Agentes.objects.filter(legajo = usuario)
+            empleados = Empleado.objects.filter(legajo = usuario)
         else:
             if 'logins_incorrectos' in request.session:
                 request.session['logins_incorrectos'] -= 1
@@ -210,11 +211,11 @@ def login(request):
                 return HttpResponseRedirect("/error?cod=1")
             mensaje_error = f"Los datos de inicio de sesión son incorrectos. Restan {request.session['logins_incorrectos']} intentos."
             return render(request, 'login.html', {"mensaje_error": mensaje_error, "usuario_previo": usuario})
-        if len(agentes) == 1:   # encontramos al usuario?
-            if check_password(password, agentes[0].password):
-                request.session['id_agente'] = agentes[0].id
-                request.session['usuario'] = agentes[0].legajo
-                request.session['nombre_usuario'] = agentes[0].apellidos + ", " + agentes[0].nombres
+        if len(empleados) == 1:   # encontramos al usuario?
+            if check_password(password, empleados[0].password):
+                request.session['id_empleado'] = empleados[0].id
+                request.session['usuario'] = empleados[0].legajo
+                request.session['nombre_usuario'] = empleados[0].apellidos + ", " + empleados[0].nombres
                 return HttpResponseRedirect("/seleccionfecha")
             else:   # volvemos a pedir login y aumentamos la cantidad de logins incorrectos
                 if 'logins_incorrectos' in request.session:
@@ -261,25 +262,25 @@ def regenerar(request):
             if request.POST["accion"] == acciones[0]:
                 usuario = request.POST['username'].strip()
                 if usuario.find("@") != -1:
-                    agentes = Agentes.objects.filter(email_agente = usuario)
+                    empleados = Empleado.objects.filter(email = usuario)
                 elif usuario.isnumeric():
-                    agentes = Agentes.objects.filter(legajo = usuario)
+                    empleados = Empleado.objects.filter(legajo = usuario)
                 else:
                     mensaje_error = "La información ingresada no corresponde a ningún usuario activo"
                     return render(request, "regenerar.html", {"mensaje_error": mensaje_error, "acciones": acciones, "accion": acciones[0]})
                 # Al llegar aquí, deberíamos tener la consulta hecha (aunque no haya coincidencias)
-                if len(agentes) == 1:
-                    agente = agentes[0]
+                if len(empleados) == 1:
+                    empleado = empleados[0]
                     # Primero verificamos que no exista otro previo, o sino lo actualizamos
-                    RegeneracionPW.objects.filter(agente_id = agente.id).delete()
+                    RegeneracionPW.objects.filter(empleado_id = empleado.id).delete()
                     # Creamos el link y lo enviamos por e-mail
-                    str2hash = agente.email_agente + str(datetime.now())
+                    str2hash = empleado.email + str(datetime.now())
                     nuevo_codigo = hashlib.sha256(str2hash.encode()).hexdigest()
-                    regPW = RegeneracionPW(agente_id = agente.id, codigo = nuevo_codigo)
+                    regPW = RegeneracionPW(empleado_id = empleado.id, codigo = nuevo_codigo)
                     regPW.save()
                     # Enviamos el e-mail
                     base_url = request.build_absolute_uri('/')[:-1].strip("/")
-                    cuerpo_email = "Estimado(a) " + agente.nombres + " " + agente.apellidos + ",\n"
+                    cuerpo_email = "Estimado(a) " + empleado.nombres + " " + empleado.apellidos + ",\n"
                     cuerpo_email += "por favor, ingrese al siguiente link (si no funciona, copie y pegue en su navegador), "
                     cuerpo_email += "e ingrese su e-mail o legajo, nueva contraseña y confirmación.\n\n" + base_url
                     cuerpo_email += "/regenerar?codigo=" + str(regPW.codigo) + "\n\nAdministradores del Sistema"
@@ -287,7 +288,7 @@ def regenerar(request):
                         "Instrucciones para regenerar su contraseña",
                         cuerpo_email,
                         # webmaster@sistema.com,
-                        # [agente.email_agente],
+                        # [empleado.email],
                         'webmaster@cguimaraenz.com',
                         ['webmaster@cguimaraenz.com'],
                         fail_silently=False)
@@ -307,18 +308,18 @@ def regenerar(request):
                     return render(request, 'regenerar.html', {"mensaje_error": mensaje_error, "acciones": acciones, "accion": acciones[1], "codigo": request.POST["codigo"]})
                 usuario = request.POST['username'].strip()
                 if usuario.find("@") != -1:
-                    agentes = Agentes.objects.filter(email_agente = usuario)
+                    empleados = Empleado.objects.filter(email = usuario)
                 elif usuario.isnumeric():
-                    agentes = Agentes.objects.filter(legajo = usuario)
-                if len(agentes) == 1:
+                    empleados = Empleado.objects.filter(legajo = usuario)
+                if len(empleados) == 1:
                     # Si hay un usuario, seguimos con la verificación
-                    agente = agentes[0]
-                    regsPW = RegeneracionPW.objects.filter(agente_id = agente.id)
+                    empleado = empleados[0]
+                    regsPW = RegeneracionPW.objects.filter(empleado_id = empleado.id)
                     if len(regsPW) == 1:
                         if regsPW[0].codigo == codigo:
                             # Regeneramos el password
-                            agente.password = make_password(pw)
-                            agente.save()
+                            empleado.password = make_password(pw)
+                            empleado.save()
                             # Elimino el código para que no se vuelva a utilizar
                             regsPW.delete()
                             mensaje = "La contraseña se ha regenerado correctamente. Ya puede utilizarla para iniciar sesión"

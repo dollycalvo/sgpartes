@@ -23,8 +23,8 @@
             <h3>EMPRESA ABC - REPORTE HORARIO</h3>
             <h4>{{ nombreMesReporte }} {{ anioReporte }}</h4>
             <div class="d-flex flex-row mt-4">
-                <h5 class="w-25"><b>Legajo:</b> {{ datosAgente.legajo }}</h5>
-                {% with nombre_completo=datosAgente.apellidos|add:", "|add:datosAgente.nombres %}
+                <h5 class="w-25"><b>Legajo:</b> {{ datosEmpleado.legajo }}</h5>
+                {% with nombre_completo=datosEmpleado.apellidos|add:", "|add:datosEmpleado.nombres %}
                 <h5 class="w-75"><b>Apellido(s) y nombre(s):</b> {{ nombre_completo }}</h5>
                 {% endwith %}
             </div>
