@@ -121,3 +121,8 @@
     text-decoration: underline;
     color: var(--color-frambuesa);
 }
+
+.link-frambuesa:hover {
+    text-decoration: underline;
+    color: var(--color-frambuesa);
+}

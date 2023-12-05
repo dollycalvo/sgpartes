@@ -1,7 +1,7 @@
 import hashlib
 import calendar
 from datetime import datetime
-from partes.models import Empleado, Planilla, RegistroDiario, RegeneracionPW
+from partes.models import Empleado, Puesto, StatusPlanilla, Planilla, RegistroDiario, RegeneracionPW
 from partes.forms import FormSeleccionFecha
 from django.http import HttpResponseRedirect
 from django.contrib.auth.hashers import make_password, check_password
@@ -43,17 +43,20 @@ def planilla(request):
         mes = request.POST['mesReporte']
         anio = request.POST['anioReporte']
         dias_del_mes = range(1, calendar.monthrange(int(anio), int(mes))[1] + 1)
-        presentado = request.POST['accion_submit'] == acciones_submit[1]
+        if request.POST['accion_submit'] == acciones_submit[1]:
+            statusPlanilla = StatusPlanilla.objects.filter(status = "Presentado")[0]
+        else:
+            statusPlanilla = StatusPlanilla.objects.filter(status = "Borrador")[0]
         # Ya existe una planilla para este mes y empleado?
         planillas = Planilla.objects.filter(empleado_id=id_empleado, anio=anio, mes=mes)
         if (len(planillas) == 1):
             planilla = planillas[0]
-            planilla.presentado = presentado
+            planilla.status = statusPlanilla
         else:
             planilla = Planilla(empleado_id = id_empleado,
                                 mes = mes,
                                 anio = anio,
-                                presentado = presentado)
+                                status = statusPlanilla)
         # Guardamos los cambios en la existente o la nueva según corresponda
         planilla.save()
         print("ID de planilla: " + str(planilla.id))
@@ -88,7 +91,7 @@ def planilla(request):
                     nuevosRegistros.append(None)    # En caso de no existir ni ser creado, hacemos un dummy 
             i += 1
         # Enviamos e-mail
-        if presentado:
+        if statusPlanilla.status == "Presentado":
             empleado = datosEmpleado[0]
             nombre_completo_empleado = empleado.apellidos + ", " + empleado.nombres
             mensaje_email = "Fecha: " + nombresMeses[int(mes) - 1]["Nombre"] + " " + anio
@@ -99,7 +102,7 @@ def planilla(request):
                 "Planilla presentada: " + nombre_completo_empleado,
                 mensaje_email,
                 # empleado.email,
-                # [empleado.email_jefe_directo, empleado.email],
+                # [empleado.jefe_directo.email, empleado.email],
                 'webmaster@cguimaraenz.com',
                 ['webmaster@cguimaraenz.com'],
                 fail_silently=False,
@@ -114,7 +117,7 @@ def planilla(request):
                             "nombreMesReporte": nombresMeses[int(mes) - 1]["Nombre"],
                             "anioReporte": anio,
                             "diasDelMes": dias_del_mes,
-                            "presentado": presentado,
+                            "statusPlanilla": statusPlanilla.status,
                             "mostrarMensaje": True,
                             "textoSinNovedad": SIN_NOVEDAD}        
         return render(request, 'planilla.html', templateParams)
@@ -138,7 +141,7 @@ def planilla(request):
         datosPlanilla = Planilla(empleado_id = id_empleado,
                             mes = mes,
                             anio = anio,
-                            presentado = False)
+                            status = StatusPlanilla.objects.filter(status = "Borrador")[0])
         datosDiarios = [None] * len(dias_del_mes)
     templateParams = {  "accion_submit": accion_submit,
                         "acciones_submit": acciones_submit[0] + "#" + acciones_submit[1],
@@ -192,6 +195,11 @@ def login(request):
             if 'logins_incorrectos' in request.session:
                 del request.session['logins_incorrectos']
             mensaje = "La sesión se ha cerrado correctamente"
+        else:
+            # Si no estoy haciendo logout
+            if 'usuario' in request.session:
+                # Si vuelvo al link /login y ya estoy logueado, voy a seleccion de fecha
+                return HttpResponseRedirect("/seleccionfecha")
         if 'logins_incorrectos' not in request.session:
             request.session['logins_incorrectos'] = MAX_LOGINS_INCORRECTOS
         return render(request, 'login.html', {"mensaje": mensaje})
