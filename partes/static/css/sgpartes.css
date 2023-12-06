@@ -126,3 +126,7 @@
     text-decoration: underline;
     color: var(--color-frambuesa);
 }
+
+.active {
+    color: var(--color-frambuesa) !important;
+}

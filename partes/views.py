@@ -23,10 +23,7 @@ nombresMeses = [{"ID": 1, "Nombre": "Enero"},
                 {"ID": 12, "Nombre": "Diciembre"}]
 
 def inicio(request):
-    if "errores_intentos" in request.session:
-        del request.session['errores_intentos']
-    return render(request, 'login.html')
-
+    return login(request)
 
 def planilla(request):
     # Cláusula de guarda
@@ -198,8 +195,12 @@ def login(request):
         else:
             # Si no estoy haciendo logout
             if 'usuario' in request.session:
-                # Si vuelvo al link /login y ya estoy logueado, voy a seleccion de fecha
-                return HttpResponseRedirect("/seleccionfecha")
+                # Si vuelvo al link /login y ya estoy logueado, voy a seleccion de fecha o dashboard según corresponda
+                if request.session['puesto'] == "Agente":
+                    return HttpResponseRedirect("/seleccionfecha")
+                else:
+                    # Si es supervisor o gerente, va a una página de selección de acción
+                    return HttpResponseRedirect("/dashboard")
         if 'logins_incorrectos' not in request.session:
             request.session['logins_incorrectos'] = MAX_LOGINS_INCORRECTOS
         return render(request, 'login.html', {"mensaje": mensaje})
@@ -224,7 +225,12 @@ def login(request):
                 request.session['id_empleado'] = empleados[0].id
                 request.session['usuario'] = empleados[0].legajo
                 request.session['nombre_usuario'] = empleados[0].apellidos + ", " + empleados[0].nombres
-                return HttpResponseRedirect("/seleccionfecha")
+                request.session['puesto'] = empleados[0].puesto.nombre
+                if empleados[0].puesto.nombre == "Agente":
+                    return HttpResponseRedirect("/seleccionfecha")
+                else:
+                    # Si es supervisor o gerente, va a una página de selección de acción
+                    return HttpResponseRedirect("/dashboard")
             else:   # volvemos a pedir login y aumentamos la cantidad de logins incorrectos
                 if 'logins_incorrectos' in request.session:
                     request.session['logins_incorrectos'] -= 1
@@ -358,3 +364,29 @@ def regenerar(request):
             return render(request, 'regenerar.html', {"acciones": acciones, "accion": acciones[1], "codigo": request.GET["codigo"]})
         else: # si viene desde el login, simplemente mostramos el formulario con el campo email
             return render(request, 'regenerar.html', {"acciones": acciones, "accion": acciones[0]})
+
+
+def dashboard(request):
+        # Cláusula de guarda
+    if 'puesto' not in request.session or request.session['puesto'] == "Agente":
+        request.session['mensaje_unauth'] = "No tienes acceso a este contenido. Si se trata de un error, contacta al administrador del sistema."
+        return HttpResponseRedirect("/error")
+    
+    if request.method == 'POST':
+        form = FormSeleccionFecha(request.POST)
+        if form.is_valid():
+            request.session['mesReporte'] = request.POST['mesReporte']
+            request.session['anioReporte'] = request.POST['anioReporte']
+            return HttpResponseRedirect('/planilla')
+    else:   # GET request
+        form = FormSeleccionFecha()
+    fechaActual = datetime.now()
+    mesActual = fechaActual.month
+    anioActual = fechaActual.year
+    anios = list(range(anioActual - 3, anioActual + 2))
+    return render(request, 'dashboard.html', {"form": form, 
+                                                   "anios": anios, 
+                                                   "nombresMeses": nombresMeses, 
+                                                   "mesActual": mesActual, 
+                                                   "anioActual": anioActual,
+                                                   "dashboard_habilitado": True})
