@@ -394,6 +394,9 @@ def dashboard(request):
                 for planilla in planillasPorAprobar:
                     planillasDeEmpleado["planillasPorAprobar"].append({"id": planilla.id, "mes": nombresMeses[int(planilla.mes) - 1], "anio": planilla.anio})
                 listaPlanillas.append(planillasDeEmpleado)
+        # Guardamos la lista en la sesión para verificarla posteriormente al procesarla,
+        # para evitar que un supervisor acceda a una planilla a la cual no está autorizado
+        request.session['listaPlanillasPorAprobar'] = listaPlanillas
             
     fechaActual = datetime.now()
     mesActual = fechaActual.month
@@ -406,3 +409,10 @@ def dashboard(request):
                                                    "anioActual": anioActual,
                                                    "listaPlanillas": listaPlanillas,
                                                    "dashboard_habilitado": True})
+
+
+
+def aprobar(request):
+    for k in request.POST.keys():
+        print(request.POST[k])
+    return render(request, 'index.html')

@@ -1,12 +1,14 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block titulo %} Dashboard {% endblock %}
 {% block navlinks %}
     {% include "components/nav_links.html" with seleccionado="Dashboard" %}
 {% endblock %}
 {% block contenido %}
-    <form method="post" action="/seleccionfecha">
+    <form id="formAprobar" method="post" action="/aprobar">
         {% csrf_token %}
+        <input type="hidden" id="id_planilla" name="id_planilla" value="INVALID">
         <div class="card">
             <div class="card-header bg-secondary text-white">
                 Planillas pendientes de aprobación
@@ -33,10 +35,10 @@
                     {% for planilla in listaPlanillas %}
                         {% for subplanilla in planilla.planillasPorAprobar %}
                             <tr>
-                                <td>{{ planilla.nombre_completo }}</td>
-                                <td>{{ subplanilla.mes.Nombre }}</td>
-                                <td>{{ subplanilla.anio }}</td>
-                                <td class="text-center"><button class="btn btn-success">Ver / Aprobar</button></td>
+                                <td class="align-middle">{{ planilla.nombre_completo }}</td>
+                                <td class="align-middle">{{ subplanilla.mes.Nombre }}</td>
+                                <td class="align-middle">{{ subplanilla.anio }}</td>
+                                <td class="align-middle text-center"><button class="btn btn-success" id="{{ subplanilla.id }}">Ver / Aprobar</button></td>
                             </tr>
                         {% endfor %}
                     {% endfor %}
@@ -54,4 +56,5 @@
     <br><br>
     {% include "components/form_fecha.html" with titulo="Acceder a mi planilla" %}
     <br><br>
+    <script type="text/javascript" src="{% static 'js/dashboard.js' %}"></script>
 {% endblock %}

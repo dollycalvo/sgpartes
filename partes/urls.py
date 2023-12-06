@@ -8,5 +8,6 @@ urlpatterns = [
     path('planilla', views.planilla, name="planilla"),
     path('error', views.error, name="error"),
     path('regenerar', views.regenerar, name="regenerar"),
-    path('dashboard', views.dashboard, name="dashboard")
+    path('dashboard', views.dashboard, name="dashboard"),
+    path('aprobar', views.aprobar, name="aprobar")
 ]
