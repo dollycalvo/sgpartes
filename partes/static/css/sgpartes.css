@@ -130,3 +130,7 @@
 .active {
     color: var(--color-frambuesa) !important;
 }
+
+.sin-planillas {
+    padding: 1rem;
+}

@@ -264,6 +264,9 @@ def error(request):
         if 'mensaje_unauth' in request.session:
             mensaje = request.session['mensaje_unauth']
             del request.session['mensaje_unauth']
+        if 'mensaje_error' in request.session:
+            mensaje = request.session['mensaje_error']
+            del request.session['mensaje_error']
         if 'logins_incorrectos' in request.session:
             del request.session['logins_incorrectos']
         if 'cod' in request.GET:
@@ -411,7 +414,12 @@ def dashboard(request):
     mesActual = fechaActual.month
     anioActual = fechaActual.year
     anios = list(range(anioActual - 3, anioActual + 2))
+    mensaje = ""
+    if "dashboard_mensaje" in request.session:
+        mensaje = request.session['dashboard_mensaje']
+        del request.session['dashboard_mensaje']
     return render(request, 'dashboard.html', {"form": form, 
+                                                   "mensaje": mensaje,
                                                    "anios": anios, 
                                                    "nombresMeses": nombresMeses, 
                                                    "mesActual": mesActual, 
@@ -421,7 +429,30 @@ def dashboard(request):
 
 
 def aprobar(request):
+    if request.method == "GET":
+        request.session['mensaje_unauth'] = "Esta página sólo puede ser accedida desde el dashboard."
+        return HttpResponseRedirect("/error")
     if request.method == 'POST':
+        if "aprobar" in request.POST and request.POST["aprobar"] == "1":
+            if not "idPorAprobar" in request.session:
+                request.session['mensaje_error'] = "Ha ocurrido un error al procesar el ID de la planilla"
+                return HttpResponseRedirect("/error")
+            if not "id_planilla" in request.POST or request.session["idPorAprobar"] != int(request.POST["id_planilla"]):
+                request.session['mensaje_error'] = "Ha ocurrido un error al procesar el ID de la planilla"
+                return HttpResponseRedirect("/error")
+            # Si obtenemos el ID en el request, y coincide con el existente en la sesión, seguimos
+            del request.session['idPorAprobar']
+            planilla = Planilla.objects.filter(id = int(request.POST['id_planilla']))
+            if len(planilla) != 1:
+                request.session['mensaje_error'] = "Ha ocurrido un error al obtener la planilla de la base de datos"
+                return HttpResponseRedirect("/error")
+            planilla = planilla[0]
+            statusAprobado = StatusPlanilla.objects.filter(status = "Aprobado")[0]
+            planilla.status = statusAprobado
+            planilla.save()
+            # TODO: enviar mail de confirmación
+            request.session['dashboard_mensaje'] = "La planilla ha sido aprobada"
+            return HttpResponseRedirect("/dashboard")
         if "id_planilla" in request.POST:
             id_planilla = int(request.POST["id_planilla"])
             # verificamos que el ID esté dentro de la lista, como mecanismo de seguridad

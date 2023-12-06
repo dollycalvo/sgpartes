@@ -7,9 +7,10 @@
     {% include "components/nav_links.html" with seleccionado="PendienteAprobacion" %}
 {% endblock %}
 {% block contenido %}
-<form method="post" action="/planilla" id="formPlanilla">
+<form method="post" action="/aprobar">
     {% csrf_token %}
     <input type="hidden" name="id_planilla" value="{{ request.session.idPorAprobar }}">
+    <input type="hidden" name="aprobar" value="1">
     <div class="card mb-4">
         <div class="card-header">
             <h3>EMPRESA ABC - APROBACIÓN DE REPORTE</h3>
@@ -41,46 +42,22 @@
                         <tr>
                             <td class="text-center">{{ forloop.counter }}</td>
                             <td class="text-center">
-                                {% if datosPlanilla.status.status == "Borrador" %}
-                                <select class="w-100 input-registro-diario" name="codigos">
-                                    <option value="sn" {% if datoDiario.codigo == "sn" %}{{"selected"}}{%endif%}>S/N</option>
-                                    <option value="v" {% if datoDiario.codigo == "v" %}{{"selected"}}{%endif%}>V</option>
-                                    <option value="cs" {% if datoDiario.codigo == "cs" %}{{"selected"}}{%endif%}>CS</option>
-                                    <option value="sa" {% if datoDiario.codigo == "sa" %}{{"selected"}}{%endif%}>SA</option>
-                                </select>
-                                {% else %}
                                 {{ datoDiario.codigo|etiqueta_codigo }}
-                                {% endif %}
                             </td>
                             <td>
-                                {% if datosPlanilla.status.status == "Borrador" %}
-                                <input class="w-100 input-registro-diario" placeholder="{{ textoSinNovedad }}" type="text" name="observaciones" id="observacion_{{i}}" value="{{datoDiario.observaciones}}">
-                                {% else %}
                                 {% if datoDiario.observaciones == "" %}{{ textoSinNovedad }}{% else %}{{ datoDiario.observaciones }}{% endif %}
-                                {% endif %}
                             </td>
                         </tr>
                     {% endfor %}
                 </tbody>
             </table>
-            {% if datosPlanilla.status.status == "Borrador" %}
             <div class="d-flex flex-row w-100 justify-content-center">
-                <button id="btnLimpiarForm" class="btn btn-danger" type="button">Limpiar formulario</button>
-                <button id="btnGuardarCambios" class="btn btn-primary ml-1rem" type="submit">Guardar cambios</button>
-                <button id="btnPresentarPlanilla" class="btn btn-success ml-1rem" type="button">Presentar planilla</button>
+                <button id="btnAprobar" class="btn btn-success ml-1rem" type="submit">Aprobar</button>
             </div>
-            {% endif %}
         </div>
-        {% if datosPlanilla.status.status == "Presentado" %}
-        <div class="card-footer text-success">
-            Estado: Presentado
-        {% else %}
         <div class="card-footer text-danger">
-            Estado: Borrador
-        {% endif %}
+            Estado: Pendiente de aprobación
         </div>
     </div>
 </form>
-
-<script type="text/javascript" src="{% static 'js/planilla.js' %}"></script>
 {% endblock %}

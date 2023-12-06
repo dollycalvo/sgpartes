@@ -9,10 +9,22 @@
     <form id="formAprobar" method="post" action="/aprobar">
         {% csrf_token %}
         <input type="hidden" id="id_planilla" name="id_planilla" value="INVALID">
+
+        {% if mensaje != "" %}
+        <div class="alert alert-success auto-hide-5s" role="alert">
+            {{ mensaje }}
+        </div>
+        {% endif %}
+    
         <div class="card">
             <div class="card-header bg-secondary text-white">
                 Planillas pendientes de aprobación
             </div>
+            {% if listaPlanillas|length == 0 %}
+            <div class="sin-planillas text-success">
+                No hay planillas pendientes de aprobación
+            </div>
+            {% else%}
             <div class="card-body">
                 <table class="table table-striped">
                     <thead class="bg-dark text-white">
@@ -48,6 +60,7 @@
                     
                 </div>
             </div>
+            {% endif %}
             <div class="card-footer text-muted bg-light">
                 Sistema de gestión - Reporte horario
             </div>
