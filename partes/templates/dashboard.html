@@ -12,31 +12,38 @@
                 Planillas pendientes de aprobación
             </div>
             <div class="card-body">
-                <h4 class="card-title">Fecha:</h4>
-                <table class="table-striped table-bordered">
-                    <thead>
+                <table class="table table-striped">
+                    <thead class="bg-dark text-white">
                         <tr>
                             <th>
-                                <label for="{{ form.mesReporte.id_for_label}}">Mes:</label>
-                                <select class="w-100" id="{{ form.mesReporte.id_for_label}}" name="{{ form.mesReporte.name}}" placeholder="Seleccionar mes" />
-                                    {% for mes in nombresMeses %}
-                                        <option value="{{mes.ID}}" {% if mes.ID == mesActual %}selected{% endif %}>{{ mes.Nombre }}</option>
-                                    {% endfor %}
-                                </select>
+                                Empleado
                             </th>
                             <th>
-                                <label for="{{ form.anioReporte.id_for_label}}">Año:</label>
-                                <select class="w-100" id="{{ form.anioReporte.id_for_label}}" name="{{ form.anioReporte.name }}" placeholder="Seleccionar año" />
-                                    {% for anio in anios %}
-                                        <option value={{anio}} {% if anio == anioActual %}selected{% endif %}>{{anio}}</option>
-                                    {% endfor %}
-                                </select>
+                                Mes
+                            </th>
+                            <th>
+                                Año
+                            </th>
+                            <th class="th-sm">
+                                
                             </th>
                         </tr>
                     </thead>
+                    <tbody>
+                    {% for planilla in listaPlanillas %}
+                        {% for subplanilla in planilla.planillasPorAprobar %}
+                            <tr>
+                                <td>{{ planilla.nombre_completo }}</td>
+                                <td>{{ subplanilla.mes.Nombre }}</td>
+                                <td>{{ subplanilla.anio }}</td>
+                                <td class="text-center"><button class="btn btn-success">Ver / Aprobar</button></td>
+                            </tr>
+                        {% endfor %}
+                    {% endfor %}
+                    </tbody>
                 </table>
                 <div class="text-center">
-                    <button class="btn btn-primary">Abrir planilla</button>
+                    
                 </div>
             </div>
             <div class="card-footer text-muted bg-light">

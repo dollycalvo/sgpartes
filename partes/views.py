@@ -380,6 +380,21 @@ def dashboard(request):
             return HttpResponseRedirect('/planilla')
     else:   # GET request
         form = FormSeleccionFecha()
+        # Datos de los empleados a cargo
+        statusPlanillaPresentado = StatusPlanilla.objects.filter(status = "Presentado")[0]
+        subordinados = Empleado.objects.filter(jefe_directo = request.session['id_empleado']).order_by("apellidos", "nombres")
+        listaPlanillas = []
+        for subordinado in subordinados:            
+            planillasPorAprobar = Planilla.objects.filter(empleado = subordinado, status = statusPlanillaPresentado).order_by("anio", "mes")
+            if len(planillasPorAprobar) > 0:
+                planillasDeEmpleado = {"id": subordinado.id,
+                                    "nombre_completo": subordinado.apellidos + ", " + subordinado.nombres,
+                                    "planillasPorAprobar": []
+                                    }
+                for planilla in planillasPorAprobar:
+                    planillasDeEmpleado["planillasPorAprobar"].append({"id": planilla.id, "mes": nombresMeses[int(planilla.mes) - 1], "anio": planilla.anio})
+                listaPlanillas.append(planillasDeEmpleado)
+            
     fechaActual = datetime.now()
     mesActual = fechaActual.month
     anioActual = fechaActual.year
@@ -389,4 +404,5 @@ def dashboard(request):
                                                    "nombresMeses": nombresMeses, 
                                                    "mesActual": mesActual, 
                                                    "anioActual": anioActual,
+                                                   "listaPlanillas": listaPlanillas,
                                                    "dashboard_habilitado": True})
