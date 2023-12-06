@@ -391,6 +391,7 @@ def dashboard(request):
         statusPlanillaPresentado = StatusPlanilla.objects.filter(status = "Presentado")[0]
         subordinados = Empleado.objects.filter(jefe_directo = request.session['id_empleado']).order_by("apellidos", "nombres")
         listaPlanillas = []
+        soloIDsPlanillas = []
         for subordinado in subordinados:            
             planillasPorAprobar = Planilla.objects.filter(empleado = subordinado, status = statusPlanillaPresentado).order_by("anio", "mes")
             if len(planillasPorAprobar) > 0:
@@ -399,11 +400,12 @@ def dashboard(request):
                                     "planillasPorAprobar": []
                                     }
                 for planilla in planillasPorAprobar:
+                    soloIDsPlanillas.append(planilla.id)
                     planillasDeEmpleado["planillasPorAprobar"].append({"id": planilla.id, "mes": nombresMeses[int(planilla.mes) - 1], "anio": planilla.anio})
                 listaPlanillas.append(planillasDeEmpleado)
         # Guardamos la lista en la sesión para verificarla posteriormente al procesarla,
         # para evitar que un supervisor acceda a una planilla a la cual no está autorizado
-        request.session['listaPlanillasPorAprobar'] = listaPlanillas
+        request.session['idsPlanillasPorAprobar'] = soloIDsPlanillas
             
     fechaActual = datetime.now()
     mesActual = fechaActual.month
@@ -419,7 +421,32 @@ def dashboard(request):
 
 
 def aprobar(request):
-    checkear contra el request.session['listaPlanillasPorAprobar']
-    for k in request.POST.keys():
-        print(request.POST[k])
+    if request.method == 'POST':
+        if "id_planilla" in request.POST:
+            id_planilla = int(request.POST["id_planilla"])
+            # verificamos que el ID esté dentro de la lista, como mecanismo de seguridad
+            if id_planilla in request.session['idsPlanillasPorAprobar']:
+                #del request.session['idsPlanillasPorAprobar']   # ya eliminamos esta lista, luego se regenerará de ser necesario
+                planillas = Planilla.objects.filter(id = id_planilla)
+                if len(planillas) != 1:
+                    mensaje_error = "No se ha encontrado la planilla"
+                    return render(request, "error.html", {"mensaje": mensaje_error})
+                # Si tenemos la planilla:
+                planilla = planillas[0]
+                # Verificamos que el status sea sólo PRESENTADO
+                if planilla.status.status == "Borrador":
+                    mensaje_error = "La planilla aún no se ha presentado."
+                    return render(request, "error.html", {"mensaje": mensaje_error})
+                elif planilla.status.status == "Aprobado":                
+                    mensaje_error = "La planilla ya ha sido aprobada."
+                    return render(request, "error.html", {"mensaje": mensaje_error})
+                # Continuamos tomando los registros diarios
+                datosDiarios = RegistroDiario.objects.filter(planilla_id = planilla.id)
+                if len(datosDiarios) == 0:
+                    mensaje_error = "No se han encontrado datos diarios de la planilla"
+                    return render(request, "error.html", {"mensaje": mensaje_error})
+                # Ya tenemos los registros diarios, procedemos a crear el objeto de datos para el template
+                request.session["idPorAprobar"] = planilla.id
+                nombreMes = nombresMeses[int(planilla.mes - 1)]["Nombre"]
+                return render(request, "planilla_aprobacion.html", {"nombreMes": nombreMes, "planilla": planilla, "datosDiarios": datosDiarios, "datosEmpleado": planilla.empleado})
     return render(request, 'index.html')

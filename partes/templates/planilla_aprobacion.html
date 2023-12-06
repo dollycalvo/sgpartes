@@ -4,27 +4,16 @@
 
 {% block titulo %} Planilla {% endblock %}
 {% block navlinks %}
-    {% include "components/nav_links.html" with seleccionado="Planilla" %}
+    {% include "components/nav_links.html" with seleccionado="PendienteAprobacion" %}
 {% endblock %}
 {% block contenido %}
 <form method="post" action="/planilla" id="formPlanilla">
     {% csrf_token %}
-    <input type="hidden" opciones="{{ acciones_submit }}" name="accion_submit" id="hdnAccionSubmit" value="{{ accion_submit }}">
-    <input type="hidden" name="mesReporte" value="{{ mesReporte }}">
-    <input type="hidden" name="anioReporte" value="{{ anioReporte }}">
-    {% if mostrarMensaje %}
-    <div class="alert alert-success auto-hide-5s" role="alert">
-        {% if statusPlanilla == "Presentado" %}
-        La planilla se presentó exitosamente
-        {% else %}
-        Los cambios en la planilla se han guardado exitosamente
-        {% endif %}
-    </div>
-    {% endif %}
+    <input type="hidden" name="id_planilla" value="{{ request.session.idPorAprobar }}">
     <div class="card mb-4">
         <div class="card-header">
-            <h3>EMPRESA ABC - REPORTE HORARIO</h3>
-            <h4>{{ nombreMesReporte }} {{ anioReporte }}</h4>
+            <h3>EMPRESA ABC - APROBACIÓN DE REPORTE</h3>
+            <h4>{{ nombreMes }} {{ planilla.anio }}</h4>
             <div class="d-flex flex-row mt-4">
                 <h5 class="w-25"><b>Legajo:</b> {{ datosEmpleado.legajo }}</h5>
                 {% with nombre_completo=datosEmpleado.apellidos|add:", "|add:datosEmpleado.nombres %}
