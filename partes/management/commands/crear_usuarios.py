@@ -9,6 +9,10 @@ class Command(BaseCommand):
     #     parser.add_argument('poll_ids', nargs='+', type=int)
 
     def handle(self, *args, **options):
+        emp = Empleado.objects.filter(id = 1)[0]
+        emp.jefe_directo = emp
+        emp.save()
+        return
         # RegistroDiario.objects.all().delete()
         # Planilla.objects.all().delete()
         # return

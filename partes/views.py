@@ -191,6 +191,12 @@ def login(request):
                 del request.session['nombre_usuario']
             if 'logins_incorrectos' in request.session:
                 del request.session['logins_incorrectos']
+            if 'dashboard_habilitado' in request.session:
+                del request.session['dashboard_habilitado']
+            if 'id_empleado' in request.session:
+                del request.session['id_empleado']
+            if 'puesto' in request.session:
+                del request.session['puesto']
             mensaje = "La sesión se ha cerrado correctamente"
         else:
             # Si no estoy haciendo logout
@@ -230,6 +236,7 @@ def login(request):
                     return HttpResponseRedirect("/seleccionfecha")
                 else:
                     # Si es supervisor o gerente, va a una página de selección de acción
+                    request.session['dashboard_habilitado'] = True
                     return HttpResponseRedirect("/dashboard")
             else:   # volvemos a pedir login y aumentamos la cantidad de logins incorrectos
                 if 'logins_incorrectos' in request.session:
@@ -407,12 +414,12 @@ def dashboard(request):
                                                    "nombresMeses": nombresMeses, 
                                                    "mesActual": mesActual, 
                                                    "anioActual": anioActual,
-                                                   "listaPlanillas": listaPlanillas,
-                                                   "dashboard_habilitado": True})
+                                                   "listaPlanillas": listaPlanillas})
 
 
 
 def aprobar(request):
+    checkear contra el request.session['listaPlanillasPorAprobar']
     for k in request.POST.keys():
         print(request.POST[k])
     return render(request, 'index.html')

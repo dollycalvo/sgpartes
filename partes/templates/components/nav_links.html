@@ -1,12 +1,12 @@
 <a class="nav-item nav-link" href="/">Inicio</a>
-{% if dashboard_habilitado %}
+{% if request.session.dashboard_habilitado %}
     {% if seleccionado == "Dashboard" %}
         <a class="nav-item nav-link active" href="dashboard" aria-current="page">Dashboard<span class="visually-hidden">(current)</span></a>
     {% else %}
         <a class="nav-item nav-link" href="dashboard">Dashboard</a>
     {% endif %}
 {% endif %}
-{% if dashboard_habilitado %}
+{% if request.session.dashboard_habilitado %}
     {% if seleccionado == "PendienteAprobacion" %}
         <a class="nav-item nav-link active" aria-current="page">Verificar planilla<span class="visually-hidden">(current)</span></a>
     {% endif %}
