@@ -74,6 +74,20 @@
                     {% endfor %}
                 </tbody>
             </table>
+            <div class="card">
+                <h5 class="card-header bg-secondary text-white">Adjuntar archivo</h5>
+                <div class="card-body" id="area-adjunto">
+                    <div id="noFilesSelectedText" class="bg-texto">
+                        <a class="file-input-anchor" onclick="fileInputOpen()">Haz click aquí</a>&nbsp;o arrastra un archivo para adjuntar
+                    </div>
+                    <div id="wrapperNombreArchivo" class="d-none">
+                        <i class='bi bi-file-earmark-pdf'></i>
+                        <div id="nombreArchivo"></div>
+                    </div>
+                    <input type="file" name="pdf" id="pdf">
+                </div>
+            </div>
+            <br>
             {% if datosPlanilla.status.status == "Borrador" %}
             <div class="d-flex flex-row w-100 justify-content-center">
                 <button id="btnLimpiarForm" class="btn btn-danger" type="button">Limpiar formulario</button>

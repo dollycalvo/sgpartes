@@ -134,3 +134,55 @@
 .sin-planillas {
     padding: 1rem;
 }
+
+#area-adjunto {
+    position: inherit;
+    padding: 3rem 0;
+}
+
+#area-adjunto[contiene-archivo=true] {
+    padding: 1rem;
+}
+
+#area-adjunto > .bg-texto {
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    color: #77777777;
+    z-index: 1;
+    font-size: 1.7rem;
+}
+
+#area-adjunto > input {
+    position: inherit;
+    z-index: 2;
+}
+
+.file-drag-over {
+    background-color: #bb0099;
+}
+
+.file-input-anchor {
+    text-decoration: underline;
+    color: #77777777;
+}
+
+.file-input-anchor:hover {
+    color: var(--color-frambuesa);
+    cursor: pointer;
+}
+
+input[type=file] {
+    display: none;
+}
+
+#wrapperNombreArchivo {
+    padding: 0 1rem;
+    width: fit-content;
+    text-align: center;
+}
