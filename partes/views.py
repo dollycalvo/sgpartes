@@ -1,8 +1,11 @@
+from django.core.files.storage import default_storage
+from django.http import HttpResponse
+import mimetypes
 import hashlib
 import calendar
-from partes.helper import guardarArchivo
+from partes.helper import guardarArchivo, etiquetaCodigo
 from datetime import datetime
-from partes.models import Empleado, Puesto, StatusPlanilla, Planilla, RegistroDiario, RegeneracionPW
+from partes.models import Empleado, StatusPlanilla, Planilla, RegistroDiario, RegeneracionPW
 from partes.forms import FormSeleccionFecha
 from django.http import HttpResponseRedirect
 from django.contrib.auth.hashers import make_password, check_password
@@ -58,10 +61,19 @@ def planilla(request):
                                 status = statusPlanilla)
         # Tenemos archivo adjunto?
         if "pdf" in request.FILES:
-            guardarArchivo(request.FILES["pdf"])
+            nombre_archivo = ""
+            try:
+                nombre_archivo = guardarArchivo(request.FILES["pdf"], mes, anio, str(datosEmpleado[0].legajo) + "_" + datosEmpleado[0].apellidos)
+            except:
+                request.session['mensaje_error'] = "Ha ocurrido un error al intentar guardar el archivo"
+                return HttpResponseRedirect("/error")            
+            if nombre_archivo != "":
+                planilla.pdf_adjunto = nombre_archivo
+            else:
+                request.session['mensaje_error'] = "Ha ocurrido un error al intentar guardar el archivo"
+                return HttpResponseRedirect("/error")            
         # Guardamos los cambios en la existente o la nueva según corresponda
         planilla.save()
-        print("ID de planilla: " + str(planilla.id))
         # Obtengo todos los registros existentes para esa planilla, para evitar consultar por cada registro individualmente
         registrosCoincidentes = RegistroDiario.objects.filter(planilla_id = planilla.id)
         # Con el ID de la planilla, ahora creamos un registro para cada día
@@ -70,7 +82,7 @@ def planilla(request):
         i = 1
         listaCodigos = request.POST.getlist("codigos")
         for observacion in request.POST.getlist("observaciones"):
-            observaciones_para_email += "\nDía " + str(i) + ": " + listaCodigos[i - 1] + ": " + (observacion.strip() if observacion.strip() != "" else SIN_NOVEDAD) 
+            observaciones_para_email += "\nDía " + str(i) + ": " + etiquetaCodigo(listaCodigos[i - 1]) + ": " + (observacion.strip() if observacion.strip() != "" else SIN_NOVEDAD) 
             rcIndex = 0
             while rcIndex < len(registrosCoincidentes) and registrosCoincidentes[rcIndex].dia != i:
                 rcIndex += 1
@@ -82,7 +94,7 @@ def planilla(request):
                 registro.save()
                 nuevosRegistros.append(registro)
             else: # Sino, creamos uno nuevo siempre y cuando sea sin novedad
-                if observacion.strip() != SIN_NOVEDAD:
+                if observacion.strip() != SIN_NOVEDAD and observacion.strip() != "":
                     registro = RegistroDiario(planilla_id = planilla.id,
                                             dia = i, # día
                                             codigo = listaCodigos[i - 1],
@@ -121,7 +133,8 @@ def planilla(request):
                             "diasDelMes": dias_del_mes,
                             "statusPlanilla": statusPlanilla.status,
                             "mostrarMensaje": True,
-                            "textoSinNovedad": SIN_NOVEDAD}        
+                            "textoSinNovedad": SIN_NOVEDAD,
+                            "nombreArchivoAdjunto": planilla.pdf_adjunto}
         return render(request, 'planilla.html', templateParams)
     else:   # Sino, al ser GET viene redireccionado desde la selección de fecha
         accion_submit = acciones_submit[0]
@@ -134,10 +147,13 @@ def planilla(request):
         dias_del_mes = range(1, calendar.monthrange(int(anio), int(mes))[1] + 1)
     datosPlanilla = Planilla.objects.filter(empleado_id=id_empleado, mes=mes, anio=anio)
     if len(datosPlanilla) == 1:
+        datosDiarios = []
+        for dias in dias_del_mes:
+            datosDiarios.append(None)
         datosPlanilla = datosPlanilla[0]
-        datosDiarios = RegistroDiario.objects.filter(planilla_id=datosPlanilla.id)
-        if len(datosDiarios) == 0:
-            datosDiarios = [None] * len(dias_del_mes)
+        registrosDiarios = RegistroDiario.objects.filter(planilla_id=datosPlanilla.id)
+        for registro in registrosDiarios:
+            datosDiarios[registro.dia - 1] = registro
     else:
         # datosPlanilla = [0, id_empleado, mes, anio, False]
         datosPlanilla = Planilla(empleado_id = id_empleado,
@@ -154,7 +170,8 @@ def planilla(request):
                         "nombreMesReporte": nombresMeses[int(mes) - 1]["Nombre"],
                         "anioReporte": anio,
                         "diasDelMes": dias_del_mes,
-                        "textoSinNovedad": SIN_NOVEDAD}
+                        "textoSinNovedad": SIN_NOVEDAD,
+                        "nombreArchivoAdjunto": datosPlanilla.pdf_adjunto}
     return render(request, 'planilla.html', templateParams)
 
 
@@ -200,6 +217,8 @@ def login(request):
                 del request.session['dashboard_habilitado']
             if 'id_empleado' in request.session:
                 del request.session['id_empleado']
+            if 'id_planilla' in request.session:
+                del request.session['id_planilla']
             if 'puesto' in request.session:
                 del request.session['puesto']
             mensaje = "La sesión se ha cerrado correctamente"
@@ -455,7 +474,33 @@ def aprobar(request):
             statusAprobado = StatusPlanilla.objects.filter(status = "Aprobado")[0]
             planilla.status = statusAprobado
             planilla.save()
-            # TODO: enviar mail de confirmación
+            # Enviar mail de confirmación de aprobación
+            empleado = planilla.empleado
+            nombre_completo_empleado = empleado.apellidos + ", " + empleado.nombres
+            mensaje_email = "Fecha: " + nombresMeses[int(planilla.mes) - 1]["Nombre"] + " " + str(planilla.anio)
+            mensaje_email += "\nEmpleado: " + nombre_completo_empleado + " (legajo: " + str(empleado.legajo) + ")"
+
+            # Con el ID de la planilla, ahora creamos un registro para cada día
+            registrosCoincidentes = RegistroDiario.objects.filter(planilla_id = planilla.id).order_by("dia")
+            dias_del_mes = range(1, calendar.monthrange(int(planilla.anio), int(planilla.mes))[1] + 1)
+            observaciones = []
+            for i in dias_del_mes:
+                observaciones.append("\nDía " + str(i) + ": S/N: Sin novedad")
+            # for registroDiario in registrosCoincidentes:
+                # observaciones[registroDiario.dia - 1] = "\nDía " + str(registroDiario.dia) + ": " + etiquetaCodigo(registroDiario.codigo) + ": " + registroDiario.observaciones
+            observaciones_para_email = "\n" + "".join(observaciones)
+
+            mensaje_email += observaciones_para_email
+            print("Mail al jefe indicando que se aprobó una planilla")
+            send_mail(
+                "Planilla aprobada: " + nombre_completo_empleado,
+                mensaje_email,
+                # mdcalvo@gmail.com,
+                # [empleado.jefe_directo.email, empleado.email],
+                'webmaster@cguimaraenz.com',
+                ['webmaster@cguimaraenz.com'],
+                fail_silently=False,
+            )
             request.session['dashboard_mensaje'] = "La planilla ha sido aprobada"
             return HttpResponseRedirect("/dashboard")
         if "id_planilla" in request.POST:
@@ -484,5 +529,28 @@ def aprobar(request):
                 # Ya tenemos los registros diarios, procedemos a crear el objeto de datos para el template
                 request.session["idPorAprobar"] = planilla.id
                 nombreMes = nombresMeses[int(planilla.mes - 1)]["Nombre"]
-                return render(request, "planilla_aprobacion.html", {"nombreMes": nombreMes, "planilla": planilla, "datosDiarios": datosDiarios, "datosEmpleado": planilla.empleado})
+                request.session['id_planilla'] = planilla.id
+                return render(request, "planilla_aprobacion.html", {"nombreMes": nombreMes,
+                                                                    "planilla": planilla,
+                                                                    "datosDiarios": datosDiarios,
+                                                                    "datosEmpleado": planilla.empleado})
     return render(request, 'index.html')
+
+
+def download_file(request):
+    planillas = Planilla.objects.filter(id = request.session['id_planilla'])
+    if len(planillas) != 1:
+        request.session['mensaje_error'] = "No se ha encontrado la planilla"
+        return HttpResponseRedirect("/error")
+    nombre_archivo = planillas[0].pdf_adjunto
+    carpeta = "adjuntos/"
+    fl_path = carpeta + nombre_archivo
+    try:
+        fl = open(fl_path, "rb")
+        mime_type, _ = mimetypes.guess_type(fl_path)
+        response = HttpResponse(fl, content_type=mime_type)
+        response['Content-Disposition'] = "attachment; filename=%s" % nombre_archivo
+    except:
+        request.session['mensaje_error'] = "No se ha encontrado el archivo adjunto"
+        return HttpResponseRedirect("/error")
+    return response

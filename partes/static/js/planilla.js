@@ -11,10 +11,13 @@ const SIN_NOVEDAD = "Sin novedad";
 const S_N = "sn";
 
 btnLimpiarForm.addEventListener("click", () => {
-    const inputs = document.querySelectorAll("input.input-registro-diario");
-    inputs.forEach(input => input.value = SIN_NOVEDAD);
-    const selects = document.querySelectorAll("select.input-registro-diario");
-    selects.forEach(sel => sel.value = S_N);
+    if (confirm("¿Confirma que desea limpiar el formulario? Se eliminarán todos los comentarios y el archivo adjunto.")) {
+        const inputs = document.querySelectorAll("input.input-registro-diario");
+        inputs.forEach(input => input.value = "");
+        const selects = document.querySelectorAll("select.input-registro-diario");
+        selects.forEach(sel => sel.value = S_N);
+        archivoEliminado();
+    }
 });
 
 btnGuardarCambios.addEventListener("click", event => {
@@ -61,6 +64,16 @@ function archivoAdjuntado(archivos) {
     noFilesSelectedText.classList.add("d-none");
     areaAdjunto.setAttribute("contiene-archivo", true);
     pdfInput.files = archivos;
+    btnPresentarPlanilla.removeAttribute("disabled");
+}
+
+function archivoEliminado() {
+    const wrapperNombreArchivo = document.getElementById("wrapperNombreArchivo");
+    wrapperNombreArchivo.classList.add("d-none");
+    noFilesSelectedText.classList.remove("d-none");
+    areaAdjunto.setAttribute("contiene-archivo", false);
+    pdfInput.value = null;
+    btnPresentarPlanilla.setAttribute("disabled", true);
 }
 
 pdfInput.addEventListener("change", event => {

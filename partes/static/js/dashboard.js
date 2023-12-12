@@ -9,5 +9,3 @@ for (const boton of botones) {
         formAprobar.submit();
     });
 }
-
-alert("dash carga");

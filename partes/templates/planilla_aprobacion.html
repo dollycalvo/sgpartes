@@ -2,12 +2,12 @@
 {% load static %}
 {% load filters %}
 
-{% block titulo %} Planilla {% endblock %}
+{% block titulo %} Aprobar planilla {% endblock %}
 {% block navlinks %}
     {% include "components/nav_links.html" with seleccionado="PendienteAprobacion" %}
 {% endblock %}
 {% block contenido %}
-<form method="post" action="/aprobar">
+<form method="post" action="/aprobar" id="formAprobar">
     {% csrf_token %}
     <input type="hidden" name="id_planilla" value="{{ request.session.idPorAprobar }}">
     <input type="hidden" name="aprobar" value="1">
@@ -51,6 +51,18 @@
                     {% endfor %}
                 </tbody>
             </table>
+            <div class="card">
+                <h5 class="card-header bg-secondary text-white">Archivo adjunto</h5>
+                <div class="card-body" id="area-adjunto" contiene-archivo="true">
+                    <a href="download">
+                        <div id="wrapperNombreArchivo">
+                            <i class='bi bi-file-earmark-pdf'></i>
+                            <div id="nombreArchivo">{{ planilla.pdf_adjunto }}</div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+            <br>
             <div class="d-flex flex-row w-100 justify-content-center">
                 <button id="btnAprobar" class="btn btn-success ml-1rem" type="submit">Aprobar</button>
             </div>
@@ -60,4 +72,6 @@
         </div>
     </div>
 </form>
+
+<script type="text/javascript" src="{% static 'js/planilla_aprobacion.js' %}"></script>
 {% endblock %}

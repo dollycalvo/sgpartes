@@ -76,6 +76,14 @@
             </table>
             <div class="card">
                 <h5 class="card-header bg-secondary text-white">Adjuntar archivo</h5>
+                {% if nombreArchivoAdjunto != "" %}
+                <div class="card-body" id="area-adjunto" contiene-archivo="true">
+                    <div id="wrapperNombreArchivo">
+                        <i class='bi bi-file-earmark-pdf'></i>
+                        <div id="nombreArchivo">{{ nombreArchivoAdjunto }}</div>
+                    </div>
+                </div>
+                {% else %}
                 <div class="card-body" id="area-adjunto">
                     <div id="noFilesSelectedText" class="bg-texto">
                         <a class="file-input-anchor" onclick="fileInputOpen()">Haz click aquí</a>&nbsp;o arrastra un archivo para adjuntar
@@ -86,13 +94,18 @@
                     </div>
                     <input type="file" name="pdf" id="pdf">
                 </div>
+                {% endif %}
             </div>
             <br>
             {% if datosPlanilla.status.status == "Borrador" %}
             <div class="d-flex flex-row w-100 justify-content-center">
                 <button id="btnLimpiarForm" class="btn btn-danger" type="button">Limpiar formulario</button>
                 <button id="btnGuardarCambios" class="btn btn-primary ml-1rem" type="submit">Guardar cambios</button>
-                <button id="btnPresentarPlanilla" class="btn btn-success ml-1rem" type="button">Presentar planilla</button>
+                {% if nombreArchivoAdjunto == "" %}
+                    <button id="btnPresentarPlanilla" class="btn btn-success ml-1rem" type="button" disabled>Presentar planilla</button>
+                {% else %}
+                    <button id="btnPresentarPlanilla" class="btn btn-success ml-1rem" type="button">Presentar planilla</button>
+                {% endif %}
             </div>
             {% endif %}
         </div>
