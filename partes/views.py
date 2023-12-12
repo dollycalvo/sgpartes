@@ -1,5 +1,6 @@
 import hashlib
 import calendar
+from partes.helper import guardarArchivo
 from datetime import datetime
 from partes.models import Empleado, Puesto, StatusPlanilla, Planilla, RegistroDiario, RegeneracionPW
 from partes.forms import FormSeleccionFecha
@@ -25,7 +26,8 @@ nombresMeses = [{"ID": 1, "Nombre": "Enero"},
 def inicio(request):
     return login(request)
 
-def planilla(request):
+
+def planilla(request):    
     # Cláusula de guarda
     if 'usuario' not in request.session:
         request.session['mensaje_unauth'] = "Se requiere iniciar sesión para acceder a esta sección"
@@ -54,6 +56,9 @@ def planilla(request):
                                 mes = mes,
                                 anio = anio,
                                 status = statusPlanilla)
+        # Tenemos archivo adjunto?
+        if "pdf" in request.FILES:
+            guardarArchivo(request.FILES["pdf"])
         # Guardamos los cambios en la existente o la nueva según corresponda
         planilla.save()
         print("ID de planilla: " + str(planilla.id))

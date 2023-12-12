@@ -41,27 +41,30 @@ noFilesSelectedText.addEventListener("dragleave", event => {
 });
 
 noFilesSelectedText.addEventListener("drop", event => {
-    console.log(event);
     event.preventDefault();
     noFilesSelectedText.classList.remove("file-drag-over");
-    archivoAdjuntado(event.dataTransfer.files[0].name);
+    if (event.dataTransfer.files.length != 1) {
+        return alert("Sólo un archivo puede ser adjuntado. Por favor intente nuevamente.");
+    }
+    archivoAdjuntado(event.dataTransfer.files);
 });
 
 function fileInputOpen() {
     pdfInput.click();
 }
 
-function archivoAdjuntado(nombre) {
+function archivoAdjuntado(archivos) {
     const wrapperNombreArchivo = document.getElementById("wrapperNombreArchivo");
     const nombreArchivo = document.getElementById("nombreArchivo");
-    nombreArchivo.innerHTML = nombre;
+    nombreArchivo.innerHTML = archivos[0].name;
     wrapperNombreArchivo.classList.remove("d-none");
     noFilesSelectedText.classList.add("d-none");
     areaAdjunto.setAttribute("contiene-archivo", true);
+    pdfInput.files = archivos;
 }
 
 pdfInput.addEventListener("change", event => {
     if (event.target.files.length > 0) {
-        archivoAdjuntado(event.target.files[0].name);
+        archivoAdjuntado(event.target.files);
     }
 });

@@ -7,7 +7,7 @@
     {% include "components/nav_links.html" with seleccionado="Planilla" %}
 {% endblock %}
 {% block contenido %}
-<form method="post" action="/planilla" id="formPlanilla">
+<form method="post" action="/planilla" id="formPlanilla" enctype="multipart/form-data">
     {% csrf_token %}
     <input type="hidden" opciones="{{ acciones_submit }}" name="accion_submit" id="hdnAccionSubmit" value="{{ accion_submit }}">
     <input type="hidden" name="mesReporte" value="{{ mesReporte }}">
