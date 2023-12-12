@@ -10,7 +10,8 @@ from partes.forms import FormSeleccionFecha
 from django.http import HttpResponseRedirect
 from django.contrib.auth.hashers import make_password, check_password
 from django.shortcuts import render
-from django.core.mail import send_mail
+from django.core.mail import EmailMessage, send_mail
+
 
 # Create your views here.
 nombresMeses = [{"ID": 1, "Nombre": "Enero"},
@@ -102,7 +103,7 @@ def planilla(request):
                     registro.save()
                     nuevosRegistros.append(registro)
                 else:
-                    nuevosRegistros.append(None)    # En caso de no existir ni ser creado, hacemos un dummy 
+                    nuevosRegistros.append(RegistroDiario(dia = i, codigo = "sn", observaciones = SIN_NOVEDAD))    # En caso de no existir ni ser creado, hacemos un dummy 
             i += 1
         # Enviamos e-mail
         if statusPlanilla.status == "Presentado":
@@ -112,15 +113,19 @@ def planilla(request):
             mensaje_email += "\nEmpleado: " + nombre_completo_empleado + " (legajo: " + str(empleado.legajo) + ")"
             mensaje_email += observaciones_para_email
             print("Mail a " + empleado.jefe_directo.email)
-            send_mail(
-                "Planilla presentada: " + nombre_completo_empleado,
-                mensaje_email,
-                # empleado.email,
-                # [empleado.jefe_directo.email, empleado.email],
-                'webmaster@cguimaraenz.com',
-                ['webmaster@cguimaraenz.com'],
-                fail_silently=False,
-            )
+            # Archivo adjunto
+            nombre_archivo = planilla.pdf_adjunto
+            carpeta = "adjuntos/"
+            fl_path = carpeta + nombre_archivo
+            email = EmailMessage("Planilla presentada: " + nombre_completo_empleado, # asunto
+                                 mensaje_email, # cuerpo del email
+                                # empleado.email,
+                                # [empleado.jefe_directo.email, empleado.email],
+                                "webmaster@cguimaraenz.com", # from
+                                ["webmaster@cguimaraenz.com"] # to
+                                )
+            email.attach_file(fl_path)
+            email.send()
         # Nos preparamos para renderizar la página
         templateParams = {  "accion_submit": acciones_submit[2],
                             "acciones_submit": acciones_submit[0] + "#" + acciones_submit[1],
@@ -148,8 +153,8 @@ def planilla(request):
     datosPlanilla = Planilla.objects.filter(empleado_id=id_empleado, mes=mes, anio=anio)
     if len(datosPlanilla) == 1:
         datosDiarios = []
-        for dias in dias_del_mes:
-            datosDiarios.append(None)
+        for dia in dias_del_mes:
+            datosDiarios.append(RegistroDiario(dia=dia, codigo="sn", observaciones=SIN_NOVEDAD))
         datosPlanilla = datosPlanilla[0]
         registrosDiarios = RegistroDiario.objects.filter(planilla_id=datosPlanilla.id)
         for registro in registrosDiarios:
@@ -486,21 +491,23 @@ def aprobar(request):
             observaciones = []
             for i in dias_del_mes:
                 observaciones.append("\nDía " + str(i) + ": S/N: Sin novedad")
-            # for registroDiario in registrosCoincidentes:
-                # observaciones[registroDiario.dia - 1] = "\nDía " + str(registroDiario.dia) + ": " + etiquetaCodigo(registroDiario.codigo) + ": " + registroDiario.observaciones
+            for registroDiario in registrosCoincidentes:
+                observaciones[registroDiario.dia - 1] = "\nDía " + str(registroDiario.dia) + ": " + etiquetaCodigo(registroDiario.codigo) + ": " + registroDiario.observaciones
             observaciones_para_email = "\n" + "".join(observaciones)
 
             mensaje_email += observaciones_para_email
             print("Mail al jefe indicando que se aprobó una planilla")
-            send_mail(
-                "Planilla aprobada: " + nombre_completo_empleado,
-                mensaje_email,
-                # mdcalvo@gmail.com,
-                # [empleado.jefe_directo.email, empleado.email],
-                'webmaster@cguimaraenz.com',
-                ['webmaster@cguimaraenz.com'],
-                fail_silently=False,
-            )
+
+            nombre_archivo = planilla.pdf_adjunto
+            carpeta = "adjuntos/"
+            fl_path = carpeta + nombre_archivo
+            email = EmailMessage("Planilla aprobada: " + nombre_completo_empleado, # asunto
+                                 mensaje_email, # cuerpo del email
+                                 "webmaster@cguimaraenz.com", # from
+                                 ["webmaster@cguimaraenz.com"] # to
+                                 )
+            email.attach_file(fl_path)
+            email.send()
             request.session['dashboard_mensaje'] = "La planilla ha sido aprobada"
             return HttpResponseRedirect("/dashboard")
         if "id_planilla" in request.POST:
@@ -522,7 +529,15 @@ def aprobar(request):
                     mensaje_error = "La planilla ya ha sido aprobada."
                     return render(request, "error.html", {"mensaje": mensaje_error})
                 # Continuamos tomando los registros diarios
-                datosDiarios = RegistroDiario.objects.filter(planilla_id = planilla.id)
+                SIN_NOVEDAD = "Sin novedad"
+                dias_del_mes = range(1, calendar.monthrange(planilla.anio, planilla.mes)[1] + 1)
+                datosDiarios = []
+                for dia in dias_del_mes:
+                    datosDiarios.append(RegistroDiario(dia=dia, codigo="sn", observaciones=SIN_NOVEDAD))
+                registrosDiarios = RegistroDiario.objects.filter(planilla_id=planilla.id)
+                for registro in registrosDiarios:
+                    datosDiarios[registro.dia - 1] = registro
+                # datosDiarios = RegistroDiario.objects.filter(planilla_id = planilla.id)
                 if len(datosDiarios) == 0:
                     mensaje_error = "No se han encontrado datos diarios de la planilla"
                     return render(request, "error.html", {"mensaje": mensaje_error})
