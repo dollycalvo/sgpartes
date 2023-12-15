@@ -144,12 +144,12 @@ def planilla(request):
     else:   # Sino, al ser GET viene redireccionado desde la selección de fecha
         accion_submit = acciones_submit[0]
         if not 'mesReporte' in request.session:
-            return HttpResponseRedirect("/error")
+            return HttpResponseRedirect("/seleccionfecha")
         mes = request.session['mesReporte']
         anio = request.session['anioReporte']
         del request.session['mesReporte']
         del request.session['anioReporte']
-        dias_del_mes = range(1, calendar.monthrange(int(anio), int(mes))[1] + 1)
+    dias_del_mes = range(1, calendar.monthrange(int(anio), int(mes))[1] + 1)
     datosPlanilla = Planilla.objects.filter(empleado_id=id_empleado, mes=mes, anio=anio)
     if len(datosPlanilla) == 1:
         datosDiarios = []
@@ -276,7 +276,7 @@ def login(request):
                     return HttpResponseRedirect("/error?cod=1")
                 mensaje_error = f"Los datos de inicio de sesión son incorrectos. Restan {request.session['logins_incorrectos']} intentos."
                 return render(request, 'login.html', {"mensaje_error": mensaje_error, "usuario_previo": usuario})
-        else:
+        else: # Si no encontramos al usuario
             if 'logins_incorrectos' in request.session:
                 request.session['logins_incorrectos'] -= 1
             else:
