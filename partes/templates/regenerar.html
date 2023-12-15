@@ -1,6 +1,9 @@
 {% extends "base.html" %}
 
 {% block titulo %} Regenerar contraseña {% endblock %}
+{% block navlinks %}
+    {% include "components/nav_links.html" with seleccionado="Dashboard" %}
+{% endblock %}
 {% block contenido %}
 <form method="post" action="/regenerar">
     {% csrf_token %}
@@ -13,7 +16,7 @@
     {% if not mensaje or mensaje == "" %}
     <div class="d-flex justify-content-center">
         <div class="card card-login">
-            <div class="card-header">
+            <div class="card-header bg-secondary text-white">
                 Empresa ABC - Control de horas
             </div>
             <div class="card-body">

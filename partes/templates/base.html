@@ -18,8 +18,8 @@
     <nav class="navbar navbar-expand navbar-light bg-light d-flex justify-content-between">
         <div class="nav navbar-nav">
             {% if request.session.usuario %}
-            <a class="nav-item nav-link active" href="/" aria-current="page">Inicio<span class="visually-hidden">(current)</span></a>
-            <a class="nav-item nav-link" href="seleccionfecha">Planilla</a>
+                {% block navlinks %}
+                {% endblock %}
             {% endif %}
         </div>
         <div id="infoLogin" class="mr-2rem d-flex flex-row justify-content-center align-items-center">
@@ -32,7 +32,7 @@
                     {{request.session.nombre_usuario}}
                 </div>
             {% else %}
-            <a class="nav-item nav-link" href="login">Iniciar sesión</a>
+            <a class="nav-item nav-link link-frambuesa" href="login">Iniciar sesión</a>
             {% endif %}
         </div>
     </nav>

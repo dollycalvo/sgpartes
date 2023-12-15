@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand, CommandError
-from partes.models import Agentes, RegistroDiario, Planilla
+from partes.models import Empleado, Puesto, StatusPlanilla, RegistroDiario, Planilla
 from django.contrib.auth.hashers import make_password
 
 class Command(BaseCommand):
@@ -9,59 +9,115 @@ class Command(BaseCommand):
     #     parser.add_argument('poll_ids', nargs='+', type=int)
 
     def handle(self, *args, **options):
+        emp = Empleado.objects.filter(id = 1)[0]
+        emp.jefe_directo = emp
+        emp.save()
+        return
         # RegistroDiario.objects.all().delete()
         # Planilla.objects.all().delete()
         # return
 
         # pl = Planilla.objects.all()
         # for p in pl:
-        #     print(str(p.id) + " " + str(p.mes) + " " + str(p.anio) + " " + str(p.agente_id) + " " + str(p.presentado))
+        #     print(str(p.id) + " " + str(p.mes) + " " + str(p.anio) + " " + str(p.empleado_id) + " " + str(p.presentado))
         # print()
         # regs = RegistroDiario.objects.all()
         # for reg in regs:
         #     if reg.codigo != "sn":
         #         print(str(reg.planilla_id) + " " + str(reg.dia) + " " + reg.codigo + " " + reg.observaciones)
         # return
+        
+        nuevosStatus = [
+            StatusPlanilla(status = "Borrador"),
+            StatusPlanilla(status = "Presentado"),
+            StatusPlanilla(status = "Aprobado")
+        ]
 
-        nuevosAgentes = [
-            Agentes(legajo = 12345,
+        statusesDB = StatusPlanilla.objects.all()
+        for nuevoStatus in nuevosStatus:
+            i = 0
+            while i < len(statusesDB) and nuevoStatus.status != statusesDB[i].status:
+                i += 1
+            if i >= len(statusesDB):
+                nuevoStatus.save()
+            else:
+                statusesDB[i].status = nuevoStatus.status
+                statusesDB[i].save()
+        # Verificamos
+        statusesDB = StatusPlanilla.objects.all()
+        for statusDB in statusesDB:
+            print(str(statusDB.id) + ": " + statusDB.status)
+
+        
+        nuevosPuestos = [
+            Puesto(nombre = "Agente"),
+            Puesto(nombre = "Supervisor"),
+            Puesto(nombre = "Gerente")
+        ]
+
+        puestosDB = Puesto.objects.all()
+        for nuevoPuesto in nuevosPuestos:
+            i = 0
+            while i < len(puestosDB) and nuevoPuesto.nombre != puestosDB[i].nombre:
+                i += 1
+            if i >= len(puestosDB):
+                nuevoPuesto.save()
+            else:
+                puestosDB[i].nombre = nuevoPuesto.nombre
+                puestosDB[i].save()
+        # Verificamos
+        puestosDB = Puesto.objects.all()
+        for puestoDB in puestosDB:
+            print(str(puestoDB.id) + ": " + puestoDB.nombre)
+
+        jefe = Empleado(legajo = 999555,
+                    apellidos = "Jefezón",
+                    nombres = "Juan Pablo",
+                    email = "jpjefezon@gmail.com",
+                    puesto = puestosDB[1],
+                    password = make_password("abc123"))
+        jefe.save()
+
+        nuevosEmpleados = [
+            Empleado(legajo = 12345,
                     apellidos = "Calvo",
                     nombres = "María Dolores",
-                    email_agente = "mdcalvo@gmail.com",
-                    jefe_directo = "Juan Pérez",
-                    email_jefe_directo = "jperez@gmail.com",
+                    email = "mdcalvo@gmail.com",
+                    puesto = puestosDB[0],
+                    jefe_directo = jefe,
                     password = make_password("abc123")),
-            Agentes(legajo = 67890,
+            Empleado(legajo = 67890,
                     apellidos = "Guimaraenz",
                     nombres = "Carlos Roberto",
-                    email_agente = "calito83@gmail.com",
-                    jefe_directo = "Pablo López",
-                    email_jefe_directo = "carlosguimaraenz@yahoo.com.ar",
+                    email = "calito83@gmail.com",
+                    puesto = puestosDB[0],
+                    jefe_directo = jefe,
                     password = make_password("xyx456")),
-            Agentes(legajo = 77777,
+            Empleado(legajo = 77777,
                     apellidos = "Olmos",
                     nombres = "Andrea",
-                    email_agente = "andrea@gmail.com",
-                    jefe_directo = "Pablo López",
-                    email_jefe_directo = "calito83@gmail.com",
+                    email = "andrea@gmail.com",
+                    puesto = puestosDB[0],
+                    jefe_directo = jefe,
                     password = make_password("123ggg"))
         ]
-        agentesDB = Agentes.objects.all()
-        for nuevoAgente in nuevosAgentes:
-            i = 0
-            while i < len(agentesDB) and nuevoAgente.legajo != agentesDB[i].legajo:
+        empleadosDB = Empleado.objects.all()
+        for nuevoEmpleado in nuevosEmpleados:
+            i = 1
+            while i < len(empleadosDB) and nuevoEmpleado.legajo != empleadosDB[i].legajo:
                 i += 1
-            if i >= len(agentesDB):
-                nuevoAgente.save()
+            if i >= len(empleadosDB):
+                nuevoEmpleado.save()
             else:
-                agentesDB[i].apellidos = nuevoAgente.apellidos
-                agentesDB[i].nombres = nuevoAgente.nombres
-                agentesDB[i].email_agente = nuevoAgente.email_agente
-                agentesDB[i].jefe_directo = nuevoAgente.jefe_directo
-                agentesDB[i].email_jefe_directo = nuevoAgente.email_jefe_directo
-                agentesDB[i].save()
+                empleadosDB[i].apellidos = nuevoEmpleado.apellidos
+                empleadosDB[i].nombres = nuevoEmpleado.nombres
+                empleadosDB[i].email = nuevoEmpleado.email
+                empleadosDB[i].puesto = nuevoEmpleado.puesto
+                empleadosDB[i].jefe_directo = jefe
+                empleadosDB[i].save()
         # Verificamos
-        agentesDB = Agentes.objects.all()
-        for agenteDB in agentesDB:
-            print(str(agenteDB.id) + ": " + str(agenteDB.legajo) + " " + agenteDB.apellidos + " " + agenteDB.email_jefe_directo)
+        empleadosDB = Empleado.objects.all()
+        for empleadoDB in empleadosDB:
+            jefe_mail = empleadoDB.jefe_directo.email if empleadoDB.jefe_directo is not None else "sin jefe"
+            print(str(empleadoDB.id) + ": " + str(empleadoDB.legajo) + " " + empleadoDB.apellidos + " " + jefe_mail)
         

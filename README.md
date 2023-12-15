@@ -9,6 +9,7 @@ El modo de ejecutar este comando es desde la línea de comandos de la siguiente 
 # Códigos en la planilla
 Para ausencias y motivos especiales, existe un código en la base de datos y otro como etiqueta para el usuario.
 En el archivo **/partes/templatetags/filters.py** se encontrará un filtro personalizado que se usa en el template HTML, el cual devuelve la etiqueta para mostrar al usuario a partir del código en la base de datos. Cuando se agregue un nuevo código, además de modificar el template HTML, habrá que modificar este filtro para incluirlo.
+A su vez, en el archivo **/partes/helper.py** existe una función que hace también esta conversión pero para ser utilizada en el backend.
 
 # Envío de e-mail al presentar planilla
 Para pruebas locales se configuró un servidor con la aplicación de Windows hMailServer (código abierto).

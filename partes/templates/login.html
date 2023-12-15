@@ -1,6 +1,9 @@
 {% extends "base.html" %}
 
 {% block titulo %} Login {% endblock %}
+{% block navlinks %}
+    {% include "components/nav_links.html" with seleccionado="Ninguno" %}
+{% endblock %}
 {% block contenido %}
 <form method="post" action="/login">
     {% csrf_token %}
@@ -11,7 +14,7 @@
     {% endif %}
     <div class="d-flex justify-content-center">
         <div class="card card-login">
-            <div class="card-header">
+            <div class="card-header bg-secondary text-white">
                 Empresa ABC - Control de horas
             </div>
             <div class="card-body">
