@@ -5,3 +5,7 @@
 
 -- DELETE FROM partes_registrodiario
 -- WHERE observaciones = "";
+
+-- DELETE FROM partes_empleado;
+-- DELETE FROM partes_registrodiario;
+-- DELETE FROM partes_planilla;
