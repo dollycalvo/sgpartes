@@ -78,10 +78,12 @@
                 <h5 class="card-header bg-secondary text-white">Adjuntar archivo</h5>
                 {% if nombreArchivoAdjunto != "" %}
                 <div class="card-body" id="area-adjunto" contiene-archivo="true">
-                    <div id="wrapperNombreArchivo">
-                        <i class='bi bi-file-earmark-pdf'></i>
-                        <div id="nombreArchivo">{{ nombreArchivoAdjunto }}</div>
-                    </div>
+                    <a href="download">
+                        <div id="wrapperNombreArchivo">
+                            <i class='bi bi-file-earmark-pdf'></i>
+                            <div id="nombreArchivo">{{ nombreArchivoAdjunto }}</div>
+                        </div>
+                    </a>
                 </div>
                 {% else %}
                 <div class="card-body" id="area-adjunto">

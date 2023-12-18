@@ -9,10 +9,6 @@ class Command(BaseCommand):
     #     parser.add_argument('poll_ids', nargs='+', type=int)
 
     def handle(self, *args, **options):
-        emp = Empleado.objects.filter(id = 1)[0]
-        emp.jefe_directo = emp
-        emp.save()
-        return
         # RegistroDiario.objects.all().delete()
         # Planilla.objects.all().delete()
         # return
@@ -70,6 +66,7 @@ class Command(BaseCommand):
         for puestoDB in puestosDB:
             print(str(puestoDB.id) + ": " + puestoDB.nombre)
 
+        return
         jefe = Empleado(legajo = 999555,
                     apellidos = "Jefezón",
                     nombres = "Juan Pablo",
