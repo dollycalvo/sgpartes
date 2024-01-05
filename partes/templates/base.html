@@ -15,34 +15,45 @@
 </head>
 
 <body>
-    <nav class="navbar navbar-expand navbar-light bg-light d-flex justify-content-between">
-        <div class="nav navbar-nav">
-            {% if request.session.usuario %}
-                {% block navlinks %}
-                {% endblock %}
-            {% endif %}
-        </div>
-        <div id="infoLogin" class="mr-2rem d-flex flex-row justify-content-center align-items-center">
-            <div class="bi bi-person-standing mr-05rem"></div>
-            {% if request.session.usuario %}
-                <div>
-                    <a class="nav-item nav-link popup-cerrar-sesion" href="login?logout">Cerrar sesión</a>
+    <div class="layout-pagina">
+        <header>
+            <h1>EMPRESA ABC</h1>
+        </header>
+        <nav class="navbar navbar-expandx justify-content-start px-05rem">
+            <img class="imagen-logo" src="{% static 'images/logo2.png' %}">
+            {% comment %} <div id="infoLogin" class="mr-2rem d-flex flex-row justify-content-center align-items-center"> {% endcomment %}
+            <div id="infoLogin" class="d-flex flex-row justify-content-center align-items-center">
+                <div class="bi bi-person-standing mr-05rem"></div>
+                {% if request.session.usuario %}
+                    <div>
+                        <a class="nav-item nav-link popup-cerrar-sesion" href="login?logout">Cerrar sesión</a>
+                    </div>
+                    <div id="divNombreUsuario">
+                        {{request.session.nombre_usuario}}
+                    </div>
+                {% else %}
+                <a class="nav-item nav-link link-login" href="login">Iniciar sesión</a>
+                {% endif %}
+            </div>
+            <div class="nav navbar-nav">
+                {% if request.session.usuario %}
+                    {% block navlinks %}
+                    {% endblock %}
+                {% endif %}
+            </div>
+        </nav>
+        <div class="container">
+            <div class="row">
+                <div class="col-12">
+                    {% block contenido %} {% endblock %}
                 </div>
-                <div id="divNombreUsuario">
-                    {{request.session.nombre_usuario}}
-                </div>
-            {% else %}
-            <a class="nav-item nav-link link-frambuesa" href="login">Iniciar sesión</a>
-            {% endif %}
+            </div>
         </div>
-    </nav>
-<div class="container">
-    <div class="row">
-        <div class="col-12">
-            {% block contenido %} {% endblock %}
-        </div>
-    </div>
-</div>
+
+        <footer>
+            <h2>Sistema de control de horarios</h2>
+        </footer>
+    </div><!-- Fin del layout de la página -->
 
   <!-- Bootstrap JavaScript Libraries -->
   <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"
