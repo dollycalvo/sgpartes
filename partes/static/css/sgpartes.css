@@ -8,66 +8,154 @@
     --color-persona: #ffffff;
 }
 
-.layout-pagina {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    grid-template-rows: auto 1fr auto;
-    grid-template-areas: "sidebar header"
-                         "sidebar main-content"
-                         "sidebar footer";
-    height: 100dvh;
+/* DISPOSITIVOS MOVILES */
+@media (max-width: 767px) {
+    .layout-pagina {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        grid-template-rows: auto auto 1fr auto;
+        grid-template-areas: "logo header header header"
+                             "navbar navbar navbar navbar"
+                             "main-content main-content main-content main-content"
+                             "footer footer footer footer";
+        height: 100dvh;
+        width: 100vw;
+    }
+    
+    .seccion-logo {
+        grid-area: logo;
+        padding: 2vw;
+    }
+
+    .seccion-logo > img {
+        width: 21vw;
+    }
+
+    header {
+        grid-area: header;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+    }
+    
+    header > h1 {
+        background-color: var(--color-celeste);
+        border: 2px solid var(--color-bordes);
+        width: 90%;
+        border-radius: 250px;
+        padding: 0.5rem 0;
+        margin: 0;
+        text-align: center;
+    }
+
+    .navbar {
+        grid-area: navbar;
+        border-top: 2px solid var(--color-bordes);
+        border-bottom: 2px solid var(--color-bordes);
+        /* border-left: 2px solid var(--color-bordes); */
+        border-right: 2px solid var(--color-bordes);
+        background: var(--color-navbar) !important;
+        display: flex !important;
+        align-items: center;
+        justify-content: top !important;
+        flex-direction: column !important;
+        width: 100%;
+    }
+    
+    .navbar-nav {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: top !important;
+    }
+
+    #infoLogin {
+        cursor: pointer;
+        color: var(--color-persona);
+    }
+    
+    .imagen-logo {
+        display: none;
+    }
 }
 
-header {
-    grid-area: header;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 1rem;
+/* DISPOSITIVOS DE ESCRITORIO */
+@media (min-width: 768px) {
+    .layout-pagina {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        grid-template-rows: auto 1fr auto;
+        grid-template-areas: "sidebar header"
+                             "sidebar main-content"
+                             "sidebar footer";
+        height: 100dvh;
+    }
+
+    .seccion-logo {
+        display: none;
+    }
+
+    header {
+        grid-area: header;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 1rem;
+    }
+    
+    header > h1 {
+        background-color: var(--color-celeste);
+        border: 2px solid var(--color-bordes);
+        width: 92%;
+        border-radius: 250px;
+        padding: 0.5rem 0;
+        margin: 0;
+        text-align: center;
+    }
+
+    .navbar {
+        grid-area: sidebar;
+        border-top: 2px solid var(--color-bordes);
+        border-bottom: 2px solid var(--color-bordes);
+        /* border-left: 2px solid var(--color-bordes); */
+        border-right: 2px solid var(--color-bordes);
+        background: var(--color-navbar) !important;
+        display: flex !important;
+        align-items: center;
+        justify-content: top !important;
+        flex-direction: column !important;
+        max-width: 20vw;
+    }
+    
+    .navbar-nav {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: top !important;
+    }
+
+    #infoLogin {
+        cursor: pointer;
+        margin-top: 2rem;
+        border-bottom: 1px outset;
+        padding-bottom: 1rem;
+        margin-bottom: 1rem;
+        color: var(--color-persona);
+    }
 }
 
-header > h1 {
-    background-color: var(--color-celeste);
-    border: 2px solid var(--color-bordes);
-    width: 92%;
-    border-radius: 250px;
-    padding: 0.5rem 0;
-    margin: 0;
-    text-align: center;
-}
 
 footer {
     grid-area: footer;
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 0.5rem;
+    padding: 0.2rem;
     border-top: 2px solid var(--color-bordes);
     /* border-right: 2px solid var(--color-bordes); */
     border-bottom: 2px solid var(--color-bordes);
     /* background: linear-gradient(to bottom, #eee 0%, var(--color-footer)); */
     background: var(--color-footer);
     margin-top: 0.5rem;
-}
-
-.navbar {
-    grid-area: sidebar;
-    border-top: 2px solid var(--color-bordes);
-    border-bottom: 2px solid var(--color-bordes);
-    /* border-left: 2px solid var(--color-bordes); */
-    border-right: 2px solid var(--color-bordes);
-    background: var(--color-navbar) !important;
-    display: flex !important;
-    align-items: center;
-    justify-content: top !important;
-    flex-direction: column !important;
-    max-width: 20vw;
-}
-
-.navbar-nav {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: top !important;
 }
 
 .nav-item {
@@ -81,11 +169,8 @@ footer {
 
 .container {
     padding-top: 2rem;
-    overflow-y: scroll;
-}
-
-.px-05rem {
-    padding: 0 0.5rem;
+    overflow-y: auto;
+    grid-area: main-content;
 }
 
 .ml-1rem {
@@ -117,15 +202,6 @@ footer {
     font-size: 1.8rem;
     color: var(--color-persona);
     transition: transform 0.3s;
-}
-
-#infoLogin {
-    cursor: pointer;
-    margin-top: 2rem;
-    border-bottom: 1px outset;
-    padding-bottom: 1rem;
-    margin-bottom: 1rem;
-    color: var(--color-persona);
 }
 
 #infoLogin > div:nth-child(3) {

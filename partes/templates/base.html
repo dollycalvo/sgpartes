@@ -19,6 +19,9 @@
         <header>
             <h1>EMPRESA ABC</h1>
         </header>
+        <div class="seccion-logo">
+            <img src="{% static 'images/logo2.png' %}">
+        </div>
         <nav class="navbar navbar-expandx justify-content-start px-05rem">
             <img class="imagen-logo" src="{% static 'images/logo2.png' %}">
             {% comment %} <div id="infoLogin" class="mr-2rem d-flex flex-row justify-content-center align-items-center"> {% endcomment %}
@@ -42,16 +45,16 @@
                 {% endif %}
             </div>
         </nav>
-        <div class="container">
+        <main class="container">
             <div class="row">
                 <div class="col-12">
                     {% block contenido %} {% endblock %}
                 </div>
             </div>
-        </div>
+        </main>
 
         <footer>
-            <h2>Sistema de control de horarios</h2>
+            <h3>Sistema de control de horarios</h3>
         </footer>
     </div><!-- Fin del layout de la página -->
 
