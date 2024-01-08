@@ -252,6 +252,8 @@ footer {
 }
 
 .container {
+    margin: 0;
+    max-width: 100% !important;
     padding-top: 2rem;
     overflow-y: auto;
     grid-area: main-content;
