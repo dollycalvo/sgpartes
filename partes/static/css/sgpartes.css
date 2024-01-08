@@ -38,6 +38,7 @@
         justify-content: center;
         align-items: center;
         width: 100%;
+        
     }
     
     header > h1 {
@@ -153,15 +154,18 @@
         justify-content: center;
         align-items: center;
         padding: 1rem;
+        background-color: var(--color-celeste);
     }
     
     header > h1 {
-        background-color: #ffffff;
+        background-color: #cdcdcd;
+       
+        
         /* border: 2px solid var(--color-bordes); */
         width: 92%;
-        border-radius: 250px;
+        border-radius: 10px;
         padding: 0.5rem 0;
-        margin: 0;
+        margin: 5;
         text-align: center;
     }
 
@@ -239,6 +243,7 @@ footer {
 
 .nav-item {
     color: #ffffff !important;
+   
 }
 
 .imagen-logo {
@@ -250,7 +255,8 @@ footer {
     padding-top: 2rem;
     overflow-y: auto;
     grid-area: main-content;
-    background-color: var(--color-celeste-claro);
+    /*background-color: var(--color-celeste-claro);*/
+    background-color: var(--color-celeste);
 }
 
 .ml-1rem {
