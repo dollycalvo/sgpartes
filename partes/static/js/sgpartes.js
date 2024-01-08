@@ -1,7 +1,10 @@
 const divNombreUsuario = document.querySelector("#divNombreUsuario");
-const popupCerrarSesion = document.querySelector(".popup-cerrar-sesion");
+const btnCerrarSesion = document.querySelector(".btn-cerrar-sesion");
+const popupCerrarSesionLarge = document.querySelector("#popup-large");
+const popupCerrarSesionSmall = document.querySelector("#popup-small");
 const loginIcon = document.querySelector("#infoLogin > div:nth-child(1)");
 const loginSection = document.querySelector("#infoLogin");
+const logoPersona = document.querySelector(".bi-person-standing");
 
 function changeHands() {
     loginIcon.classList.toggle("bi-person-standing");
@@ -18,12 +21,21 @@ loginSection.addEventListener("mouseout", () => {
 
 if (divNombreUsuario) {
     divNombreUsuario.addEventListener("mouseover", () => {
-        popupCerrarSesion.classList.add("popup-cerrar-sesion-mostrar");
+        popupCerrarSesionLarge.classList.add("popup-cerrar-sesion-mostrar-large");
+        popupCerrarSesionSmall.classList.add("popup-cerrar-sesion-mostrar-small");
     });
 }
 
-if (popupCerrarSesion) {
-    popupCerrarSesion.addEventListener("mouseout", () => {
-        popupCerrarSesion.classList.remove("popup-cerrar-sesion-mostrar");
+if (logoPersona) {
+    logoPersona.addEventListener("touchend", () => {
+        popupCerrarSesionLarge.classList.add("popup-cerrar-sesion-mostrar-large");
+        popupCerrarSesionSmall.classList.add("popup-cerrar-sesion-mostrar-small");
+    });
+}
+
+if (btnCerrarSesion) {
+    btnCerrarSesion.addEventListener("mouseout", () => {
+        popupCerrarSesionLarge.classList.remove("popup-cerrar-sesion-mostrar-large");
+        popupCerrarSesionSmall.classList.remove("popup-cerrar-sesion-mostrar-small");
     });
 }

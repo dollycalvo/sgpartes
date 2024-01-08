@@ -22,17 +22,23 @@
         <div class="seccion-logo">
             <img src="{% static 'images/logo2.png' %}">
         </div>
-        <nav class="navbar navbar-expandx justify-content-start px-05rem">
+        <nav class="navbar justify-content-start px-05rem">
             <img class="imagen-logo" src="{% static 'images/logo2.png' %}">
             {% comment %} <div id="infoLogin" class="mr-2rem d-flex flex-row justify-content-center align-items-center"> {% endcomment %}
+            <div id="separador"></div>
             <div id="infoLogin" class="d-flex flex-row justify-content-center align-items-center">
                 <div class="bi bi-person-standing mr-05rem"></div>
                 {% if request.session.usuario %}
-                    <div>
-                        <a class="nav-item nav-link popup-cerrar-sesion" href="login?logout">Cerrar sesión</a>
+                    <div id="popup-large" class="popup-cerrar-sesion">
+                        <a class="nav-item nav-link btn-cerrar-sesion" href="login?logout">Cerrar sesión</a>
                     </div>
                     <div id="divNombreUsuario">
                         {{request.session.nombre_usuario}}
+                    </div>
+                    <div id="popup-small" class="popup-cerrar-sesion">
+                        {{request.session.nombre_usuario}}
+                        <hr>
+                        <a class="nav-item nav-link btn-cerrar-sesion" href="login?logout">Cerrar sesión</a>
                     </div>
                 {% else %}
                 <a class="nav-item nav-link link-login" href="login">Iniciar sesión</a>
@@ -52,10 +58,10 @@
                 </div>
             </div>
         </main>
-
+{% comment %} 
         <footer>
             <h3>Sistema de control de horarios</h3>
-        </footer>
+        </footer> {% endcomment %}
     </div><!-- Fin del layout de la página -->
 
   <!-- Bootstrap JavaScript Libraries -->
