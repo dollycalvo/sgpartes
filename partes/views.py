@@ -1,6 +1,6 @@
 from partes.views_helpers.common import nombresMeses, redirectToError
 from partes.views_helpers.regenerar import generarCodigo, crearNuevoPassword
-from partes.views_helpers.dashboard import cargarPlanillasPorAprobarYCalendario
+from partes.views_helpers.dashboard import cargarPlanillasParaMostrarYCalendario
 from partes.views_helpers.planilla import mostrarPlanillaParaVistaEdicion, procesarCambiosEnPlanilla
 from partes.views_helpers.aprobar import aprobarPlanilla, mostrarPlanillaAprobacion
 from partes.views_helpers.login import procesarLogout, buscarUsuario
@@ -115,15 +115,19 @@ def dashboard(request):
     if 'puesto' not in request.session or request.session['puesto'] == "Agente":
         return redirectToError(request, "No tienes acceso a este contenido. Si se trata de un error, contacta al administrador del sistema.")
     
-    # Si es POST, procesamos el pedido de mirar/editar su propia planilla
     if request.method == 'POST':
-        form = FormSeleccionFecha(request.POST)
-        if form.is_valid():
-            request.session['mesReporte'] = request.POST['mesReporte']
-            request.session['anioReporte'] = request.POST['anioReporte']
-            return HttpResponseRedirect('/planilla')
+        # Si existe filtroEmpleado, hacemos la búsqueda
+        if 'filtroEmpleado' in request.POST:
+            return cargarPlanillasParaMostrarYCalendario(request)
+        else:
+            # #Sino procesamos el pedido de mirar/editar su propia planilla
+            form = FormSeleccionFecha(request.POST)
+            if form.is_valid():
+                request.session['mesReporte'] = request.POST['mesReporte']
+                request.session['anioReporte'] = request.POST['anioReporte']
+                return HttpResponseRedirect('/planilla')
     else:   # GET request
-        return cargarPlanillasPorAprobarYCalendario(request)
+        return cargarPlanillasParaMostrarYCalendario(request)
 
 
 def aprobar(request):

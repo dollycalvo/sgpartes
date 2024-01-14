@@ -126,6 +126,14 @@
     .popup-cerrar-sesion-mostrar-small {
         display: block;    
     }
+
+    .filtro {
+        width: 50%;
+    }
+
+    .filtro-boton {
+        width: 100%;
+    }
 }
 
 /* DISPOSITIVOS DE ESCRITORIO */
@@ -224,6 +232,10 @@
     .popup-cerrar-sesion-mostrar-small {
         display: none;    
     }
+
+    .filtro {
+        width: 20%;
+    }
 }
 
 
@@ -284,6 +296,16 @@ footer {
 .px-05rem {
     padding-left: 0.5rem;
     padding-right: 0.5rem;
+}
+
+.px-2rem {
+    padding-left: 2rem;
+    padding-right: 2rem;
+}
+
+.wrapper-tabla-planillas {
+    overflow-x: auto;
+    max-width: 100%;
 }
 
 .bi {
@@ -415,4 +437,34 @@ button[disabled] {
 
 .bi-file-earmark-pdf {
     color: #ff0000 !important;
+}
+
+.filtros-dashboard {
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.filtro {
+    display: flex;
+    padding: 0 0.5rem;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.filtro-select {
+    align-items: flex-start;
+}
+
+.filtro-boton {
+    align-items: center;
+}
+
+.filtros-dashboard label {
+    font-weight: 600;
+}
+
+.filtros-dashboard select {
+    width: 100%;
 }

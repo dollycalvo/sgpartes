@@ -52,8 +52,9 @@ def aprobarPlanilla(request):
 def mostrarPlanillaAprobacion(request):
     id_planilla = int(request.POST["id_planilla"])
     # verificamos que el ID esté dentro de la lista, como mecanismo de seguridad
-    if id_planilla in request.session['idsPlanillasPorAprobar']:
-        #del request.session['idsPlanillasPorAprobar']   # ya eliminamos esta lista, luego se regenerará de ser necesario
+    if id_planilla in request.session['idsPlanillasParaMostrar']:
+        print("MPA si existe en la lista de IDs")
+        #del request.session['idsPlanillasParaMostrar']   # ya eliminamos esta lista, luego se regenerará de ser necesario
         planillas = Planilla.objects.filter(id = id_planilla)
         if len(planillas) != 1:
             mensaje_error = "No se ha encontrado la planilla"
