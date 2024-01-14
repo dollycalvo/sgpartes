@@ -273,6 +273,10 @@ footer {
     background-color: var(--color-celeste);
 }
 
+.ml-05rem {
+    margin-left: 0.5rem;
+}
+
 .ml-1rem {
     margin-left: 1rem;
 }
@@ -291,6 +295,10 @@ footer {
 
 .mr-2rem {
     margin-right: 2rem;
+}
+
+.mb-1rem {
+    margin-bottom: 1rem;
 }
 
 .px-05rem {
@@ -467,4 +475,8 @@ button[disabled] {
 
 .filtros-dashboard select {
     width: 100%;
+}
+
+.bold-600 {
+    font-weight: 600;
 }

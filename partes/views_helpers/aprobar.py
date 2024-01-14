@@ -6,6 +6,8 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.core.mail import EmailMessage
 
+import settings
+
 
 def aprobarPlanilla(request):
     del request.session['idPorAprobar']
@@ -38,15 +40,59 @@ def aprobarPlanilla(request):
     nombre_archivo = planilla.pdf_adjunto
     carpeta = "adjuntos/"
     fl_path = carpeta + nombre_archivo
-    email = EmailMessage("Planilla aprobada: " + nombre_completo_empleado, # asunto
-                            mensaje_email, # cuerpo del email
-                            "webmaster@cguimaraenz.com", # from
-                            ["webmaster@cguimaraenz.com"] # to
-                            )
+    if settings.DEBUG:
+        email = EmailMessage("Planilla aprobada: " + nombre_completo_empleado, # asunto
+                                mensaje_email, # cuerpo del email
+                                "webmaster@cguimaraenz.com", # from
+                                ["webmaster@cguimaraenz.com"] # to
+                                )
+    else:
+        email = EmailMessage("Planilla aprobada: " + nombre_completo_empleado, # asunto
+                                mensaje_email, # cuerpo del email
+                                "webmaster@cguimaraenz.com", # from
+                                [empleado.jefe_directo.email] # to
+                                )
     email.attach_file(fl_path)
     email.send()
     request.session['dashboard_mensaje'] = "La planilla ha sido aprobada"
     return HttpResponseRedirect("/dashboard")
+
+
+def revisarPlanilla(request):
+    del request.session['idPorAprobar']
+    planilla = Planilla.objects.filter(id = int(request.POST['id_planilla']))
+    if len(planilla) != 1:
+        return redirectToError(request, "Ha ocurrido un error al obtener la planilla de la base de datos")
+    planilla = planilla[0]
+    # Volvemos la planilla a status Borrador para que la revise el agente
+    statusBorrador = StatusPlanilla.objects.filter(status = "Borrador")[0]
+    planilla.status = statusBorrador
+    observaciones = request.POST["observaciones"].strip()
+    planilla.observaciones = observaciones
+    planilla.save()
+    # Enviar mail de confirmación de aprobación
+    empleado = planilla.empleado
+    nombre_completo_empleado = empleado.apellidos + ", " + empleado.nombres
+    mensaje_email = "Fecha: " + nombresMeses[int(planilla.mes) - 1]["Nombre"] + " " + str(planilla.anio)
+    mensaje_email += "\nEmpleado: " + nombre_completo_empleado + " (legajo: " + str(empleado.legajo) + ")"
+    mensaje_email += "\nObservaciones: " + observaciones
+    print("Mail al agente indicando que se envía a revisión la planilla")
+    if settings.DEBUG:
+        email = EmailMessage("Planilla devuelta para revisión: " + nombre_completo_empleado, # asunto
+                                mensaje_email, # cuerpo del email
+                                "webmaster@cguimaraenz.com", # from
+                                ["webmaster@cguimaraenz.com"] # to
+                                )
+    else:
+        email = EmailMessage("Planilla devuelta para revisión: " + nombre_completo_empleado, # asunto
+                                mensaje_email, # cuerpo del email
+                                "webmaster@cguimaraenz.com", # from
+                                [empleado.email] # to
+                                )
+    email.send()
+    request.session['dashboard_mensaje'] = "La planilla ha sido devuelta para revisión"
+    return HttpResponseRedirect("/dashboard")
+
 
 
 def mostrarPlanillaAprobacion(request):

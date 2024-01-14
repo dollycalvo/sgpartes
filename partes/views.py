@@ -2,7 +2,7 @@ from partes.views_helpers.common import nombresMeses, redirectToError
 from partes.views_helpers.regenerar import generarCodigo, crearNuevoPassword
 from partes.views_helpers.dashboard import cargarPlanillasParaMostrarYCalendario
 from partes.views_helpers.planilla import mostrarPlanillaParaVistaEdicion, procesarCambiosEnPlanilla
-from partes.views_helpers.aprobar import aprobarPlanilla, mostrarPlanillaAprobacion
+from partes.views_helpers.aprobar import aprobarPlanilla, revisarPlanilla, mostrarPlanillaAprobacion
 from partes.views_helpers.login import procesarLogout, buscarUsuario
 from django.http import HttpResponse
 import mimetypes
@@ -134,13 +134,16 @@ def aprobar(request):
     if request.method == "GET":
         return redirectToError(request, "Esta página sólo puede ser accedida desde el dashboard.")
     if request.method == 'POST':
-        if "aprobar" in request.POST and request.POST["aprobar"] == "1":
+        if "aprobar" in request.POST:
             if not "idPorAprobar" in request.session:
                 return redirectToError(request, "Ha ocurrido un error al procesar el ID de la planilla")
             if not "id_planilla" in request.POST or request.session["idPorAprobar"] != int(request.POST["id_planilla"]):
                 return redirectToError(request, "Ha ocurrido un error al procesar el ID de la planilla")
             # Si obtenemos el ID en el request, y coincide con el existente en la sesión, seguimos
-            return aprobarPlanilla(request)
+            if request.POST["aprobar"] == "1":
+                return aprobarPlanilla(request)
+            else:
+                return revisarPlanilla(request)
         if "id_planilla" in request.POST:
             return mostrarPlanillaAprobacion(request)
     return render(request, 'index.html')

@@ -6,6 +6,8 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.core.mail import EmailMessage
 
+import settings
+
 
 SIN_NOVEDAD = "Sin novedad"
 acciones_submit = ['guardar', 'presentar', 'sin_accion']
@@ -84,13 +86,20 @@ def procesarCambiosEnPlanilla(request, id_empleado, datosEmpleado):
         nombre_archivo = planilla.pdf_adjunto
         carpeta = "adjuntos/"
         fl_path = carpeta + nombre_archivo
-        email = EmailMessage("Planilla presentada: " + nombre_completo_empleado, # asunto
-                                mensaje_email, # cuerpo del email
-                            # empleado.email,
-                            # [empleado.jefe_directo.email, empleado.email],
-                            "webmaster@cguimaraenz.com", # from
-                            ["webmaster@cguimaraenz.com"] # to
-                            )
+        if settings.DEBUG:
+            email = EmailMessage("Planilla presentada: " + nombre_completo_empleado, # asunto
+                                    mensaje_email, # cuerpo del email
+                                # empleado.email,
+                                # [empleado.jefe_directo.email, empleado.email],
+                                "webmaster@cguimaraenz.com", # from
+                                ["webmaster@cguimaraenz.com"] # to
+                                )
+        else:
+            email = EmailMessage("Planilla presentada: " + nombre_completo_empleado, # asunto
+                                    mensaje_email, # cuerpo del email
+                                empleado.email, #from
+                                [empleado.jefe_directo.email, empleado.email], #to
+                                )
         email.attach_file(fl_path)
         email.send()
     # Nos preparamos para renderizar la página

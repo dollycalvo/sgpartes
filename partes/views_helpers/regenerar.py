@@ -5,6 +5,8 @@ from django.shortcuts import render
 import hashlib
 from datetime import datetime
 
+import settings
+
 
 def generarCodigo(request, acciones):
     usuario = request.POST['username'].strip()
@@ -31,14 +33,20 @@ def generarCodigo(request, acciones):
         cuerpo_email += "por favor, ingrese al siguiente link (si no funciona, copie y pegue en su navegador), "
         cuerpo_email += "e ingrese su e-mail o legajo, nueva contraseña y confirmación.\n\n" + base_url
         cuerpo_email += "/regenerar?codigo=" + str(regPW.codigo) + "\n\nAdministradores del Sistema"
-        send_mail(
-            "Instrucciones para regenerar su contraseña",
-            cuerpo_email,
-            # webmaster@sistema.com,
-            # [empleado.email],
-            'webmaster@cguimaraenz.com',
-            ['webmaster@cguimaraenz.com'],
-            fail_silently=False)
+        if settings.DEBUG:
+            send_mail(
+                "Instrucciones para regenerar su contraseña",
+                cuerpo_email,
+                'webmaster@cguimaraenz.com',
+                ['webmaster@cguimaraenz.com'],
+                fail_silently=False)
+        else:
+            send_mail(
+                "Instrucciones para regenerar su contraseña",
+                cuerpo_email,
+                'webmaster@cguimaraenz.com',
+                [empleado.email],
+                fail_silently=False)
         # Y redireccionamos con el mensaje de éxito
         mensaje = "Se ha envíado un correo electrónico a su casilla con información para regenerar su contraseña"
         return render(request, "regenerar.html", {"mensaje": mensaje})

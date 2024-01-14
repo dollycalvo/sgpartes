@@ -10,7 +10,7 @@
 <form method="post" action="/aprobar" id="formAprobar">
     {% csrf_token %}
     <input type="hidden" name="id_planilla" value="{{ request.session.idPorAprobar }}">
-    <input type="hidden" name="aprobar" value="1">
+    <input type="hidden" id="hdnAprobar" name="aprobar" value="1">
     <div class="card mb-4">
         <div class="card-header">
             <h3>EMPRESA ABC - APROBACIÓN DE REPORTE</h3>
@@ -63,8 +63,15 @@
                 </div>
             </div>
             <br>
+            <div class="d-flex flex-row w-100 justify-content-center align-items-end mb-1rem">
+                <label class="bold-600" for="txtObservaciones">
+                    Observaciones:
+                </label>
+                <input type="text" id="txtObservaciones" name="observaciones" class="ml-05rem w-100" placeholder="Observaciones para el agente">
+            </div>
             <div class="d-flex flex-row w-100 justify-content-center">
                 <button id="btnAprobar" class="btn btn-success ml-1rem" type="submit">Aprobar</button>
+                <button id="btnRevisar" class="btn btn-danger ml-1rem" type="button">Revisar</button>
             </div>
         </div>
         <div class="card-footer text-danger">
