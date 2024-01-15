@@ -117,7 +117,12 @@
             Sistema de gestión - Reporte horario
         </div>
     </div>
-    <br><br>
+    {% if planillasParaRevisar %}
+        <br><br>
+        {% include 'components/revision_planillas.html' %}
+        {% else %}
+        <br><br>
+        {% endif %}
     {% include "components/form_fecha.html" with titulo="Acceder a mi planilla" %}
     <br><br>
     <script type="text/javascript" src="{% static 'js/dashboard.js' %}"></script>

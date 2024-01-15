@@ -480,3 +480,30 @@ button[disabled] {
 .bold-600 {
     font-weight: 600;
 }
+
+.revision-planillas {
+    margin-bottom: 2rem;
+}
+
+.bloque-revision-planilla {
+    padding: 1rem 0.5rem;
+    border: 1px solid black;
+    border-radius: 1rem;
+    margin: 0.3rem;
+    box-shadow: 0 0 2rem #ffc10755 inset;
+    background-color: #eeeeee;
+    cursor: pointer;
+}
+
+.bloque-revision-planilla:hover {
+    text-decoration: underline;
+    background-color: #ffc10777;
+    box-shadow: 0 0 0.5rem #333333, 0 0 4rem #ffc107bb inset;
+    transition: box-shadow 200ms;
+}
+
+.wrapper-revision-planillas {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+}

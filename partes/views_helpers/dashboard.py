@@ -2,7 +2,7 @@ from partes.forms import FormSeleccionFecha
 from partes.models import Planilla, Empleado, StatusPlanilla
 from datetime import datetime
 from django.shortcuts import render
-from partes.views_helpers.common import nombresMeses
+from partes.views_helpers.common import nombresMeses, obtenerPlanillasParaRevisar
 
 
 def cargarPlanillasParaMostrarYCalendario(request):
@@ -66,6 +66,7 @@ def cargarPlanillasParaMostrarYCalendario(request):
     if "dashboard_mensaje" in request.session:
         mensaje = request.session['dashboard_mensaje']
         del request.session['dashboard_mensaje']
+    planillasParaRevisar = obtenerPlanillasParaRevisar(request.session['id_empleado'])
     return render(request, 'dashboard.html', {"form": form, 
                                                 "mensaje": mensaje,
                                                 "anios": anios, 
@@ -75,4 +76,5 @@ def cargarPlanillasParaMostrarYCalendario(request):
                                                 "listaPlanillas": listaPlanillas,
                                                 "listaSubordinados": listaSubordinados,
                                                 "statuses": statuses,
-                                                "filtros": filtros})
+                                                "filtros": filtros,
+                                                "planillasParaRevisar": planillasParaRevisar})

@@ -1,4 +1,4 @@
-from partes.views_helpers.common import nombresMeses, redirectToError
+from partes.views_helpers.common import nombresMeses, obtenerPlanillasParaRevisar, redirectToError
 from partes.views_helpers.regenerar import generarCodigo, crearNuevoPassword
 from partes.views_helpers.dashboard import cargarPlanillasParaMostrarYCalendario
 from partes.views_helpers.planilla import mostrarPlanillaParaVistaEdicion, procesarCambiosEnPlanilla
@@ -22,12 +22,16 @@ def planilla(request):
     if 'usuario' not in request.session:
         return redirectToError(request, "Se requiere iniciar sesión para acceder a esta sección")
     id_empleado = request.session['id_empleado']
-    datosEmpleado = Empleado.objects.filter(id=id_empleado)
     # Si recibimos desde la planilla el POST
     if request.method == "POST":
-        return procesarCambiosEnPlanilla(request, id_empleado, datosEmpleado)
+        if "idPlanillaParaAbrir" in request.POST:
+            # Si la estamos abriendo desde el anuncio de planillas por revisar:
+            return mostrarPlanillaParaVistaEdicion(request, id_empleado, request.POST["idPlanillaParaAbrir"])
+        else:
+            # O si estamos procesando los cambios
+            return procesarCambiosEnPlanilla(request, id_empleado)
     else:   # Sino, al ser GET viene redireccionado desde la selección de fecha
-        return mostrarPlanillaParaVistaEdicion(request, id_empleado, datosEmpleado)
+        return mostrarPlanillaParaVistaEdicion(request, id_empleado)
 
 
 def seleccionfecha(request):
@@ -47,11 +51,13 @@ def seleccionfecha(request):
     mesActual = fechaActual.month
     anioActual = fechaActual.year
     anios = list(range(anioActual - 3, anioActual + 2))
+    planillasParaRevisar = obtenerPlanillasParaRevisar(request.session['id_empleado'])
     return render(request, 'seleccionfecha.html', {"form": form, 
                                                    "anios": anios, 
                                                    "nombresMeses": nombresMeses, 
                                                    "mesActual": mesActual, 
-                                                   "anioActual": anioActual})
+                                                   "anioActual": anioActual,
+                                                   "planillasParaRevisar": planillasParaRevisar})
 
 
 

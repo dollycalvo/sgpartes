@@ -1,7 +1,7 @@
 from partes.views_helpers.common import nombresMeses, redirectToError
 import calendar
 from partes.helper import guardarArchivo, etiquetaCodigo
-from partes.models import StatusPlanilla, Planilla, RegistroDiario
+from partes.models import Empleado, StatusPlanilla, Planilla, RegistroDiario
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.core.mail import EmailMessage
@@ -13,7 +13,7 @@ SIN_NOVEDAD = "Sin novedad"
 acciones_submit = ['guardar', 'presentar', 'sin_accion']
 
 
-def procesarCambiosEnPlanilla(request, id_empleado, datosEmpleado):
+def procesarCambiosEnPlanilla(request, id_empleado):
     mes = request.POST['mesReporte']
     anio = request.POST['anioReporte']
     dias_del_mes = range(1, calendar.monthrange(int(anio), int(mes))[1] + 1)
@@ -32,6 +32,7 @@ def procesarCambiosEnPlanilla(request, id_empleado, datosEmpleado):
                             anio = anio,
                             status = statusPlanilla)
     # Tenemos archivo adjunto?
+    datosEmpleado = Empleado.objects.filter(id = id_empleado)
     if "pdf" in request.FILES:
         nombre_archivo = ""
         try:
@@ -72,7 +73,7 @@ def procesarCambiosEnPlanilla(request, id_empleado, datosEmpleado):
                 registro.save()
                 nuevosRegistros.append(registro)
             else:
-                nuevosRegistros.append(RegistroDiario(dia = i, codigo = "sn", observaciones = SIN_NOVEDAD))    # En caso de no existir ni ser creado, hacemos un dummy 
+                nuevosRegistros.append(RegistroDiario(dia = i, codigo = "sn", observaciones = ""))    # En caso de no existir ni ser creado, hacemos un dummy 
         i += 1
     # Enviamos e-mail
     if statusPlanilla.status == "Presentado":
@@ -120,41 +121,46 @@ def procesarCambiosEnPlanilla(request, id_empleado, datosEmpleado):
     return render(request, 'planilla.html', templateParams)
 
 
-def mostrarPlanillaParaVistaEdicion(request, id_empleado, datosEmpleado):
-        accion_submit = acciones_submit[0]
-        if not 'mesReporte' in request.session:
-            return HttpResponseRedirect("/seleccionfecha")
+def mostrarPlanillaParaVistaEdicion(request, id_empleado = 0, id_planilla = "0"):
+    accion_submit = acciones_submit[0]
+    if not 'mesReporte' in request.session and id_planilla == "0":
+        return HttpResponseRedirect("/seleccionfecha")
+    if id_planilla == "0":
         mes = request.session['mesReporte']
         anio = request.session['anioReporte']
         del request.session['mesReporte']
         del request.session['anioReporte']
+        datosPlanilla = Planilla.objects.filter(empleado_id = id_empleado, mes = mes, anio = anio)
+    else:
+        datosPlanilla = Planilla.objects.filter(id = id_planilla)
+    if len(datosPlanilla) == 1:
+        datosPlanilla = datosPlanilla[0]
+        datosDiarios = []
+        dias_del_mes = range(1, calendar.monthrange(int(datosPlanilla.anio), int(datosPlanilla.mes))[1] + 1)
+        for dia in dias_del_mes:
+            datosDiarios.append(RegistroDiario(dia = dia, codigo = "sn", observaciones = ""))
+        registrosDiarios = RegistroDiario.objects.filter(planilla_id=datosPlanilla.id)
+        for registro in registrosDiarios:
+            datosDiarios[registro.dia - 1] = registro
+    else:
+        # datosPlanilla = [0, id_empleado, mes, anio, False]
         dias_del_mes = range(1, calendar.monthrange(int(anio), int(mes))[1] + 1)
-        datosPlanilla = Planilla.objects.filter(empleado_id=id_empleado, mes=mes, anio=anio)
-        if len(datosPlanilla) == 1:
-            datosDiarios = []
-            for dia in dias_del_mes:
-                datosDiarios.append(RegistroDiario(dia=dia, codigo="sn", observaciones=SIN_NOVEDAD))
-            datosPlanilla = datosPlanilla[0]
-            registrosDiarios = RegistroDiario.objects.filter(planilla_id=datosPlanilla.id)
-            for registro in registrosDiarios:
-                datosDiarios[registro.dia - 1] = registro
-        else:
-            # datosPlanilla = [0, id_empleado, mes, anio, False]
-            datosPlanilla = Planilla(empleado_id = id_empleado,
-                                mes = mes,
-                                anio = anio,
-                                status = StatusPlanilla.objects.filter(status = "Borrador")[0])
-            datosDiarios = [None] * len(dias_del_mes)
-        templateParams = {  "accion_submit": accion_submit,
-                            "acciones_submit": acciones_submit[0] + "#" + acciones_submit[1],
-                            "datosEmpleado": datosEmpleado[0],
-                            "datosPlanilla": datosPlanilla,
-                            "datosDiarios": datosDiarios,
-                            "mesReporte": int(mes),
-                            "nombreMesReporte": nombresMeses[int(mes) - 1]["Nombre"],
-                            "anioReporte": anio,
-                            "diasDelMes": dias_del_mes,
-                            "textoSinNovedad": SIN_NOVEDAD,
-                            "nombreArchivoAdjunto": datosPlanilla.pdf_adjunto}
-        request.session['id_planilla'] = datosPlanilla.id
-        return render(request, 'planilla.html', templateParams)
+        datosPlanilla = Planilla(empleado_id = id_empleado,
+                            mes = mes,
+                            anio = anio,
+                            status = StatusPlanilla.objects.filter(status = "Borrador")[0])
+        datosDiarios = [None] * len(dias_del_mes)
+    datosEmpleado = Empleado.objects.filter(id = id_empleado)[0]
+    templateParams = {  "accion_submit": accion_submit,
+                        "acciones_submit": acciones_submit[0] + "#" + acciones_submit[1],
+                        "datosEmpleado": datosEmpleado,
+                        "datosPlanilla": datosPlanilla,
+                        "datosDiarios": datosDiarios,
+                        "mesReporte": int(datosPlanilla.mes),
+                        "nombreMesReporte": nombresMeses[int(datosPlanilla.mes) - 1]["Nombre"],
+                        "anioReporte": datosPlanilla.anio,
+                        "diasDelMes": dias_del_mes,
+                        "textoSinNovedad": SIN_NOVEDAD,
+                        "nombreArchivoAdjunto": datosPlanilla.pdf_adjunto}
+    request.session['id_planilla'] = datosPlanilla.id
+    return render(request, 'planilla.html', templateParams)

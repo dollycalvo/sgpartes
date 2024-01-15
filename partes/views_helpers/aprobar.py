@@ -68,6 +68,8 @@ def revisarPlanilla(request):
     statusBorrador = StatusPlanilla.objects.filter(status = "Borrador")[0]
     planilla.status = statusBorrador
     observaciones = request.POST["observaciones"].strip()
+    if observaciones == "":
+        observaciones = "Por favor contacte a su jefe directo para conocer las razones de la revisión."
     planilla.observaciones = observaciones
     planilla.save()
     # Enviar mail de confirmación de aprobación

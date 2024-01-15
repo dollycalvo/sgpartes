@@ -1,0 +1,28 @@
+{% load static %}
+
+<div class="card revision-planillas">
+    <div class="card-header bg-warning text-black">
+        Revisión de planillas
+    </div>
+    <div class="card-body">
+        {% if planillasParaRevisar|length == 1 %}
+        <h4 class="card-title">La siguiente planilla debe ser revisada:</h4>
+        {% else %}
+        <h4 class="card-title">Las siguientes planillas deben ser revisadas:</h4>
+        {% endif %}
+        <form id="formAbrirPlanilla" method="post" action="/planilla">
+            {% csrf_token %}
+            <div class="wrapper-revision-planillas">
+                <input type="hidden" id="hdnIdPlanilla" name="idPlanillaParaAbrir" value="0">
+                {% for planilla in planillasParaRevisar %}
+                <div class="bloque-revision-planilla" id="{{ planilla.id }}">
+                    <h6>{{ planilla.mes }} {{ planilla.anio }}</h6>
+                    {{ planilla.observaciones }}
+                </div>
+                {% endfor %}
+            </div>
+        </form>
+    </div>
+</div>
+
+<script type="text/javascript" src="{% static 'js/revision_planillas.js' %}"></script>
