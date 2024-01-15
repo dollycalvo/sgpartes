@@ -35,6 +35,9 @@ def cargarPlanillasParaMostrarYCalendario(request):
         if str(filtros["status"]) != "0":
             statusPlanillaFiltrado = StatusPlanilla.objects.filter(id = int(filtros["status"]))[0]
             planillasParaMostrar = planillasParaMostrar.filter(status = statusPlanillaFiltrado)
+        else:
+            # statusPlanillaFiltrado = StatusPlanilla.objects.filter(id__gt = 1)[0]
+            planillasParaMostrar = planillasParaMostrar.filter(status_id__gt = 1)
         if str(filtros["mes"]) != "0":
             planillasParaMostrar = planillasParaMostrar.filter(mes = int(filtros["mes"]))
         if str(filtros["anio"]) != "0":

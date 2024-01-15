@@ -26,6 +26,8 @@ def procesarCambiosEnPlanilla(request, id_empleado):
     if (len(planillas) == 1):
         planilla = planillas[0]
         planilla.status = statusPlanilla
+        if statusPlanilla.status == "Presentado":
+            planilla.observaciones = ""
     else:
         planilla = Planilla(empleado_id = id_empleado,
                             mes = mes,

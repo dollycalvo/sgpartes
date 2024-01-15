@@ -70,48 +70,52 @@
         {% else%}
         <form id="formAprobar" method="post" action="/aprobar">
             {% csrf_token %}
-            <input type="hidden" id="id_planilla" name="id_planilla" value="INVALID">
-    
-            <div class="card-body wrapper-tabla-planillas">
-                <table class="table table-striped">
-                    <thead class="bg-dark text-white">
-                        <tr>
-                            <th>
-                                Empleado
-                            </th>
-                            <th>
-                                Mes
-                            </th>
-                            <th>
-                                Año
-                            </th>
-                            <th>
-                                Estado
-                            </th>
-                            <th class="th-sm">
-                                
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for planilla in listaPlanillas %}
-                        {% for subplanilla in planilla.planillasParaMostrar %}
-                        <tr>
-                            <td class="align-middle">{{ planilla.nombre_completo }}</td>
-                            <td class="align-middle">{{ subplanilla.mes.Nombre }}</td>
-                                <td class="align-middle">{{ subplanilla.anio }}</td>
-                                <td class="align-middle">{{ subplanilla.status }}</td>
-                                <td class="align-middle text-center"><button class="btn btn-success" id="{{ subplanilla.id }}">Ver / Aprobar</button></td>
-                            </tr>
-                            {% endfor %}
-                            {% endfor %}
-                        </tbody>
-                </table>
-                <div class="text-center">
-                    
-                </div>
-            </div>
+            <input type="hidden" id="idPlanillaAprobar" name="id_planilla" value="INVALID">
         </form>
+        <div class="card-body wrapper-tabla-planillas">
+            <table class="table table-striped">
+                <thead class="bg-dark text-white">
+                    <tr>
+                        <th>
+                            Empleado
+                        </th>
+                        <th>
+                            Mes
+                        </th>
+                        <th>
+                            Año
+                        </th>
+                        <th>
+                            Estado
+                        </th>
+                        <th colspan="2">
+                            
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for planilla in listaPlanillas %}
+                    {% for subplanilla in planilla.planillasParaMostrar %}
+                    <tr>
+                        <td class="align-middle">{{ planilla.nombre_completo }}</td>
+                        <td class="align-middle">{{ subplanilla.mes.Nombre }}</td>
+                            <td class="align-middle">{{ subplanilla.anio }}</td>
+                            <td class="align-middle">{{ subplanilla.status }}</td>
+                            <td class="align-middle text-end minimal-width">
+                                <button class="btn btn-success" id="{{ subplanilla.id }}">Ver{% if subplanilla.status != "Aprobado" %} / Aprobar{% endif %}</button>
+                            </td>
+                            <td class="align-middle text-end minimal-width">
+                                <button class="btn btn-primary btn-enviar-email" id="{{ subplanilla.id }}">Enviar por e-mail</button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        {% endfor %}
+                    </tbody>
+            </table>
+            <div class="text-center">
+                
+            </div>
+        </div>
         {% endif %}
         <div class="card-footer text-muted bg-light">
             Sistema de gestión - Reporte horario
@@ -125,5 +129,10 @@
         {% endif %}
     {% include "components/form_fecha.html" with titulo="Acceder a mi planilla" %}
     <br><br>
+    <dialog id="dlgEnviandoEmail" class="modal-email">
+        Enviando e-mail...
+    </dialog>
+    <dialog id="dlgResultado" class="modal-resultado">
+    </dialog>
     <script type="text/javascript" src="{% static 'js/dashboard.js' %}"></script>
 {% endblock %}

@@ -1,10 +1,11 @@
-from partes.views_helpers.common import nombresMeses, obtenerPlanillasParaRevisar, redirectToError
+import json
+from partes.views_helpers.common import enviarEmailPlanilla, nombresMeses, obtenerPlanillasParaRevisar, redirectToError
 from partes.views_helpers.regenerar import generarCodigo, crearNuevoPassword
 from partes.views_helpers.dashboard import cargarPlanillasParaMostrarYCalendario
 from partes.views_helpers.planilla import mostrarPlanillaParaVistaEdicion, procesarCambiosEnPlanilla
 from partes.views_helpers.aprobar import aprobarPlanilla, revisarPlanilla, mostrarPlanillaAprobacion
 from partes.views_helpers.login import procesarLogout, buscarUsuario
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 import mimetypes
 from datetime import datetime
 from partes.models import Empleado, Planilla
@@ -171,3 +172,24 @@ def download_file(request):
     except:
         return redirectToError(request, "No se ha encontrado el archivo adjunto")
     return response
+
+def enviar_mail(request):
+    id_planilla = json.loads(request.body)["id_planilla"]
+    planilla = Planilla.objects.filter(id = id_planilla)
+    if len(planilla) == 1:
+        planilla = planilla[0]
+        # Enviamos el email
+        if enviarEmailPlanilla(planilla.id, ['mdcalvo@gmail.com'], True) == False:
+            response = HttpResponse(
+                json.dumps({"mensaje": "Ha ocurrido un error al intentar enviar el e-mail"}),
+            )
+            response.status_code = 500
+            return response
+    else:
+        # En caso de no encontrar la planilla:
+        response = HttpResponse(
+            json.dumps({"mensaje": "No se ha encontrado la planilla"}),
+        )
+        response.status_code = 404
+        return response
+    return JsonResponse({"mensaje": "exito"})

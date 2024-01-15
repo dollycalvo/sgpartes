@@ -633,3 +633,36 @@ button[disabled] {
     width: 1px;
     white-space: nowrap;
 }
+
+.modal-email {
+    border-radius: 0.5rem;
+    padding: 1rem;
+    border: 5px solid var(--color-celeste);
+    animation: letras-bailando 1s ease-in-out 0s infinite alternate;
+}
+
+dialog::backdrop {
+    background: rgba(0, 0, 0, 0.6);
+}
+
+.modal-resultado {
+    border-radius: 0.5rem;
+    padding: 1rem;
+}
+
+.modal-exito {
+    border: 5px solid green;
+}
+
+.modal-error {
+    border: 5px solid red;
+}
+
+@keyframes letras-bailando {
+    from {
+        transform: scale(1);
+    }
+    to {
+        transform: scale(1.2);
+    }
+}
