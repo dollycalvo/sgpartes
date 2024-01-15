@@ -27,7 +27,7 @@ def redirectToError(request, mensaje):
 
 # Esta función devuelve las planillas para revisar para el empleado dado
 def obtenerPlanillasParaRevisar(id_empleado):
-    planillas = Planilla.objects.filter(empleado_id = id_empleado).exclude(observaciones = "").order_by("anio", "mes")
+    planillas = Planilla.objects.filter(empleado_id = id_empleado, status_id = 1).exclude(observaciones = "").order_by("anio", "mes")
     listaPlanillas = []
     for planilla in planillas:
         listaPlanillas.append({"id": planilla.id, "mes": obtenerNombreMes(planilla.mes), "anio": planilla.anio, "observaciones": planilla.observaciones})
