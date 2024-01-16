@@ -78,9 +78,6 @@ def mostrarPlanillaAprobacion(request):
         if planilla.status.status == "Borrador":
             mensaje_error = "La planilla aún no se ha presentado."
             return render(request, "error.html", {"mensaje": mensaje_error})
-        elif planilla.status.status == "Aprobado":                
-            mensaje_error = "La planilla ya ha sido aprobada."
-            return render(request, "error.html", {"mensaje": mensaje_error})
         # Continuamos tomando los registros diarios
         SIN_NOVEDAD = "Sin novedad"
         dias_del_mes = range(1, calendar.monthrange(planilla.anio, planilla.mes)[1] + 1)

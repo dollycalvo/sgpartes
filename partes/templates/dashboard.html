@@ -94,23 +94,25 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for planilla in listaPlanillas %}
+                {% for planilla in listaPlanillas %}
                     {% for subplanilla in planilla.planillasParaMostrar %}
                     <tr>
                         <td class="align-middle">{{ planilla.nombre_completo }}</td>
                         <td class="align-middle">{{ subplanilla.mes.Nombre }}</td>
-                            <td class="align-middle">{{ subplanilla.anio }}</td>
-                            <td class="align-middle">{{ subplanilla.status }}</td>
-                            <td class="align-middle text-end minimal-width">
-                                <button class="btn btn-success" id="{{ subplanilla.id }}">Ver{% if subplanilla.status != "Aprobado" %} / Aprobar{% endif %}</button>
-                            </td>
-                            <td class="align-middle text-end minimal-width">
-                                <button class="btn btn-primary btn-enviar-email" id="{{ subplanilla.id }}">Enviar por e-mail</button>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                        {% endfor %}
-                    </tbody>
+                        <td class="align-middle">{{ subplanilla.anio }}</td>
+                        <td class="align-middle">{{ subplanilla.status }}</td>
+                        <td class="align-middle text-end minimal-width">
+                            <button class="btn btn-success" id="{{ subplanilla.id }}">Ver{% if subplanilla.status != "Aprobado" %} / Aprobar{% endif %}</button>
+                        </td>
+                        <td class="align-middle text-end minimal-width">
+                            {% if subplanilla.status == "Aprobado" %}
+                            <button class="btn btn-primary btn-enviar-email" id="{{ subplanilla.id }}">Enviar por e-mail</button>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% endfor %}
+                </tbody>
             </table>
             <div class="text-center">
                 
