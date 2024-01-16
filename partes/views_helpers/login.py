@@ -19,6 +19,8 @@ def procesarLogout(request):
         del request.session['id_planilla']
     if 'puesto' in request.session:
         del request.session['puesto']
+    if 'idsPlanillasParaMostrar' in request.session:
+        del request.session['idsPlanillasParaMostrar']
     mensaje = "La sesión se ha cerrado correctamente"
     return mensaje
 

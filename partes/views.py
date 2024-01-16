@@ -1,10 +1,11 @@
-from partes.views_helpers.common import nombresMeses, redirectToError
+import json
+from partes.views_helpers.common import enviarEmailPlanilla, nombresMeses, obtenerPlanillasParaRevisar, redirectToError
 from partes.views_helpers.regenerar import generarCodigo, crearNuevoPassword
-from partes.views_helpers.dashboard import cargarPlanillasPorAprobarYCalendario
+from partes.views_helpers.dashboard import cargarPlanillasParaMostrarYCalendario
 from partes.views_helpers.planilla import mostrarPlanillaParaVistaEdicion, procesarCambiosEnPlanilla
-from partes.views_helpers.aprobar import aprobarPlanilla, mostrarPlanillaAprobacion
+from partes.views_helpers.aprobar import aprobarPlanilla, revisarPlanilla, mostrarPlanillaAprobacion
 from partes.views_helpers.login import procesarLogout, buscarUsuario
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 import mimetypes
 from datetime import datetime
 from partes.models import Empleado, Planilla
@@ -22,12 +23,16 @@ def planilla(request):
     if 'usuario' not in request.session:
         return redirectToError(request, "Se requiere iniciar sesión para acceder a esta sección")
     id_empleado = request.session['id_empleado']
-    datosEmpleado = Empleado.objects.filter(id=id_empleado)
     # Si recibimos desde la planilla el POST
     if request.method == "POST":
-        return procesarCambiosEnPlanilla(request, id_empleado, datosEmpleado)
+        if "idPlanillaParaAbrir" in request.POST:
+            # Si la estamos abriendo desde el anuncio de planillas por revisar:
+            return mostrarPlanillaParaVistaEdicion(request, id_empleado, request.POST["idPlanillaParaAbrir"])
+        else:
+            # O si estamos procesando los cambios
+            return procesarCambiosEnPlanilla(request, id_empleado)
     else:   # Sino, al ser GET viene redireccionado desde la selección de fecha
-        return mostrarPlanillaParaVistaEdicion(request, id_empleado, datosEmpleado)
+        return mostrarPlanillaParaVistaEdicion(request, id_empleado)
 
 
 def seleccionfecha(request):
@@ -47,11 +52,13 @@ def seleccionfecha(request):
     mesActual = fechaActual.month
     anioActual = fechaActual.year
     anios = list(range(anioActual - 3, anioActual + 2))
+    planillasParaRevisar = obtenerPlanillasParaRevisar(request.session['id_empleado'])
     return render(request, 'seleccionfecha.html', {"form": form, 
                                                    "anios": anios, 
                                                    "nombresMeses": nombresMeses, 
                                                    "mesActual": mesActual, 
-                                                   "anioActual": anioActual})
+                                                   "anioActual": anioActual,
+                                                   "planillasParaRevisar": planillasParaRevisar})
 
 
 
@@ -115,28 +122,35 @@ def dashboard(request):
     if 'puesto' not in request.session or request.session['puesto'] == "Agente":
         return redirectToError(request, "No tienes acceso a este contenido. Si se trata de un error, contacta al administrador del sistema.")
     
-    # Si es POST, procesamos el pedido de mirar/editar su propia planilla
     if request.method == 'POST':
-        form = FormSeleccionFecha(request.POST)
-        if form.is_valid():
-            request.session['mesReporte'] = request.POST['mesReporte']
-            request.session['anioReporte'] = request.POST['anioReporte']
-            return HttpResponseRedirect('/planilla')
+        # Si existe filtroEmpleado, hacemos la búsqueda
+        if 'filtroEmpleado' in request.POST:
+            return cargarPlanillasParaMostrarYCalendario(request)
+        else:
+            # #Sino procesamos el pedido de mirar/editar su propia planilla
+            form = FormSeleccionFecha(request.POST)
+            if form.is_valid():
+                request.session['mesReporte'] = request.POST['mesReporte']
+                request.session['anioReporte'] = request.POST['anioReporte']
+                return HttpResponseRedirect('/planilla')
     else:   # GET request
-        return cargarPlanillasPorAprobarYCalendario(request)
+        return cargarPlanillasParaMostrarYCalendario(request)
 
 
 def aprobar(request):
     if request.method == "GET":
         return redirectToError(request, "Esta página sólo puede ser accedida desde el dashboard.")
     if request.method == 'POST':
-        if "aprobar" in request.POST and request.POST["aprobar"] == "1":
+        if "aprobar" in request.POST:
             if not "idPorAprobar" in request.session:
                 return redirectToError(request, "Ha ocurrido un error al procesar el ID de la planilla")
             if not "id_planilla" in request.POST or request.session["idPorAprobar"] != int(request.POST["id_planilla"]):
                 return redirectToError(request, "Ha ocurrido un error al procesar el ID de la planilla")
             # Si obtenemos el ID en el request, y coincide con el existente en la sesión, seguimos
-            return aprobarPlanilla(request)
+            if request.POST["aprobar"] == "1":
+                return aprobarPlanilla(request)
+            else:
+                return revisarPlanilla(request)
         if "id_planilla" in request.POST:
             return mostrarPlanillaAprobacion(request)
     return render(request, 'index.html')
@@ -158,3 +172,24 @@ def download_file(request):
     except:
         return redirectToError(request, "No se ha encontrado el archivo adjunto")
     return response
+
+def enviar_mail(request):
+    id_planilla = json.loads(request.body)["id_planilla"]
+    planilla = Planilla.objects.filter(id = id_planilla)
+    if len(planilla) == 1:
+        planilla = planilla[0]
+        # Enviamos el email
+        if enviarEmailPlanilla(planilla.id, ['mdcalvo@gmail.com'], True) == False:
+            response = HttpResponse(
+                json.dumps({"mensaje": "Ha ocurrido un error al intentar enviar el e-mail"}),
+            )
+            response.status_code = 500
+            return response
+    else:
+        # En caso de no encontrar la planilla:
+        response = HttpResponse(
+            json.dumps({"mensaje": "No se ha encontrado la planilla"}),
+        )
+        response.status_code = 404
+        return response
+    return JsonResponse({"mensaje": "exito"})

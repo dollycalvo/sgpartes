@@ -6,68 +6,135 @@
     {% include "components/nav_links.html" with seleccionado="Dashboard" %}
 {% endblock %}
 {% block contenido %}
-    <form id="formAprobar" method="post" action="/aprobar">
-        {% csrf_token %}
-        <input type="hidden" id="id_planilla" name="id_planilla" value="INVALID">
+    {% if mensaje != "" %}
+    <div class="alert alert-success auto-hide-5s" role="alert">
+        {{ mensaje }}
+    </div>
+    {% endif %}
 
-        {% if mensaje != "" %}
-        <div class="alert alert-success auto-hide-5s" role="alert">
-            {{ mensaje }}
+    <div class="card card-filtros">
+        <div class="card-header bg-secondary text-white">
+            Mis agentes - Buscar planillas
         </div>
-        {% endif %}
-    
-        <div class="card">
-            <div class="card-header bg-secondary text-white">
-                Planillas pendientes de aprobación
-            </div>
-            {% if listaPlanillas|length == 0 %}
-            <div class="sin-planillas text-success">
-                No hay planillas pendientes de aprobación
-            </div>
-            {% else%}
-            <div class="card-body">
-                <table class="table table-striped">
-                    <thead class="bg-dark text-white">
-                        <tr>
-                            <th>
-                                Empleado
-                            </th>
-                            <th>
-                                Mes
-                            </th>
-                            <th>
-                                Año
-                            </th>
-                            <th class="th-sm">
-                                
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                    {% for planilla in listaPlanillas %}
-                        {% for subplanilla in planilla.planillasPorAprobar %}
-                            <tr>
-                                <td class="align-middle">{{ planilla.nombre_completo }}</td>
-                                <td class="align-middle">{{ subplanilla.mes.Nombre }}</td>
-                                <td class="align-middle">{{ subplanilla.anio }}</td>
-                                <td class="align-middle text-center"><button class="btn btn-success" id="{{ subplanilla.id }}">Ver / Aprobar</button></td>
-                            </tr>
+        <form method="post" action="/dashboard">
+            {% csrf_token %}
+            <div class="card-body filtros-dashboard">
+                <div class="filtro filtro-select">
+                    <label for="filtroEmpleado">Empleado:</label>
+                    <select name="filtroEmpleado" id="filtroEmpleado" placeholder="Seleccionar empleado">
+                        <option value="0" {% if filtros.empleado|slugify == "0" %}selected{% endif %}>Todos</option>
+                        {% for empleado in listaSubordinados %}
+                            {% with nombre_completo=empleado.apellidos|add:", "|add:empleado.nombres %}
+                            <option value="{{empleado.id}}" {% if filtros.empleado|slugify == empleado.id|slugify %}selected{% endif %}>{{ nombre_completo }}</option>
+                            {% endwith %}
                         {% endfor %}
+                    </select>
+                </div>
+                <div class="filtro filtro-select">
+                    <label for="filtroMes">Mes:</label>
+                    <select name="filtroMes" id="filtroMes" placeholder="Seleccionar mes">
+                        <option value="0" {% if filtros.mes|slugify == "0" %}selected{% endif %}>Cualquiera</option>
+                        {% for mes in nombresMeses %}
+                            <option value="{{mes.ID}}" {% if mes.ID|slugify == filtros.mes|slugify %}selected{% endif %}>{{ mes.Nombre }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="filtro filtro-select">
+                    <label for="filtroAnio">Año:</label>
+                    <select name="filtroAnio" id="filtroAnio">
+                        <option value="0" {% if filtros.anio|slugify == "0" %}selected{% endif %}>Cualquiera</option>
+                        {% for anio in anios %}
+                        <option value={{anio}} {% if anio|slugify == filtros.anio|slugify %}selected{% endif %}>{{anio}}</option>
                     {% endfor %}
-                    </tbody>
-                </table>
-                <div class="text-center">
-                    
+                    </select>
+                </div>
+                <div class="filtro filtro-select">
+                <label for="filtroStatus">Estado:</label>
+                    <select name="filtroStatus" id="filtroStatus">
+                        <option value="0" {% if filtros.status|slugify == "0" %}selected{% endif %}>Cualquiera</option>
+                        {% for status in statuses %}
+                            <option value="{{status.id}}" {% if status.id|slugify == filtros.status|slugify %}selected{% endif %}>{{ status.status }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="filtro filtro-boton">
+                    <br>
+                    <button type="submit" class="btn btn-primary px-2rem">Buscar</button>
                 </div>
             </div>
-            {% endif %}
-            <div class="card-footer text-muted bg-light">
-                Sistema de gestión - Reporte horario
+        </form>
+        {% if listaPlanillas|length == 0 %}
+        <div class="sin-planillas text-success">
+            No hay planillas que coincidan con la búsqueda
+        </div>
+        {% else%}
+        <form id="formAprobar" method="post" action="/aprobar">
+            {% csrf_token %}
+            <input type="hidden" id="idPlanillaAprobar" name="id_planilla" value="INVALID">
+        </form>
+        <div class="card-body wrapper-tabla-planillas">
+            <table class="table table-striped">
+                <thead class="bg-dark text-white">
+                    <tr>
+                        <th>
+                            Empleado
+                        </th>
+                        <th>
+                            Mes
+                        </th>
+                        <th>
+                            Año
+                        </th>
+                        <th>
+                            Estado
+                        </th>
+                        <th colspan="2">
+                            
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for planilla in listaPlanillas %}
+                    {% for subplanilla in planilla.planillasParaMostrar %}
+                    <tr>
+                        <td class="align-middle">{{ planilla.nombre_completo }}</td>
+                        <td class="align-middle">{{ subplanilla.mes.Nombre }}</td>
+                        <td class="align-middle">{{ subplanilla.anio }}</td>
+                        <td class="align-middle">{{ subplanilla.status }}</td>
+                        <td class="align-middle text-end minimal-width">
+                            <button class="btn btn-success" id="{{ subplanilla.id }}">Ver{% if subplanilla.status != "Aprobado" %} / Aprobar{% endif %}</button>
+                        </td>
+                        <td class="align-middle text-end minimal-width">
+                            {% if subplanilla.status == "Aprobado" %}
+                            <button class="btn btn-primary btn-enviar-email" id="{{ subplanilla.id }}">Enviar por e-mail</button>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% endfor %}
+                </tbody>
+            </table>
+            <div class="text-center">
+                
             </div>
         </div>
-    </form>
-    <br><br>
+        {% endif %}
+        <div class="card-footer text-muted bg-light">
+            Sistema de gestión - Reporte horario
+        </div>
+    </div>
+    {% if planillasParaRevisar %}
+        <br><br>
+        {% include 'components/revision_planillas.html' %}
+        {% else %}
+        <br><br>
+        {% endif %}
     {% include "components/form_fecha.html" with titulo="Acceder a mi planilla" %}
     <br><br>
+    <dialog id="dlgEnviandoEmail" class="modal-email">
+        Enviando e-mail...
+    </dialog>
+    <dialog id="dlgResultado" class="modal-resultado">
+    </dialog>
     <script type="text/javascript" src="{% static 'js/dashboard.js' %}"></script>
 {% endblock %}

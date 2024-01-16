@@ -9,8 +9,8 @@
 {% block contenido %}
 <form method="post" action="/aprobar" id="formAprobar">
     {% csrf_token %}
-    <input type="hidden" name="id_planilla" value="{{ request.session.idPorAprobar }}">
-    <input type="hidden" name="aprobar" value="1">
+    <input type="hidden" id="hdnIdPlanilla" name="id_planilla" value="{{ request.session.idPorAprobar }}">
+    <input type="hidden" id="hdnAprobar" name="aprobar" value="1">
     <div class="card mb-4">
         <div class="card-header">
             <h3>EMPRESA ABC - APROBACIÓN DE REPORTE</h3>
@@ -20,6 +20,9 @@
                 {% with nombre_completo=datosEmpleado.apellidos|add:", "|add:datosEmpleado.nombres %}
                 <h5 class="w-75"><b>Apellido(s) y nombre(s):</b> {{ nombre_completo }}</h5>
                 {% endwith %}
+            </div>
+            <div class="mt-1rem">
+                <h5><b>Observaciones:</b> {{ planilla.observaciones }}</h5>
             </div>
         </div>
         <div class="card-body">
@@ -63,15 +66,38 @@
                 </div>
             </div>
             <br>
+            {% if planilla.status.status == "Presentado" %}
+            <div class="d-flex flex-row w-100 justify-content-center align-items-end mb-1rem">
+                <label class="bold-600" for="txtObservaciones">
+                    Observaciones:
+                </label>
+                <input type="text" id="txtObservaciones" name="observaciones" class="ml-05rem w-100" placeholder="Observaciones para el agente">
+            </div>
             <div class="d-flex flex-row w-100 justify-content-center">
                 <button id="btnAprobar" class="btn btn-success ml-1rem" type="submit">Aprobar</button>
+                <button id="btnRevisar" class="btn btn-danger ml-1rem" type="button">Revisar</button>
             </div>
         </div>
         <div class="card-footer text-danger">
             Estado: Pendiente de aprobación
         </div>
+        {% elif planilla.status.status == "Aprobado" %}
+            <div class="d-flex flex-row w-100 justify-content-center">
+                <button id="btnEnviar" class="btn btn-primary ml-1rem" type="button">Enviar por e-mail</button>
+            </div>
+        </div>
+        <div class="card-footer text-success">
+            Estado: Aprobado
+        </div>
+        {% endif %}
     </div>
 </form>
+
+<dialog id="dlgEnviandoEmail" class="modal-email">
+    Enviando e-mail...
+</dialog>
+<dialog id="dlgResultado" class="modal-resultado">
+</dialog>
 
 <script type="text/javascript" src="{% static 'js/planilla_aprobacion.js' %}"></script>
 {% endblock %}

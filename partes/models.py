@@ -23,14 +23,15 @@ class Planilla(models.Model):
     mes = models.SmallIntegerField(default=0)
     anio = models.SmallIntegerField(default=0)
     pdf_adjunto = models.TextField(default="")
-    status = models.ForeignKey(StatusPlanilla, on_delete=models.DO_NOTHING, default=None)    
+    status = models.ForeignKey(StatusPlanilla, on_delete=models.DO_NOTHING, default=None)
+    observaciones = models.TextField(default="")
 
 
 class RegistroDiario(models.Model):
     planilla = models.ForeignKey(Planilla, on_delete=models.DO_NOTHING, default=None)
     dia = models.SmallIntegerField()
     codigo = models.CharField(max_length=3)
-    observaciones = models.TextField()
+    observaciones = models.TextField(default="")
 
 
 class RegeneracionPW(models.Model):

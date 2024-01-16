@@ -10,5 +10,6 @@ urlpatterns = [
     path('regenerar', views.regenerar, name="regenerar"),
     path('dashboard', views.dashboard, name="dashboard"),
     path('aprobar', views.aprobar, name="aprobar"),
-    path('download', views.download_file, name="download_file")
+    path('download', views.download_file, name="download_file"),
+    path('enviar_mail', views.enviar_mail, name="enviar_mail")
 ]
