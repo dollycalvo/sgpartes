@@ -6,4 +6,5 @@
 *.xlsx
 __pycache__
 db.sqlite3
+soportes.db.sqlite3
 media
