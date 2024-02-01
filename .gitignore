@@ -2,8 +2,8 @@
 *.log
 *.pot
 *.pyc
-*.pdf
-*.xlsx
+#*.pdf
+#*.xlsx
 __pycache__
 db.sqlite3
 # soportes.db.sqlite3
