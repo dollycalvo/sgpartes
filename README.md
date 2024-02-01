@@ -1,5 +1,14 @@
 # sgpartes
-Sistema de control de planillas horarias 
+Sistema de control de planillas horarias - DEPLOY
+
+# Pendientes 01-febrero-2024:
+- Incluir códigos del archivo de excel adjunto 'CODIGOS PARTES DESCRIPCION.xlsx', posibilidad de autocompletar el campo Descripcion con la seleccion de cada código
+- Que el jefe superior pueda ver también las planillas presentadas del jefe subordinado
+- Creación de un panel para que una persona autorizada pueda ver únicamente las planillas aprobadas
+- Botón para descargar la planilla presentada
+- Que pueda adjuntarse más de un archivo, en la presentación de la planilla
+- Que pueda reenviarse la planilla corregida, aún en el caso de que haya sido aprobada por el jefe (y sobreescribir la planilla que estaba mal en la DB)
+- Configuración de servidor de correo (pendiente: confirmación por parte de GTIC de los parámetros de configuración)
 
 # Correr el comando para agregar agentes
 En el proyecto *partes*, en el directorio management/commands encontraremos el archivo *crear_usuarios.py* en el cual se puede manejar la lista de agentes que la base de datos debe contener.
