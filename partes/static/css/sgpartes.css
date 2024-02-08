@@ -404,6 +404,7 @@ footer {
 .input-registro-diario {
     background-color: transparent;
     border: none;
+    width: 1.1rem;
 }
 
 @-webkit-keyframes removeAfter10seconds {
@@ -666,3 +667,12 @@ dialog::backdrop {
         transform: scale(1.2);
     }
 }
+
+.spanFachadaSelect {
+    font-size: 0.9rem;
+    width: 1.9rem;
+    display: inline-block;
+    box-sizing: border-box;
+    text-align: center;
+}
+

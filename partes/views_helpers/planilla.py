@@ -54,6 +54,7 @@ def procesarCambiosEnPlanilla(request, id_empleado):
     nuevosRegistros = []
     i = 1
     listaCodigos = request.POST.getlist("codigos")
+    print(listaCodigos)
     for observacion in request.POST.getlist("observaciones"):
         observaciones_para_email += "\nDía " + str(i) + ": " + etiquetaCodigo(listaCodigos[i - 1]) + ": " + (observacion.strip() if observacion.strip() != "" else SIN_NOVEDAD) 
         rcIndex = 0
@@ -67,7 +68,7 @@ def procesarCambiosEnPlanilla(request, id_empleado):
             registro.save()
             nuevosRegistros.append(registro)
         else: # Sino, creamos uno nuevo siempre y cuando sea sin novedad
-            if observacion.strip() != SIN_NOVEDAD and observacion.strip() != "":
+            if (listaCodigos[i - 1] != "sn"):
                 registro = RegistroDiario(planilla_id = planilla.id,
                                         dia = i, # día
                                         codigo = listaCodigos[i - 1],
@@ -75,7 +76,8 @@ def procesarCambiosEnPlanilla(request, id_empleado):
                 registro.save()
                 nuevosRegistros.append(registro)
             else:
-                nuevosRegistros.append(RegistroDiario(dia = i, codigo = "sn", observaciones = ""))    # En caso de no existir ni ser creado, hacemos un dummy 
+                # En caso de no existir ni ser creado, hacemos un dummy 
+                nuevosRegistros.append(RegistroDiario(dia = i, codigo = "sn", observaciones = ""))
         i += 1
     # Enviamos e-mail
     if statusPlanilla.status == "Presentado":

@@ -7,6 +7,8 @@ const opcionesAccionesSubmit = hdnAccionSubmit.getAttribute("opciones").split("#
 const noFilesSelectedText = document.getElementById("noFilesSelectedText");
 const areaAdjunto = document.getElementById("area-adjunto");
 const pdfInput = document.getElementById("pdf");
+const spansFachadaSelects = document.querySelectorAll(".spanFachadaSelect");
+const selectsCodigos = document.getElementsByName("codigos");
 const SIN_NOVEDAD = "Sin novedad";
 const S_N = "sn";
 
@@ -80,4 +82,10 @@ pdfInput.addEventListener("change", event => {
     if (event.target.files.length > 0) {
         archivoAdjuntado(event.target.files);
     }
+});
+
+selectsCodigos.forEach((select, index) => {    
+    select.addEventListener("change", event => {
+        spansFachadaSelects[index].textContent = event.target[event.target.selectedIndex].getAttribute("data-codigo");
+    });
 });
