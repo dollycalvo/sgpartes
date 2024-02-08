@@ -56,15 +56,8 @@
                             <td class="text-center">{{ forloop.counter }}</td>
                             <td class="text-center">
                                 {% if datosPlanilla.status.status == "Borrador" %}
-                                <span class="spanFachadaSelect"></span>
+                                <span class="spanFachadaSelect">{{ datoDiario.codigo|etiqueta_codigo }}</span>
                                 <select class="w-1rem input-registro-diario" name="codigos">
-                                    <!--
-                                    <option value="sn" {% if datoDiario.codigo == "sn" %}{{"selected"}}{%endif%}>S/N</option>
-                                    <option value="v" {% if datoDiario.codigo == "v" %}{{"selected"}}{%endif%}>V</option>
-                                    <option value="cs" {% if datoDiario.codigo == "cs" %}{{"selected"}}{%endif%}>CS</option>
-                                    <option value="sa" {% if datoDiario.codigo == "sa" %}{{"selected"}}{%endif%}>SA</option>
-                                    -->
-
                                     <option value="sn" {% if datoDiario.codigo == "sn" %}{{"selected"}}{%endif%} data-codigo="S/N">S/N - Sin novedad</option>
                                     <option value=":" {% if datoDiario.codigo == ":" %}{{"selected"}}{%endif%} data-codigo=":">: - Asueto</option>
                                     <option value="+" {% if datoDiario.codigo == "+" %}{{"selected"}}{%endif%} data-codigo="+">+ - Adhesión a paros</option>
@@ -100,8 +93,6 @@
                                     <option value="UNP" {% if datoDiario.codigo == "UNP" %}{{"selected"}}{%endif%} data-codigo="UNP">UNP - Licencia examen posgrado</option>
                                     <option value="UNT" {% if datoDiario.codigo == "UNT" %}{{"selected"}}{%endif%} data-codigo="UNT">UNT - Licencia examen terciario</option>
                                     <option value="UNU" {% if datoDiario.codigo == "UNU" %}{{"selected"}}{%endif%} data-codigo="UNU">UNU - Licencia examen universitario</option>
-
-                                    
                                 </select>
                                 {% else %}
                                 {{ datoDiario.codigo|etiqueta_codigo }}
