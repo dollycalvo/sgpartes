@@ -111,27 +111,30 @@
             </table>
             <div class="card">
                 <h5 class="card-header bg-secondary text-white">Adjuntar archivo</h5>
-                {% if nombreArchivoAdjunto != "" %}
+                {% if nombresArchivosAdjuntos %}
                 <div class="card-body" id="area-adjunto" contiene-archivo="true">
-                    <a href="download">
+                    {% for adjunto in nombresArchivosAdjuntos %}
+                    <a href="download/{{ request.session.id_empleado }}/{{ adjunto.id }}">
                         <div id="wrapperNombreArchivo">
                             <i class='bi bi-file-earmark-pdf'></i>
-                            <div id="nombreArchivo">{{ nombreArchivoAdjunto }}</div>
+                            <div id="nombreArchivo">{{ adjunto.nombre_archivo }}</div>
                         </div>
                     </a>
+                    {% endfor %}
+                    <div id="dummyAdjuntarArchivo" class="filter-full-grayscale opacity05">
+                        <i class='bi bi-file-earmark-pdf'></i>
+                        <div>Adjuntar nuevo</div>
+                    </div>
                 </div>
                 {% else %}
                 <div class="card-body" id="area-adjunto">
-                    <div id="noFilesSelectedText" class="bg-texto">
-                        <a class="file-input-anchor" onclick="fileInputOpen()">Haz click aquí</a>&nbsp;o arrastra un archivo para adjuntar
-                    </div>
-                    <div id="wrapperNombreArchivo" class="d-none">
+                    <div id="dummyAdjuntarArchivo" class="filter-full-grayscale opacity05">
                         <i class='bi bi-file-earmark-pdf'></i>
-                        <div id="nombreArchivo"></div>
+                        <div>Adjuntar nuevo</div>
                     </div>
-                    <input type="file" name="pdf" id="pdf">
                 </div>
                 {% endif %}
+                <input type="file" name="pdfs" id="pdf" multiple>
             </div>
             <br>
             {% if datosPlanilla.status.status == "Borrador" %}

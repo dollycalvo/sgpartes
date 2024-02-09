@@ -29,9 +29,13 @@ class Planilla(models.Model):
     empleado = models.ForeignKey(Empleado, on_delete=models.DO_NOTHING, default=None)
     mes = models.SmallIntegerField(default=0)
     anio = models.SmallIntegerField(default=0)
-    pdf_adjunto = models.TextField(default="")
     status = models.ForeignKey(StatusPlanilla, on_delete=models.DO_NOTHING, default=None)
     observaciones = models.TextField(default="")
+    
+    
+class Adjuntos(models.Model):
+    planilla = models.ForeignKey(Planilla, on_delete=models.DO_NOTHING, default=None)
+    nombre_archivo = models.TextField(default="")
 
 
 class RegistroDiario(models.Model):

@@ -32,3 +32,4 @@ Los e-mails se podrán ver en la carpeta "C:\Program Files (x86)\hMailServer\Dat
 partes/views_helpers/planilla.py
 partes/views_helpers/aprobar.py
 partes/views_helpers/regenerar.py
+partes/views_helpers/common.py

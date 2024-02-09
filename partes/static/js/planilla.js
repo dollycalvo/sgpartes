@@ -4,7 +4,7 @@ const btnGuardarCambios = document.querySelector("#btnGuardarCambios");
 const btnPresentarPlanilla = document.querySelector("#btnPresentarPlanilla");
 const hdnAccionSubmit = document.querySelector("#hdnAccionSubmit");
 const opcionesAccionesSubmit = hdnAccionSubmit.getAttribute("opciones").split("#");
-const noFilesSelectedText = document.getElementById("noFilesSelectedText");
+const dummyAdjuntarArchivo = document.getElementById("dummyAdjuntarArchivo");
 const areaAdjunto = document.getElementById("area-adjunto");
 const pdfInput = document.getElementById("pdf");
 const spansFachadaSelects = document.querySelectorAll(".spanFachadaSelect");
@@ -35,44 +35,54 @@ btnPresentarPlanilla.addEventListener("click", () => {
     }
 });
 
-noFilesSelectedText.addEventListener("dragover", event => {
+dummyAdjuntarArchivo.addEventListener("dragover", event => {
     event.preventDefault();
-    noFilesSelectedText.classList.add("file-drag-over");
+    dummyAdjuntarArchivo.classList.add("file-drag-over");
+    dummyAdjuntarArchivo.classList.remove("filter-full-grayscale", "opacity05");
 });
 
-noFilesSelectedText.addEventListener("dragleave", event => {
+dummyAdjuntarArchivo.addEventListener("dragleave", event => {
     event.preventDefault();
-    noFilesSelectedText.classList.remove("file-drag-over");
+    dummyAdjuntarArchivo.classList.remove("file-drag-over");
+    dummyAdjuntarArchivo.classList.add("filter-full-grayscale", "opacity05");
 });
 
-noFilesSelectedText.addEventListener("drop", event => {
+dummyAdjuntarArchivo.addEventListener("drop", event => {
     event.preventDefault();
-    noFilesSelectedText.classList.remove("file-drag-over");
-    if (event.dataTransfer.files.length != 1) {
-        return alert("Sólo un archivo puede ser adjuntado. Por favor intente nuevamente.");
-    }
-    archivoAdjuntado(event.dataTransfer.files);
+    dummyAdjuntarArchivo.classList.remove("file-drag-over");
+    dummyAdjuntarArchivo.classList.add("filter-full-grayscale", "opacity05");
+    archivosAdjuntado(event.dataTransfer.files);
+});
+
+dummyAdjuntarArchivo.addEventListener("click", () => {
+    fileInputOpen();
 });
 
 function fileInputOpen() {
     pdfInput.click();
 }
 
-function archivoAdjuntado(archivos) {
-    const wrapperNombreArchivo = document.getElementById("wrapperNombreArchivo");
-    const nombreArchivo = document.getElementById("nombreArchivo");
-    nombreArchivo.innerHTML = archivos[0].name;
-    wrapperNombreArchivo.classList.remove("d-none");
-    noFilesSelectedText.classList.add("d-none");
-    areaAdjunto.setAttribute("contiene-archivo", true);
+function archivosAdjuntado(archivos) {
+    for (let archivo of archivos) {
+        areaAdjunto.innerHTML = componenteArchivoAdjunto(archivo.name) + areaAdjunto.innerHTML;
+    }
     pdfInput.files = archivos;
     btnPresentarPlanilla.removeAttribute("disabled");
+}
+
+function componenteArchivoAdjunto(nombre) {
+    return `
+        <div id="wrapperNombreArchivo">
+            <i class='bi bi-file-earmark-pdf'></i>
+            <div id="nombreArchivo">${nombre}</div>
+        </div>
+    `;
 }
 
 function archivoEliminado() {
     const wrapperNombreArchivo = document.getElementById("wrapperNombreArchivo");
     wrapperNombreArchivo.classList.add("d-none");
-    noFilesSelectedText.classList.remove("d-none");
+    dummyAdjuntarArchivo.classList.remove("d-none");
     areaAdjunto.setAttribute("contiene-archivo", false);
     pdfInput.value = null;
     btnPresentarPlanilla.setAttribute("disabled", true);
@@ -80,7 +90,7 @@ function archivoEliminado() {
 
 pdfInput.addEventListener("change", event => {
     if (event.target.files.length > 0) {
-        archivoAdjuntado(event.target.files);
+        archivosAdjuntado(event.target.files);
     }
 });
 

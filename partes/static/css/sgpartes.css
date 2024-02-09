@@ -168,6 +168,14 @@
     .filtro-boton {
         width: 100%;
     }
+
+    #area-adjunto {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        position: inherit;
+        padding: 3rem 0;
+    }
 }
 
 /* DISPOSITIVOS DE ESCRITORIO */
@@ -292,6 +300,13 @@
 
     .filtro {
         width: 20%;
+    }
+
+    #area-adjunto {
+        display: flex;
+        flex-direction: row;
+        position: inherit;
+        padding: 3rem 0;
     }
 }
 
@@ -472,7 +487,9 @@ footer {
 
 #area-adjunto {
     position: inherit;
-    padding: 3rem 0;
+    padding: 1.5rem 1.5rem;
+    flex-wrap: wrap;
+    gap: 1rem;
 }
 
 #area-adjunto[contiene-archivo=true] {
@@ -504,8 +521,25 @@ footer {
     z-index: 2;
 }
 
+#dummyAdjuntarArchivo {
+    border: 2px #555555 dashed;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    padding: 0.5em;
+    cursor: pointer;
+}
+
+.opacity05 {
+    opacity: 0.5;
+}
+
+.filter-full-grayscale {
+    filter: grayscale(100%);
+}
+
 .file-drag-over {
-    background-color: #bb009933;
+    border-color: red;
 }
 
 .file-input-anchor {
@@ -523,7 +557,8 @@ input[type=file] {
 }
 
 #wrapperNombreArchivo {
-    padding: 0 1rem;
+    padding: 0.5rem 1rem;
+    border: 2px solid transparent;
     width: -webkit-fit-content;
     width: -moz-fit-content;
     width: fit-content;

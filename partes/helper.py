@@ -22,14 +22,14 @@ def slugify(value, allow_unicode=False):
     return re.sub(r'[-\s]+', '-', value).strip('-_')
 
 
-def guardarArchivo(archivo, mes, anio, empleado):
+def guardarArchivo(archivo, mes, anio, empleado, indice):
     carpeta = "adjuntos/"
     partes_nombre = archivo.name.split(".")
     # nuevo_nombre = []
     # for parte in partes_nombre:
     #     nuevo_nombre.append(slugify(parte))
     # new_filename = str(calendar.timegm(time.gmtime())) + "." + ".".join(nuevo_nombre)
-    new_filename = slugify(empleado) + "_" + mes + "_" + anio + "." + partes_nombre[len(partes_nombre) - 1]
+    new_filename = slugify(empleado) + "_" + mes + "_" + anio + "_" + str(indice) + "." + partes_nombre[len(partes_nombre) - 1]
     default_storage.save(carpeta + new_filename, archivo)
     return new_filename
 
