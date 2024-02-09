@@ -121,18 +121,22 @@
                         </div>
                     </a>
                     {% endfor %}
+                    {% if datosPlanilla.status.status == "Borrador" %}
                     <div id="dummyAdjuntarArchivo" class="filter-full-grayscale opacity05">
                         <i class='bi bi-file-earmark-pdf'></i>
                         <div>Adjuntar nuevo</div>
                     </div>
+                    {% endif %}
                 </div>
                 {% else %}
-                <div class="card-body" id="area-adjunto">
-                    <div id="dummyAdjuntarArchivo" class="filter-full-grayscale opacity05">
-                        <i class='bi bi-file-earmark-pdf'></i>
-                        <div>Adjuntar nuevo</div>
+                    {% if datosPlanilla.status.status == "Borrador" %}
+                    <div class="card-body" id="area-adjunto">
+                        <div id="dummyAdjuntarArchivo" class="filter-full-grayscale opacity05">
+                            <i class='bi bi-file-earmark-pdf'></i>
+                            <div>Adjuntar nuevo</div>
+                        </div>
                     </div>
-                </div>
+                    {% endif %}
                 {% endif %}
                 <input type="file" name="pdfs" id="pdf" multiple>
             </div>

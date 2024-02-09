@@ -1,7 +1,7 @@
 import calendar
 from partes.views_helpers.common import enviarEmailPlanilla, nombresMeses, redirectToError
 from partes.helper import etiquetaCodigo
-from partes.models import StatusPlanilla, Planilla, RegistroDiario
+from partes.models import Adjuntos, StatusPlanilla, Planilla, RegistroDiario
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.core.mail import EmailMessage
@@ -74,6 +74,8 @@ def mostrarPlanillaAprobacion(request):
             return render(request, "error.html", {"mensaje": mensaje_error})
         # Si tenemos la planilla:
         planilla = planillas[0]
+        # Adjuntos
+        adjuntos = Adjuntos.objects.filter(planilla = planilla)
         # Verificamos que el status sea sólo PRESENTADO
         if planilla.status.status == "Borrador":
             mensaje_error = "La planilla aún no se ha presentado."
@@ -97,6 +99,7 @@ def mostrarPlanillaAprobacion(request):
         request.session['id_planilla'] = planilla.id
         return render(request, "planilla_aprobacion.html", {"nombreMes": nombreMes,
                                                             "planilla": planilla,
+                                                            "adjuntos": adjuntos,
                                                             "datosDiarios": datosDiarios,
                                                             "datosEmpleado": planilla.empleado})
 
