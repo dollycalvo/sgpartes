@@ -1,0 +1,79 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+
+<head>
+  <title> {% block titulo %} {% endblock %}</title>
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <!-- Bootstrap CSS v5.2.1 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-iYQeCzEYFbKjA/T2uDLTpkwGzCiq6soy8tYaI1GyVh/UjpbCx/TYkiZhlZB6+fzT" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/sgpartes.css' %}">
+</head>
+
+<body>
+    <div class="layout-pagina">
+        <header>
+            <h1>EMPRESA ABC</h1>
+        </header>
+        <div class="seccion-logo">
+            <img src="{% static 'images/logo2.png' %}">
+        </div>
+        <nav class="navbar justify-content-start px-05rem">
+            <img class="imagen-logo" src="{% static 'images/logo2.png' %}">
+            {% comment %} <div id="infoLogin" class="mr-2rem d-flex flex-row justify-content-center align-items-center"> {% endcomment %}
+            <div id="separador"></div>
+            <div id="infoLogin" class="d-flex flex-row justify-content-center align-items-center">
+                <div class="bi bi-person-standing mr-05rem"></div>
+                {% if request.session.usuario %}
+                    <div id="popup-large" class="popup-cerrar-sesion">
+                        <a class="nav-item nav-link btn-cerrar-sesion" href="login?logout">Cerrar sesión</a>
+                    </div>
+                    <div id="divNombreUsuario">
+                        {{request.session.nombre_usuario}}
+                    </div>
+                    <div id="popup-small" class="popup-cerrar-sesion">
+                        {{request.session.nombre_usuario}}
+                        <hr>
+                        <a class="nav-item nav-link btn-cerrar-sesion" href="login?logout">Cerrar sesión</a>
+                    </div>
+                {% else %}
+                <a class="nav-item nav-link link-login" href="login">Iniciar sesión</a>
+                {% endif %}
+            </div>
+            <div class="nav navbar-nav">
+                {% if request.session.usuario %}
+                    {% block navlinks %}
+                    {% endblock %}
+                {% endif %}
+            </div>
+        </nav>
+        <main class="container">
+            <div class="row">
+                <div class="col-12">
+                    {% block contenido %} {% endblock %}
+                </div>
+            </div>
+        </main>
+{% comment %} 
+        <footer>
+            <h3>Sistema de control de horarios</h3>
+        </footer> {% endcomment %}
+    </div><!-- Fin del layout de la página -->
+
+  <!-- Bootstrap JavaScript Libraries -->
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"
+    integrity="sha384-oBqDVmMz9ATKxIep9tiCxS/Z9fNfEXiDAYTujMAeBAsjFuCZSmKbSSUnQlmh/jp3" crossorigin="anonymous">
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/js/bootstrap.min.js"
+    integrity="sha384-7VPbUDkoPSGFnVtYi0QogXtr74QeVeeIs99Qfg5YCF+TidwNdjvaKZX19NZ/e6oz" crossorigin="anonymous">
+  </script>
+
+  <script type="text/javascript" src="{% static 'js/sgpartes.js' %}"></script>
+</body>
+
+</html>
