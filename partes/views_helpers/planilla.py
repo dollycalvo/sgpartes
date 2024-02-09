@@ -54,7 +54,6 @@ def procesarCambiosEnPlanilla(request, id_empleado):
     nuevosRegistros = []
     i = 1
     listaCodigos = request.POST.getlist("codigos")
-    print(listaCodigos)
     for observacion in request.POST.getlist("observaciones"):
         observaciones_para_email += "\nDía " + str(i) + ": " + etiquetaCodigo(listaCodigos[i - 1]) + ": " + (observacion.strip() if observacion.strip() != "" else SIN_NOVEDAD) 
         rcIndex = 0

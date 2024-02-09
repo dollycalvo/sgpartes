@@ -56,7 +56,7 @@
                             <td class="text-center">{{ forloop.counter }}</td>
                             <td class="text-center">
                                 {% if datosPlanilla.status.status == "Borrador" %}
-                                <span class="spanFachadaSelect">{{ datoDiario.codigo|etiqueta_codigo }}</span>
+                                <span class="spanFachadaSelect">{% firstof datoDiario.codigo|etiqueta_codigo "S/N" %}</span>
                                 <select class="w-1rem input-registro-diario" name="codigos">
                                     <option value="sn" {% if datoDiario.codigo == "sn" %}{{"selected"}}{%endif%} data-codigo="S/N">S/N - Sin novedad</option>
                                     <option value=":" {% if datoDiario.codigo == ":" %}{{"selected"}}{%endif%} data-codigo=":">: - Asueto</option>

@@ -1,4 +1,6 @@
+from itertools import chain
 from partes.forms import FormSeleccionFecha
+from partes.helper import tienePermisoEspecialRPA
 from partes.models import Planilla, Empleado, StatusPlanilla
 from datetime import datetime
 from django.shortcuts import render
@@ -6,25 +8,39 @@ from partes.views_helpers.common import nombresMeses, obtenerPlanillasParaRevisa
 
 
 def cargarPlanillasParaMostrarYCalendario(request):
+    # Si la persona tiene el rol especial RPA (Revisión de Planillas Aprobadas), mostramos una tarjeta adicional
+    rolRPA = None
+    if (tienePermisoEspecialRPA(request.session['id_empleado'])):
+        rolRPA = "RPA"
     form = FormSeleccionFecha()
     # Cargamos los datos para alimentar los filtros, excepto Borrador ya que el jefe directo no debería verlo
     statuses = StatusPlanilla.objects.filter(id__gt = 1)
     # Si no hay filtros aplicados, es porque entramos por GET y cargamos los filtros por defecto
     if "filtroEmpleado" not in request.POST:
-        filtros = {"empleado": 0, "mes": 0, "anio": 0, "status": 2}
+        if rolRPA is not None:
+            # Si es el rol RPA, ya filtramos por defecto el status 3 (Aprobado)
+            filtros = {"empleado": 0, "mes": 0, "anio": 0, "status": 3}
+        else:
+            filtros = {"empleado": 0, "mes": 0, "anio": 0, "status": 2}
     else:
         filtros = {"empleado": request.POST["filtroEmpleado"],
                    "mes": request.POST["filtroMes"],
                    "anio": request.POST["filtroAnio"],
                    "status": request.POST["filtroStatus"]}
     # La listaSubordinados contiene la lista entera para mostrarlo en el filtro
-    listaSubordinados = Empleado.objects.filter(jefe_directo = request.session['id_empleado']).order_by("apellidos", "nombres")
+    if rolRPA is not None or request.session['puesto'] == "Gerente":
+        listaSubordinados = Empleado.objects.all().order_by("apellidos", "nombres")
+    else:
+        listaSubordinados = Empleado.objects.filter(jefe_directo = request.session['id_empleado']).order_by("apellidos", "nombres")
     if str(filtros["empleado"]) == "0":
         # Si no hay filtro, entonces buscamos las planillas de todos los empleados
         subordinados = listaSubordinados
     else:
-        # Filtramos no sólo por id de empleado, sino también verificamos que pertenezca a nuestros subordinados, para evitar acceso a información no autorizada
-        subordinados = Empleado.objects.filter(id = int(filtros['empleado']), jefe_directo = request.session['id_empleado'])
+        if rolRPA is not None or request.session['puesto'] == "Gerente":
+            subordinados = Empleado.objects.get(id = int(filtros['empleado']))
+        else:
+            # Filtramos no sólo por id de empleado, sino también verificamos que pertenezca a nuestros subordinados, para evitar acceso a información no autorizada
+            subordinados = Empleado.objects.get(id = int(filtros['empleado']), jefe_directo = request.session['id_empleado'])
     listaPlanillas = []
     soloIDsPlanillas = []
     # Recorremos la lista de subordinados (sean filtrados o no)
@@ -80,4 +96,5 @@ def cargarPlanillasParaMostrarYCalendario(request):
                                                 "listaSubordinados": listaSubordinados,
                                                 "statuses": statuses,
                                                 "filtros": filtros,
-                                                "planillasParaRevisar": planillasParaRevisar})
+                                                "planillasParaRevisar": planillasParaRevisar,
+                                                "rolRPA": rolRPA})

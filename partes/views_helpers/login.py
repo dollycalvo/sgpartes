@@ -1,3 +1,4 @@
+from partes.helper import tienePermisosEspecialesParaDashboard
 from partes.models import Empleado
 from django.http import HttpResponseRedirect
 from django.contrib.auth.hashers import check_password
@@ -47,7 +48,7 @@ def buscarUsuario(request, MAX_LOGINS_INCORRECTOS):
             request.session['usuario'] = empleados[0].legajo
             request.session['nombre_usuario'] = empleados[0].apellidos + ", " + empleados[0].nombres
             request.session['puesto'] = empleados[0].puesto.nombre
-            if empleados[0].puesto.nombre == "Agente":
+            if empleados[0].puesto.nombre == "Agente" and not tienePermisosEspecialesParaDashboard(empleados[0].id):
                 return HttpResponseRedirect("/seleccionfecha")
             else:
                 # Si es supervisor o gerente, va a una página de selección de acción

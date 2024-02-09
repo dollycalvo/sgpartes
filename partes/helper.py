@@ -1,6 +1,8 @@
 import unicodedata
 import re
 from django.core.files.storage import default_storage
+
+from partes.models import PermisoEspecial
 #import calendar, time
 
 def slugify(value, allow_unicode=False):
@@ -105,3 +107,16 @@ def etiquetaCodigo(value):
         return "UNU"
 
     return value
+
+
+def tienePermisoEspecialRPA(id_empleado):
+    rolesRPA = PermisoEspecial.objects.filter(empleado_id = id_empleado, codigo="RPA")
+    if (len(rolesRPA) == 1):
+        return True
+    return False
+
+
+def tienePermisosEspecialesParaDashboard(id_empleado):
+    # De momento sólo retornará con este permiso especial, en caso de nuevos permisos especiales
+    # podríamos hacer un OR para verificar si tiene alguno que le habilite acceso al dashboard
+    return tienePermisoEspecialRPA(id_empleado)

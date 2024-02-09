@@ -1,4 +1,5 @@
 import json
+from partes.helper import tienePermisosEspecialesParaDashboard
 from partes.views_helpers.common import enviarEmailPlanilla, nombresMeses, obtenerPlanillasParaRevisar, redirectToError
 from partes.views_helpers.regenerar import generarCodigo, crearNuevoPassword
 from partes.views_helpers.dashboard import cargarPlanillasParaMostrarYCalendario
@@ -8,7 +9,7 @@ from partes.views_helpers.login import procesarLogout, buscarUsuario
 from django.http import HttpResponse, JsonResponse
 import mimetypes
 from datetime import datetime
-from partes.models import Empleado, Planilla
+from partes.models import Planilla
 from partes.forms import FormSeleccionFecha
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
@@ -119,7 +120,7 @@ def regenerar(request):
 
 def dashboard(request):
     # Cláusula de guarda
-    if 'puesto' not in request.session or request.session['puesto'] == "Agente":
+    if 'puesto' not in request.session or (request.session['puesto'] == "Agente" and not tienePermisosEspecialesParaDashboard(request.session['id_empleado'])):
         return redirectToError(request, "No tienes acceso a este contenido. Si se trata de un error, contacta al administrador del sistema.")
     
     if request.method == 'POST':
