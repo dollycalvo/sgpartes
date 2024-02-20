@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block titulo %} Selección de fecha {% endblock %}
+{% block navlinks %}
+    {% include "components/nav_links.html" with seleccionado="Planilla" %}
+{% endblock %}
+{% block contenido %}
+    {% if planillasParaRevisar %}
+        {% include 'components/revision_planillas.html' %}
+    {% endif %}
+    {% include 'components/form_fecha.html' %}
+{% endblock %}

@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% load static %}
+{% load filters %}
+
+{% block titulo %} Aprobar planilla {% endblock %}
+{% block navlinks %}
+    {% include "components/nav_links.html" with seleccionado="PendienteAprobacion" %}
+{% endblock %}
+{% block contenido %}
+<form method="post" action="/aprobar" id="formAprobar">
+    {% csrf_token %}
+    <input type="hidden" id="hdnIdPlanilla" name="id_planilla" value="{{ request.session.idPorAprobar }}">
+    <input type="hidden" id="hdnAprobar" name="aprobar" value="1">
+    <div class="card mb-4">
+        <div class="card-header">
+            <h3>EMPRESA ABC - APROBACIÓN DE REPORTE</h3>
+            <h4>{{ nombreMes }} {{ planilla.anio }}</h4>
+            <div class="d-flex flex-row mt-4">
+                <h5 class="w-25"><b>Legajo:</b> {{ datosEmpleado.legajo }}</h5>
+                {% with nombre_completo=datosEmpleado.apellidos|add:", "|add:datosEmpleado.nombres %}
+                <h5 class="w-75"><b>Apellido(s) y nombre(s):</b> {{ nombre_completo }}</h5>
+                {% endwith %}
+            </div>
+            <div class="mt-1rem">
+                <h5><b>Observaciones:</b> {{ planilla.observaciones }}</h5>
+            </div>
+        </div>
+        <div class="card-body">
+            <table class="table table-striped table-bordered w-0">
+                <thead>
+                    <tr>
+                        <th>
+                            Día
+                        </th>
+                        <th>
+                            Código
+                        </th>
+                        <th class="w-100">
+                            Observaciones
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for datoDiario in datosDiarios %}
+                        <tr>
+                            <td class="text-center">{{ forloop.counter }}</td>
+                            <td class="text-center">
+                                {{ datoDiario.codigo|etiqueta_codigo }}
+                            </td>
+                            <td>
+                                {% if datoDiario.observaciones == "" %}{{ textoSinNovedad }}{% else %}{{ datoDiario.observaciones }}{% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <div class="card">
+                <h5 class="card-header bg-secondary text-white">Archivo adjunto</h5>
+                <div class="card-body" id="area-adjunto" contiene-archivo="true">
+                    {{ adjuntos|length }}
+                    {% for adjunto in adjuntos %}
+                    <a href="download/{{ request.session.id_empleado }}/{{ adjunto.id }}">
+                        <div id="wrapperNombreArchivo">
+                            <i class='bi bi-file-earmark-pdf'></i>
+                            <div id="nombreArchivo">{{ adjunto.nombre_archivo }}</div>
+                        </div>
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+            <br>
+            {% if planilla.status.status == "Presentado" %}
+            <div class="d-flex flex-row w-100 justify-content-center align-items-end mb-1rem">
+                <label class="bold-600" for="txtObservaciones">
+                    Observaciones:
+                </label>
+                <input type="text" id="txtObservaciones" name="observaciones" class="ml-05rem w-100" placeholder="Observaciones para el agente">
+            </div>
+            <div class="d-flex flex-row w-100 justify-content-center">
+                <button id="btnAprobar" class="btn btn-success ml-1rem" type="submit">Aprobar</button>
+                <button id="btnRevisar" class="btn btn-danger ml-1rem" type="button">Revisar</button>
+            </div>
+        </div>
+        <div class="card-footer text-danger">
+            Estado: Pendiente de aprobación
+        </div>
+        {% elif planilla.status.status == "Aprobado" %}
+            <div class="d-flex flex-row w-100 justify-content-center align-items-end mb-1rem">
+                <label class="bold-600" for="txtObservaciones">
+                    Observaciones:
+                </label>
+                <input type="text" id="txtObservaciones" name="observaciones" class="ml-05rem w-100" placeholder="Observaciones para el agente">
+            </div>
+            <div class="d-flex flex-row w-100 justify-content-center">
+                <button id="btnRevisar" class="btn btn-danger ml-1rem" type="button">Revisar</button>
+                <button id="btnEnviar" class="btn btn-primary ml-1rem" type="button">Enviar por e-mail</button>
+            </div>
+        </div>
+        <div class="card-footer text-success">
+            Estado: Aprobado
+        </div>
+        {% endif %}
+    </div>
+</form>
+
+<dialog id="dlgEnviandoEmail" class="modal-email">
+    Enviando e-mail...
+</dialog>
+<dialog id="dlgResultado" class="modal-resultado">
+</dialog>
+
+<script type="text/javascript" src="{% static 'js/planilla_aprobacion.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block titulo %} Dashboard {% endblock %}
+{% block navlinks %}
+    {% include "components/nav_links.html" with seleccionado="Dashboard" %}
+{% endblock %}
+{% block contenido %}
+    {% if mensaje != "" %}
+    <div class="alert alert-success auto-hide-5s" role="alert">
+        {{ mensaje }}
+    </div>
+    {% endif %}
+
+    {% if request.session.puesto != "Agente" %}
+        {% include 'components/card_busqueda_planillas.html' %}
+        <br><br>
+    {% endif %}
+
+    {% if rolRPA and rolRPA == "RPA" %}
+        {% include 'components/card_busqueda_planillas.html' with rol="RPA" %}
+        <br><br>
+    {% endif %}
+
+    {% if planillasParaRevisar %}
+        {% include 'components/revision_planillas.html' %}
+    {% endif %}
+    {% include "components/form_fecha.html" with titulo="Acceder a mi planilla" %}
+    <br><br>
+    <dialog id="dlgEnviandoEmail" class="modal-email">
+        Enviando e-mail...
+    </dialog>
+    <dialog id="dlgResultado" class="modal-resultado">
+    </dialog>
+    <script type="text/javascript" src="{% static 'js/dashboard.js' %}"></script>
+{% endblock %}

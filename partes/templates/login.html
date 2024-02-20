@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block titulo %} Login {% endblock %}
+{% block navlinks %}
+    {% include "components/nav_links.html" with seleccionado="Ninguno" %}
+{% endblock %}
+{% block contenido %}
+<form method="post" action="/login">
+    {% csrf_token %}
+    {% if mensaje and mensaje != "" %}
+    <div class="alert alert-success auto-hide-5s" role="success">
+        {{ mensaje }}
+    </div>
+    {% endif %}
+    <div class="d-flex justify-content-center">
+        <div class="card card-login">
+            <div class="card-header bg-secondary text-white">
+                Empresa ABC - Control de horas
+            </div>
+            <div class="card-body">
+                <h4 class="card-title">Iniciar sesión</h4>
+                <div class="d-flex flex-column">
+                    <div class="d-flex flex-column mt-1rem">
+                        <label for="txtUsername">E-mail o legajo:</label>
+                        <input {% if usuario_previo %}value="{{usuario_previo}}" {% endif %}id="txtUsername" type="text" name="login_username" placeholder="E-mail o legajo" class="px-05rem" required>
+                    </div>
+                    <div class="d-flex flex-column mt-1rem">
+                        <label for="txtPassword">Contraseña:</label>
+                        <input id="txtPassword" type="password" name="login_password" placeholder="Contraseña" class="px-05rem" required>
+                    </div>
+                </div>
+                <div class="regenerar-pw">
+                    <a class="nav-item nav-link link-regenerar" href="regenerar">Hacé click acá para regenerar tu contraseña</a>
+                </div>
+                <div class="mensaje-error-login">
+                    {{ mensaje_error }}
+                </div>
+                <div class="text-center mt-2rem">
+                    <button class="btn btn-primary">Iniciar sesión</button>
+                </div>
+            </div>
+            <div class="card-footer text-muted">
+                Sistema de gestión - Reporte horario
+            </div>
+        </div>
+    </div>
+</form>
+{% endblock %}
