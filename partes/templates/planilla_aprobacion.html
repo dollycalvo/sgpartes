@@ -57,7 +57,6 @@
             <div class="card">
                 <h5 class="card-header bg-secondary text-white">Archivo adjunto</h5>
                 <div class="card-body" id="area-adjunto" contiene-archivo="true">
-                    {{ adjuntos|length }}
                     {% for adjunto in adjuntos %}
                     <a href="download/{{ request.session.id_empleado }}/{{ adjunto.id }}">
                         <div id="wrapperNombreArchivo">
