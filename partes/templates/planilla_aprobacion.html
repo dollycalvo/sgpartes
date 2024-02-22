@@ -44,7 +44,7 @@
                     {% for datoDiario in datosDiarios %}
                         <tr>
                             {% with dds=forloop.counter %}
-                            <td class="text-center minw5rem">{{ dds|dia_semana:primerDiaDelMes }} {{ forloop.counter }}</td>
+                            <td class="text-center minw5rem {{ dds|class_dia_semana:primerDiaDelMes}}">{{ dds|dia_semana:primerDiaDelMes }} {{ forloop.counter }}</td>
                             {% endwith %}
                             <td class="text-center">
                                 {{ datoDiario.codigo|etiqueta_codigo }}

@@ -714,3 +714,12 @@ dialog::backdrop {
 .minw5rem {
     min-width: 5rem;
 }
+
+.dia-finde {
+    color: red !important;
+    font-weight: 500;
+}
+
+.dia-semana {
+    font-weight: 500;
+}
