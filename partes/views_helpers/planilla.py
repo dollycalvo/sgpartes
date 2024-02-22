@@ -1,7 +1,7 @@
 from partes.views_helpers.common import nombresMeses, redirectToError
 import calendar
 from partes.helper import guardarArchivo, etiquetaCodigo
-from partes.models import Empleado, StatusPlanilla, Planilla, RegistroDiario
+from partes.models import Adjuntos, Empleado, StatusPlanilla, Planilla, RegistroDiario
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.core.mail import EmailMessage
@@ -23,30 +23,37 @@ def procesarCambiosEnPlanilla(request, id_empleado):
         statusPlanilla = StatusPlanilla.objects.filter(status = "Borrador")[0]
     # Ya existe una planilla para este mes y empleado?
     planillas = Planilla.objects.filter(empleado_id=id_empleado, anio=anio, mes=mes)
+    indice_adjunto = 1
     if (len(planillas) == 1):
         planilla = planillas[0]
         planilla.status = statusPlanilla
         if statusPlanilla.status == "Presentado":
             planilla.observaciones = ""
+        # cantidad de adjuntos?
+        indice_adjunto = len(Adjuntos.objects.filter(planilla = planilla)) + 1
     else:
         planilla = Planilla(empleado_id = id_empleado,
                             mes = mes,
                             anio = anio,
                             status = statusPlanilla)
-    # Tenemos archivo adjunto?
-    datosEmpleado = Empleado.objects.filter(id = id_empleado)
-    if "pdf" in request.FILES:
-        nombre_archivo = ""
-        try:
-            nombre_archivo = guardarArchivo(request.FILES["pdf"], mes, anio, str(datosEmpleado[0].legajo) + "_" + datosEmpleado[0].apellidos)
-        except:
-            return redirectToError(request, "Ha ocurrido un error al intentar guardar el archivo")
-        if nombre_archivo != "":
-            planilla.pdf_adjunto = nombre_archivo
-        else:
-            return redirectToError(request, "Ha ocurrido un error al intentar guardar el archivo")
     # Guardamos los cambios en la existente o la nueva según corresponda
     planilla.save()
+    # Tenemos archivo adjunto?
+    datosEmpleado = Empleado.objects.filter(id = id_empleado)
+    if "pdfs" in request.FILES:
+        for archivo in request.FILES.getlist("pdfs"):
+            nombre_archivo = ""
+            try:
+                nombre_archivo = guardarArchivo(archivo, mes, anio, str(datosEmpleado[0].legajo) + "_" + datosEmpleado[0].apellidos, indice_adjunto)
+                indice_adjunto += 1
+            except:
+                return redirectToError(request, "Ha ocurrido un error al intentar guardar los archivos. Error GA001")
+            if nombre_archivo != "":
+                adjunto = Adjuntos(planilla = planilla, nombre_archivo = nombre_archivo)
+                adjunto.save()
+            else:
+                return redirectToError(request, "Ha ocurrido un error al intentar guardar los archivos. Error GA002")
+    adjuntos = Adjuntos.objects.filter(planilla = planilla)
     # Obtengo todos los registros existentes para esa planilla, para evitar consultar por cada registro individualmente
     registrosCoincidentes = RegistroDiario.objects.filter(planilla_id = planilla.id)
     # Con el ID de la planilla, ahora creamos un registro para cada día
@@ -67,7 +74,7 @@ def procesarCambiosEnPlanilla(request, id_empleado):
             registro.save()
             nuevosRegistros.append(registro)
         else: # Sino, creamos uno nuevo siempre y cuando sea sin novedad
-            if observacion.strip() != SIN_NOVEDAD and observacion.strip() != "":
+            if (listaCodigos[i - 1] != "sn"):
                 registro = RegistroDiario(planilla_id = planilla.id,
                                         dia = i, # día
                                         codigo = listaCodigos[i - 1],
@@ -75,7 +82,8 @@ def procesarCambiosEnPlanilla(request, id_empleado):
                 registro.save()
                 nuevosRegistros.append(registro)
             else:
-                nuevosRegistros.append(RegistroDiario(dia = i, codigo = "sn", observaciones = ""))    # En caso de no existir ni ser creado, hacemos un dummy 
+                # En caso de no existir ni ser creado, hacemos un dummy 
+                nuevosRegistros.append(RegistroDiario(dia = i, codigo = "sn", observaciones = ""))
         i += 1
     # Enviamos e-mail
     if statusPlanilla.status == "Presentado":
@@ -85,10 +93,6 @@ def procesarCambiosEnPlanilla(request, id_empleado):
         mensaje_email += "\nEmpleado: " + nombre_completo_empleado + " (legajo: " + str(empleado.legajo) + ")"
         mensaje_email += observaciones_para_email
         print("Mail a " + empleado.jefe_directo.email)
-        # Archivo adjunto
-        nombre_archivo = planilla.pdf_adjunto
-        carpeta = "adjuntos/"
-        fl_path = carpeta + nombre_archivo
         if settings.DEBUG:
             email = EmailMessage("Planilla presentada: " + nombre_completo_empleado, # asunto
                                     mensaje_email, # cuerpo del email
@@ -103,7 +107,12 @@ def procesarCambiosEnPlanilla(request, id_empleado):
                                 empleado.email, #from
                                 [empleado.jefe_directo.email, empleado.email], #to
                                 )
-        email.attach_file(fl_path)
+        # Archivos adjuntos        
+        carpeta = "adjuntos/"
+        for adjunto in adjuntos:
+            nombre_archivo = adjunto.nombre_archivo
+            fl_path = carpeta + nombre_archivo
+            email.attach_file(fl_path)
         email.send()
     # Nos preparamos para renderizar la página
     templateParams = {  "accion_submit": acciones_submit[2],
@@ -118,7 +127,7 @@ def procesarCambiosEnPlanilla(request, id_empleado):
                         "statusPlanilla": statusPlanilla.status,
                         "mostrarMensaje": True,
                         "textoSinNovedad": SIN_NOVEDAD,
-                        "nombreArchivoAdjunto": planilla.pdf_adjunto}
+                        "nombresArchivosAdjuntos": adjuntos}
     request.session['id_planilla'] = planilla.id
     return render(request, 'planilla.html', templateParams)
 
@@ -137,6 +146,8 @@ def mostrarPlanillaParaVistaEdicion(request, id_empleado = 0, id_planilla = "0")
         datosPlanilla = Planilla.objects.filter(id = id_planilla)
     if len(datosPlanilla) == 1:
         datosPlanilla = datosPlanilla[0]
+        # obtenemos sus archivos adjuntos
+        adjuntos = Adjuntos.objects.filter(planilla_id = datosPlanilla.id)
         datosDiarios = []
         dias_del_mes = range(1, calendar.monthrange(int(datosPlanilla.anio), int(datosPlanilla.mes))[1] + 1)
         for dia in dias_del_mes:
@@ -152,6 +163,7 @@ def mostrarPlanillaParaVistaEdicion(request, id_empleado = 0, id_planilla = "0")
                             anio = anio,
                             status = StatusPlanilla.objects.filter(status = "Borrador")[0])
         datosDiarios = [None] * len(dias_del_mes)
+        adjuntos = None
     datosEmpleado = Empleado.objects.filter(id = id_empleado)[0]
     templateParams = {  "accion_submit": accion_submit,
                         "acciones_submit": acciones_submit[0] + "#" + acciones_submit[1],
@@ -163,6 +175,6 @@ def mostrarPlanillaParaVistaEdicion(request, id_empleado = 0, id_planilla = "0")
                         "anioReporte": datosPlanilla.anio,
                         "diasDelMes": dias_del_mes,
                         "textoSinNovedad": SIN_NOVEDAD,
-                        "nombreArchivoAdjunto": datosPlanilla.pdf_adjunto}
+                        "nombresArchivosAdjuntos": adjuntos}
     request.session['id_planilla'] = datosPlanilla.id
     return render(request, 'planilla.html', templateParams)

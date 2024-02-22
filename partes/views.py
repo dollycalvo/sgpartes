@@ -1,4 +1,5 @@
 import json
+from partes.helper import tienePermisosEspecialesParaDashboard
 from partes.views_helpers.common import enviarEmailPlanilla, nombresMeses, obtenerPlanillasParaRevisar, redirectToError
 from partes.views_helpers.regenerar import generarCodigo, crearNuevoPassword
 from partes.views_helpers.dashboard import cargarPlanillasParaMostrarYCalendario
@@ -8,7 +9,7 @@ from partes.views_helpers.login import procesarLogout, buscarUsuario
 from django.http import HttpResponse, JsonResponse
 import mimetypes
 from datetime import datetime
-from partes.models import Empleado, Planilla
+from partes.models import Adjuntos, Planilla
 from partes.forms import FormSeleccionFecha
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
@@ -119,7 +120,7 @@ def regenerar(request):
 
 def dashboard(request):
     # Cláusula de guarda
-    if 'puesto' not in request.session or request.session['puesto'] == "Agente":
+    if 'puesto' not in request.session or (request.session['puesto'] == "Agente" and not tienePermisosEspecialesParaDashboard(request.session['id_empleado'])):
         return redirectToError(request, "No tienes acceso a este contenido. Si se trata de un error, contacta al administrador del sistema.")
     
     if request.method == 'POST':
@@ -156,11 +157,14 @@ def aprobar(request):
     return render(request, 'index.html')
 
 
-def download_file(request):
-    planillas = Planilla.objects.filter(id = request.session['id_planilla'])
-    if len(planillas) != 1:
-        return redirectToError(request, "No se ha encontrado la planilla")
-    nombre_archivo = planillas[0].pdf_adjunto
+def download_file(request, eid, fid):
+    if (eid != request.session['id_empleado']):
+        # si el eid no es el id del usuario logueado, posiblemente se haya querido falsear una descarga
+        return redirectToError(request, "Ha ocurrido un error al intentar descargar el archivo adjunto. Error FD001")
+    try:
+        nombre_archivo = Adjuntos.objects.get(id = fid).nombre_archivo
+    except:
+        return redirectToError(request, "Ha ocurrido un error al intentar descargar el archivo adjunto. Error FD002")
     carpeta = "adjuntos/"
     fl_path = carpeta + nombre_archivo
     print(fl_path)
@@ -172,6 +176,7 @@ def download_file(request):
     except:
         return redirectToError(request, "No se ha encontrado el archivo adjunto")
     return response
+
 
 def enviar_mail(request):
     id_planilla = json.loads(request.body)["id_planilla"]

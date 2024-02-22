@@ -57,12 +57,14 @@
             <div class="card">
                 <h5 class="card-header bg-secondary text-white">Archivo adjunto</h5>
                 <div class="card-body" id="area-adjunto" contiene-archivo="true">
-                    <a href="download">
+                    {% for adjunto in adjuntos %}
+                    <a href="download/{{ request.session.id_empleado }}/{{ adjunto.id }}">
                         <div id="wrapperNombreArchivo">
                             <i class='bi bi-file-earmark-pdf'></i>
-                            <div id="nombreArchivo">{{ planilla.pdf_adjunto }}</div>
+                            <div id="nombreArchivo">{{ adjunto.nombre_archivo }}</div>
                         </div>
                     </a>
+                    {% endfor %}
                 </div>
             </div>
             <br>
@@ -82,7 +84,14 @@
             Estado: Pendiente de aprobación
         </div>
         {% elif planilla.status.status == "Aprobado" %}
+            <div class="d-flex flex-row w-100 justify-content-center align-items-end mb-1rem">
+                <label class="bold-600" for="txtObservaciones">
+                    Observaciones:
+                </label>
+                <input type="text" id="txtObservaciones" name="observaciones" class="ml-05rem w-100" placeholder="Observaciones para el agente">
+            </div>
             <div class="d-flex flex-row w-100 justify-content-center">
+                <button id="btnRevisar" class="btn btn-danger ml-1rem" type="button">Revisar</button>
                 <button id="btnEnviar" class="btn btn-primary ml-1rem" type="button">Enviar por e-mail</button>
             </div>
         </div>

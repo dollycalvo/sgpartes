@@ -3,7 +3,7 @@ from django.core.mail import EmailMessage
 from django.http import HttpResponseRedirect
 from partes.helper import etiquetaCodigo
 
-from partes.models import Planilla, RegistroDiario
+from partes.models import Adjuntos, Planilla, RegistroDiario
 import settings
 
 nombresMeses = [{"ID": 1, "Nombre": "Enero"},
@@ -74,10 +74,12 @@ def enviarEmailPlanilla(id_planilla, receptores_email, enviar_adjunto = True):
                                     receptores_email # to
                                     )
         if enviar_adjunto == True:
-            nombre_archivo = planilla.pdf_adjunto
             carpeta = "adjuntos/"
-            fl_path = carpeta + nombre_archivo
-            email.attach_file(fl_path)
+            adjuntos = Adjuntos.objects.filter(planilla = planilla)
+            for adjunto in adjuntos:
+                nombre_archivo = adjunto.nombre_archivo
+                fl_path = carpeta + nombre_archivo
+                email.attach_file(fl_path)
         email.send()
     except:
         return False
