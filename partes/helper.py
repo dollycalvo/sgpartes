@@ -5,6 +5,16 @@ from django.core.files.storage import default_storage
 from partes.models import PermisoEspecial
 #import calendar, time
 
+diasDeLaSemana = [
+    {"nombre": "Lunes", "corto": "Lun"},
+    {"nombre": "Martes", "corto": "Mar"},
+    {"nombre": "Miércoles", "corto": "Mié"},
+    {"nombre": "Jueves", "corto": "Jue"},
+    {"nombre": "Viernes", "corto": "Vie"},
+    {"nombre": "Sábado", "corto": "Sáb"},
+    {"nombre": "Domingo", "corto": "Dom"}
+]
+
 def slugify(value, allow_unicode=False):
     """
     Taken from https://github.com/django/django/blob/master/django/utils/text.py

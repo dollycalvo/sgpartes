@@ -1,3 +1,4 @@
+from datetime import datetime
 from partes.views_helpers.common import nombresMeses, redirectToError
 import calendar
 from partes.helper import guardarArchivo, etiquetaCodigo
@@ -175,6 +176,8 @@ def mostrarPlanillaParaVistaEdicion(request, id_empleado = 0, id_planilla = "0")
                         "anioReporte": datosPlanilla.anio,
                         "diasDelMes": dias_del_mes,
                         "textoSinNovedad": SIN_NOVEDAD,
-                        "nombresArchivosAdjuntos": adjuntos}
+                        "nombresArchivosAdjuntos": adjuntos,
+                        "primerDiaDelMes": datetime.strptime("1/" + str(datosPlanilla.mes) + "/" + str(datosPlanilla.anio), "%d/%m/%Y").weekday()
+                    }
     request.session['id_planilla'] = datosPlanilla.id
     return render(request, 'planilla.html', templateParams)

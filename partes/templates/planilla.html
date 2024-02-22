@@ -53,7 +53,9 @@
                 <tbody>
                     {% for datoDiario in datosDiarios %}
                         <tr>
-                            <td class="text-center">{{ forloop.counter }}</td>
+                            {% with dds=forloop.counter %}
+                            <td class="text-center minw5rem">{{ dds|dia_semana:primerDiaDelMes }} {{ forloop.counter }}</td>
+                            {% endwith %}
                             <td class="text-center">
                                 {% if datosPlanilla.status.status == "Borrador" %}
                                 <span class="spanFachadaSelect">{% firstof datoDiario.codigo|etiqueta_codigo "S/N" %}</span>
