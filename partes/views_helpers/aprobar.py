@@ -45,19 +45,20 @@ def revisarPlanilla(request):
     mensaje_email += "\nEmpleado: " + nombre_completo_empleado + " (legajo: " + str(empleado.legajo) + ")"
     mensaje_email += "\nObservaciones: " + observaciones
     print("Mail al agente indicando que se envía a revisión la planilla")
-    if settings.DEBUG:
-        email = EmailMessage("Planilla devuelta para revisión: " + nombre_completo_empleado, # asunto
-                                mensaje_email, # cuerpo del email
-                                "webmaster@cguimaraenz.com", # from
-                                ["webmaster@cguimaraenz.com"] # to
-                                )
-    else:
-        email = EmailMessage("Planilla devuelta para revisión: " + nombre_completo_empleado, # asunto
-                                mensaje_email, # cuerpo del email
-                                "webmaster@cguimaraenz.com", # from
-                                [empleado.email] # to
-                                )
-    email.send()
+    if settings.ENVIAR_EMAIL:
+        if settings.DEBUG:
+            email = EmailMessage("Planilla devuelta para revisión: " + nombre_completo_empleado, # asunto
+                                    mensaje_email, # cuerpo del email
+                                    "webmaster@cguimaraenz.com", # from
+                                    ["webmaster@cguimaraenz.com"] # to
+                                    )
+        else:
+            email = EmailMessage("Planilla devuelta para revisión: " + nombre_completo_empleado, # asunto
+                                    mensaje_email, # cuerpo del email
+                                    "webmaster@cguimaraenz.com", # from
+                                    [empleado.email] # to
+                                    )
+        email.send()
     request.session['dashboard_mensaje'] = "La planilla ha sido devuelta para revisión"
     return HttpResponseRedirect("/dashboard")
 

@@ -90,24 +90,25 @@ def procesarCambiosEnPlanilla(request, id_empleado):
     if statusPlanilla.status == "Presentado":
         empleado = datosEmpleado[0]
         nombre_completo_empleado = empleado.apellidos + ", " + empleado.nombres
-        mensaje_email = "Fecha: " + nombresMeses[int(mes) - 1]["Nombre"] + " " + anio
-        mensaje_email += "\nEmpleado: " + nombre_completo_empleado + " (legajo: " + str(empleado.legajo) + ")"
-        mensaje_email += observaciones_para_email
-        print("Mail a " + empleado.jefe_directo.email)
-        if settings.DEBUG:
-            email = EmailMessage("Planilla presentada: " + nombre_completo_empleado, # asunto
-                                    mensaje_email, # cuerpo del email
-                                # empleado.email,
-                                # [empleado.jefe_directo.email, empleado.email],
-                                "webmaster@cguimaraenz.com", # from
-                                ["webmaster@cguimaraenz.com"] # to
-                                )
-        else:
-            email = EmailMessage("Planilla presentada: " + nombre_completo_empleado, # asunto
-                                    mensaje_email, # cuerpo del email
-                                empleado.email, #from
-                                [empleado.jefe_directo.email, empleado.email], #to
-                                )
+        if settings.ENVIAR_EMAIL:
+            mensaje_email = "Fecha: " + nombresMeses[int(mes) - 1]["Nombre"] + " " + anio
+            mensaje_email += "\nEmpleado: " + nombre_completo_empleado + " (legajo: " + str(empleado.legajo) + ")"
+            mensaje_email += observaciones_para_email
+            print("Mail a " + empleado.jefe_directo.email)
+            if settings.DEBUG:
+                email = EmailMessage("Planilla presentada: " + nombre_completo_empleado, # asunto
+                                        mensaje_email, # cuerpo del email
+                                    # empleado.email,
+                                    # [empleado.jefe_directo.email, empleado.email],
+                                    "webmaster@cguimaraenz.com", # from
+                                    ["webmaster@cguimaraenz.com"] # to
+                                    )
+            else:
+                email = EmailMessage("Planilla presentada: " + nombre_completo_empleado, # asunto
+                                        mensaje_email, # cuerpo del email
+                                    empleado.email, #from
+                                    [empleado.jefe_directo.email, empleado.email], #to
+                                    )
         # Archivos adjuntos        
         carpeta = "adjuntos/"
         for adjunto in adjuntos:
