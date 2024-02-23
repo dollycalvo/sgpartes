@@ -9,3 +9,4 @@ db.sqlite3
 soportes.db.sqlite3
 media
 adjuntos/*
+sgpartes/settings.py
