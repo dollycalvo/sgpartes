@@ -1,6 +1,6 @@
 import calendar
+from datetime import datetime
 from partes.views_helpers.common import enviarEmailPlanilla, nombresMeses, redirectToError
-from partes.helper import etiquetaCodigo
 from partes.models import Adjuntos, StatusPlanilla, Planilla, RegistroDiario
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
@@ -102,5 +102,6 @@ def mostrarPlanillaAprobacion(request):
                                                             "planilla": planilla,
                                                             "adjuntos": adjuntos,
                                                             "datosDiarios": datosDiarios,
-                                                            "datosEmpleado": planilla.empleado})
+                                                            "datosEmpleado": planilla.empleado,
+                                                            "primerDiaDelMes": datetime.strptime("1/" + str(planilla.mes) + "/" + str(planilla.anio), "%d/%m/%Y").weekday()})
 
