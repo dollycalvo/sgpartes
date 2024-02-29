@@ -109,13 +109,13 @@ def procesarCambiosEnPlanilla(request, id_empleado):
                                     empleado.email, #from
                                     [empleado.jefe_directo.email, empleado.email], #to
                                     )
-        # Archivos adjuntos        
-        carpeta = "adjuntos/"
-        for adjunto in adjuntos:
-            nombre_archivo = adjunto.nombre_archivo
-            fl_path = carpeta + nombre_archivo
-            email.attach_file(fl_path)
-        email.send()
+            # Archivos adjuntos        
+            carpeta = "adjuntos/"
+            for adjunto in adjuntos:
+                nombre_archivo = adjunto.nombre_archivo
+                fl_path = carpeta + nombre_archivo
+                email.attach_file(fl_path)
+            email.send()
     # Nos preparamos para renderizar la página
     templateParams = {  "accion_submit": acciones_submit[2],
                         "acciones_submit": acciones_submit[0] + "#" + acciones_submit[1],
@@ -129,7 +129,9 @@ def procesarCambiosEnPlanilla(request, id_empleado):
                         "statusPlanilla": statusPlanilla.status,
                         "mostrarMensaje": True,
                         "textoSinNovedad": SIN_NOVEDAD,
-                        "nombresArchivosAdjuntos": adjuntos}
+                        "nombresArchivosAdjuntos": adjuntos,
+                        "primerDiaDelMes": datetime.strptime("1/" + str(planilla.mes) + "/" + str(planilla.anio), "%d/%m/%Y").weekday()
+                    }
     request.session['id_planilla'] = planilla.id
     return render(request, 'planilla.html', templateParams)
 

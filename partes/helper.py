@@ -45,6 +45,8 @@ def guardarArchivo(archivo, mes, anio, empleado, indice):
 
 def etiquetaCodigo(value):
     # Convierte el código en una etiqueta para el usuario
+    if value == None:
+        return None
     if value == "sn":
         return "S/N"
 
