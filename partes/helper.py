@@ -1,8 +1,10 @@
+import os
 import unicodedata
 import re
 from django.core.files.storage import default_storage
 
 from partes.models import PermisoEspecial
+import settings
 #import calendar, time
 
 diasDeLaSemana = [
@@ -33,7 +35,7 @@ def slugify(value, allow_unicode=False):
 
 
 def guardarArchivo(archivo, mes, anio, empleado, indice):
-    carpeta = "adjuntos/"
+    carpeta = os.path.join(settings.BASE_DIR, 'sgpartes/adjuntos/')
     partes_nombre = archivo.name.split(".")
     # nuevo_nombre = []
     # for parte in partes_nombre:

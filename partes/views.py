@@ -1,3 +1,5 @@
+import os
+import settings
 import json
 from partes.helper import tienePermisosEspecialesParaDashboard
 from partes.views_helpers.common import enviarEmailPlanilla, nombresMeses, obtenerPlanillasParaRevisar, redirectToError
@@ -165,7 +167,7 @@ def download_file(request, eid, fid):
         nombre_archivo = Adjuntos.objects.get(id = fid).nombre_archivo
     except:
         return redirectToError(request, "Ha ocurrido un error al intentar descargar el archivo adjunto. Error FD002")
-    carpeta = "adjuntos/"
+    carpeta = os.path.join(settings.BASE_DIR, 'sgpartes/adjuntos/')
     fl_path = carpeta + nombre_archivo
     print(fl_path)
     try:

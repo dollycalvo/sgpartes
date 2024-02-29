@@ -1,3 +1,4 @@
+import os
 import calendar
 from django.core.mail import EmailMessage
 from django.http import HttpResponseRedirect
@@ -75,7 +76,7 @@ def enviarEmailPlanilla(id_planilla, receptores_email, enviar_adjunto = True):
                                         receptores_email # to
                                         )
             if enviar_adjunto == True:
-                carpeta = "adjuntos/"
+                carpeta = os.path.join(settings.BASE_DIR, 'sgpartes/adjuntos/')
                 adjuntos = Adjuntos.objects.filter(planilla = planilla)
                 for adjunto in adjuntos:
                     nombre_archivo = adjunto.nombre_archivo

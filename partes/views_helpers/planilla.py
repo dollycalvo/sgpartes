@@ -1,3 +1,4 @@
+import os
 from datetime import datetime
 from partes.views_helpers.common import nombresMeses, redirectToError
 import calendar
@@ -110,7 +111,7 @@ def procesarCambiosEnPlanilla(request, id_empleado):
                                     [empleado.jefe_directo.email, empleado.email], #to
                                     )
             # Archivos adjuntos        
-            carpeta = "adjuntos/"
+            carpeta = os.path.join(settings.BASE_DIR, 'sgpartes/adjuntos/')
             for adjunto in adjuntos:
                 nombre_archivo = adjunto.nombre_archivo
                 fl_path = carpeta + nombre_archivo
