@@ -1,3 +1,5 @@
+import os
+import settings
 import json
 from partes.helper import tienePermisosEspecialesParaDashboard
 from partes.views_helpers.common import enviarEmailPlanilla, nombresMeses, obtenerPlanillasParaRevisar, redirectToError
@@ -40,7 +42,7 @@ def seleccionfecha(request):
     # Cláusula de guarda
     if 'usuario' not in request.session:
         return redirectToError(request, "Se requiere iniciar sesión para acceder a esta sección.")
-    
+
     if request.method == 'POST':
         form = FormSeleccionFecha(request.POST)
         if form.is_valid():
@@ -54,10 +56,10 @@ def seleccionfecha(request):
     anioActual = fechaActual.year
     anios = list(range(anioActual - 3, anioActual + 2))
     planillasParaRevisar = obtenerPlanillasParaRevisar(request.session['id_empleado'])
-    return render(request, 'seleccionfecha.html', {"form": form, 
-                                                   "anios": anios, 
-                                                   "nombresMeses": nombresMeses, 
-                                                   "mesActual": mesActual, 
+    return render(request, 'seleccionfecha.html', {"form": form,
+                                                   "anios": anios,
+                                                   "nombresMeses": nombresMeses,
+                                                   "mesActual": mesActual,
                                                    "anioActual": anioActual,
                                                    "planillasParaRevisar": planillasParaRevisar})
 
@@ -122,7 +124,7 @@ def dashboard(request):
     # Cláusula de guarda
     if 'puesto' not in request.session or (request.session['puesto'] == "Agente" and not tienePermisosEspecialesParaDashboard(request.session['id_empleado'])):
         return redirectToError(request, "No tienes acceso a este contenido. Si se trata de un error, contacta al administrador del sistema.")
-    
+
     if request.method == 'POST':
         # Si existe filtroEmpleado, hacemos la búsqueda
         if 'filtroEmpleado' in request.POST:
@@ -165,7 +167,7 @@ def download_file(request, eid, fid):
         nombre_archivo = Adjuntos.objects.get(id = fid).nombre_archivo
     except:
         return redirectToError(request, "Ha ocurrido un error al intentar descargar el archivo adjunto. Error FD002")
-    carpeta = "adjuntos/"
+    carpeta = os.path.join(settings.BASE_DIR, 'sgpartes/adjuntos/')
     fl_path = carpeta + nombre_archivo
     print(fl_path)
     try:
@@ -184,7 +186,7 @@ def enviar_mail(request):
     if len(planilla) == 1:
         planilla = planilla[0]
         # Enviamos el email
-        if enviarEmailPlanilla(planilla.id, ['mdcalvo@gmail.com'], True) == False:
+        if enviarEmailPlanilla(planilla.id, ['mdcalvogrycn@gmail.com'], True) == False:
             response = HttpResponse(
                 json.dumps({"mensaje": "Ha ocurrido un error al intentar enviar el e-mail"}),
             )

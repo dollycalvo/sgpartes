@@ -1,3 +1,4 @@
+import os
 import calendar
 from django.core.mail import EmailMessage
 from django.http import HttpResponseRedirect
@@ -61,25 +62,26 @@ def enviarEmailPlanilla(id_planilla, receptores_email, enviar_adjunto = True):
         observaciones_para_email = "\n" + "".join(observaciones)
         mensaje_email += observaciones_para_email
 
-        if settings.DEBUG:
-            email = EmailMessage("Planilla aprobada: " + nombre_completo_empleado, # asunto
-                                    mensaje_email, # cuerpo del email
-                                    "webmaster@cguimaraenz.com", # from
-                                    ["webmaster@cguimaraenz.com"] # to
-                                    )
-        else:
-            email = EmailMessage("Planilla aprobada: " + nombre_completo_empleado, # asunto
-                                    mensaje_email, # cuerpo del email
-                                    "webmaster@cguimaraenz.com", # from
-                                    receptores_email # to
-                                    )
-        if enviar_adjunto == True:
-            carpeta = "adjuntos/"
-            adjuntos = Adjuntos.objects.filter(planilla = planilla)
-            for adjunto in adjuntos:
-                nombre_archivo = adjunto.nombre_archivo
-                fl_path = carpeta + nombre_archivo
-                email.attach_file(fl_path)
-        email.send()
+        if settings.ENVIAR_EMAIL:
+            if settings.DEBUG:
+                email = EmailMessage("Planilla aprobada: " + nombre_completo_empleado, # asunto
+                                        mensaje_email, # cuerpo del email
+                                        "webmaster@cguimaraenz.com", # from
+                                        ["webmaster@cguimaraenz.com"] # to
+                                        )
+            else:
+                email = EmailMessage("Planilla aprobada: " + nombre_completo_empleado, # asunto
+                                        mensaje_email, # cuerpo del email
+                                        "mdcalvogrycn@gmail.com", # from
+                                        receptores_email # to
+                                        )
+            if enviar_adjunto == True:
+                carpeta = os.path.join(settings.BASE_DIR, 'sgpartes/adjuntos/')
+                adjuntos = Adjuntos.objects.filter(planilla = planilla)
+                for adjunto in adjuntos:
+                    nombre_archivo = adjunto.nombre_archivo
+                    fl_path = carpeta + nombre_archivo
+                    email.attach_file(fl_path)
+            email.send()
     except:
         return False

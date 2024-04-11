@@ -23,7 +23,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = 's7(0rj)3^8j6eq7qf6_j%-fq6la5m3q=zm#40^_h7yqjf4+i^v'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['mdcalvo.pythonanywhere.com']
 
@@ -77,7 +77,7 @@ WSGI_APPLICATION = 'sgpartes.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'soportes.db.sqlite3'),
+        'NAME': os.path.join(BASE_DIR, 'sgpartes/soportes.db.sqlite3'),
     }
 }
 
@@ -120,7 +120,9 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+STATIC_ROOT = '/home/mdcalvo/sgpartes/partes/static'
+
+#DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Configuración de correo (cuentas de gmail)
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
@@ -128,5 +130,5 @@ EMAIL_HOST = "smtp.gmail.com"
 EMAIL_USE_TLS = True
 EMAIL_PORT = 587
 EMAIL_HOST_USER = "mdcalvogrycn@gmail.com"
-EMAIL_HOST_PASSWORD = "dollycalvo1"
-
+EMAIL_HOST_PASSWORD = "qwpxyfgdxrxxehzn"
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER

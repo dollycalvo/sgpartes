@@ -23,7 +23,7 @@
     {% endif %}
     <div class="card mb-4">
         <div class="card-header">
-            <h3>REPORTE HORARIO</h3>
+            <h3>Planillas de horario</h3>
             <h4>{{ nombreMesReporte }} {{ anioReporte }}</h4>
             <div class="d-flex flex-row mt-4">
                 <h5 class="w-25"><b>Legajo:</b> {{ datosEmpleado.legajo }}</h5>
@@ -53,7 +53,9 @@
                 <tbody>
                     {% for datoDiario in datosDiarios %}
                         <tr>
-                            <td class="text-center">{{ forloop.counter }}</td>
+                            {% with dds=forloop.counter %}
+                            <td class="text-center minw5rem {{ dds|class_dia_semana:primerDiaDelMes}}">{{ dds|dia_semana:primerDiaDelMes }} {{ forloop.counter }}</td>
+                            {% endwith %}
                             <td class="text-center">
                                 {% if datosPlanilla.status.status == "Borrador" %}
                                 <span class="spanFachadaSelect">{% firstof datoDiario.codigo|etiqueta_codigo "S/N" %}</span>
@@ -63,7 +65,7 @@
                                     <option value="+" {% if datoDiario.codigo == "+" %}{{"selected"}}{%endif%} data-codigo="+">+ - Adhesión a paros</option>
                                     <option value="D" {% if datoDiario.codigo == "D" %}{{"selected"}}{%endif%} data-codigo="D">D - Donación de sangre</option>
                                     <option value="E" {% if datoDiario.codigo == "E" %}{{"selected"}}{%endif%} data-codigo="E">E - 4º A Enfermedad común</option>
-                                    <option value="sa" {% if datoDiario.codigo == "sa" %}{{"selected"}}{%endif%} data-codigo="SA">SA - Licencia médica</option>
+                                    <option value="SA" {% if datoDiario.codigo == "SA" %}{{"selected"}}{%endif%} data-codigo="SA">SA - Licencia médica</option>
                                     <option value="H" {% if datoDiario.codigo == "H" %}{{"selected"}}{%endif%} data-codigo="H">H - Atención de hijos menores</option>
                                     <option value="L" {% if datoDiario.codigo == "L" %}{{"selected"}}{%endif%} data-codigo="L">L - Enfermedad largo tratamiento</option>
                                     <option value="M" {% if datoDiario.codigo == "M" %}{{"selected"}}{%endif%} data-codigo="M">M - Maternidad</option>
@@ -73,7 +75,7 @@
                                     <option value="W" {% if datoDiario.codigo == "W" %}{{"selected"}}{%endif%} data-codigo="W">W - 9º A Sin goce de haberes</option>
                                     <option value="Y" {% if datoDiario.codigo == "Y" %}{{"selected"}}{%endif%} data-codigo="Y">Y - Mesas examinadoras</option>
                                     <option value="Z" {% if datoDiario.codigo == "Z" %}{{"selected"}}{%endif%} data-codigo="Z">Z - Franco compensatorio</option>
-                                    <option value="cs" {% if datoDiario.codigo == "cs" %}{{"selected"}}{%endif%} data-codigo="CS">CS - Comisión de Servicio</option>
+                                    <option value="CS" {% if datoDiario.codigo == "CS" %}{{"selected"}}{%endif%} data-codigo="CS">CS - Comisión de Servicio</option>
                                     <option value="FR" {% if datoDiario.codigo == "FR" %}{{"selected"}}{%endif%} data-codigo="FR">FR - Festividad religiosa</option>
                                     <option value="JA" {% if datoDiario.codigo == "JA" %}{{"selected"}}{%endif%} data-codigo="JA">JA - Matrimonio</option>
                                     <option value="JH" {% if datoDiario.codigo == "JH" %}{{"selected"}}{%endif%} data-codigo="JH">JH - Matrimonio hijo agente</option>
@@ -145,7 +147,7 @@
             <div class="d-flex flex-row w-100 justify-content-center">
                 <button id="btnLimpiarForm" class="btn btn-danger" type="button">Limpiar formulario</button>
                 <button id="btnGuardarCambios" class="btn btn-primary ml-1rem" type="submit">Guardar cambios</button>
-                {% if nombreArchivoAdjunto == "" %}
+                {% if not nombresArchivosAdjuntos %}
                     <button id="btnPresentarPlanilla" class="btn btn-success ml-1rem" type="button" disabled>Presentar planilla</button>
                 {% else %}
                     <button id="btnPresentarPlanilla" class="btn btn-success ml-1rem" type="button">Presentar planilla</button>

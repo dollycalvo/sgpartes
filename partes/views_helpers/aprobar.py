@@ -1,4 +1,5 @@
 import calendar
+from datetime import datetime
 from partes.views_helpers.common import enviarEmailPlanilla, nombresMeses, redirectToError
 from partes.helper import etiquetaCodigo
 from partes.models import Adjuntos, StatusPlanilla, Planilla, RegistroDiario
@@ -45,19 +46,20 @@ def revisarPlanilla(request):
     mensaje_email += "\nEmpleado: " + nombre_completo_empleado + " (legajo: " + str(empleado.legajo) + ")"
     mensaje_email += "\nObservaciones: " + observaciones
     print("Mail al agente indicando que se envía a revisión la planilla")
-    if settings.DEBUG:
-        email = EmailMessage("Planilla devuelta para revisión: " + nombre_completo_empleado, # asunto
-                                mensaje_email, # cuerpo del email
-                                "webmaster@cguimaraenz.com", # from
-                                ["webmaster@cguimaraenz.com"] # to
-                                )
-    else:
-        email = EmailMessage("Planilla devuelta para revisión: " + nombre_completo_empleado, # asunto
-                                mensaje_email, # cuerpo del email
-                                "webmaster@cguimaraenz.com", # from
-                                [empleado.email] # to
-                                )
-    email.send()
+    if settings.ENVIAR_EMAIL:
+        if settings.DEBUG:
+            email = EmailMessage("Planilla devuelta para revisión: " + nombre_completo_empleado, # asunto
+                                    mensaje_email, # cuerpo del email
+                                    "webmaster@cguimaraenz.com", # from
+                                    ["webmaster@cguimaraenz.com"] # to
+                                    )
+        else:
+            email = EmailMessage("Planilla devuelta para revisión: " + nombre_completo_empleado, # asunto
+                                    mensaje_email, # cuerpo del email
+                                    "mdcalvogrycn@gmail.com", # from
+                                    [empleado.email] # to
+                                    )
+        email.send()
     request.session['dashboard_mensaje'] = "La planilla ha sido devuelta para revisión"
     return HttpResponseRedirect("/dashboard")
 
@@ -101,5 +103,6 @@ def mostrarPlanillaAprobacion(request):
                                                             "planilla": planilla,
                                                             "adjuntos": adjuntos,
                                                             "datosDiarios": datosDiarios,
-                                                            "datosEmpleado": planilla.empleado})
+                                                            "datosEmpleado": planilla.empleado,
+                                                            "primerDiaDelMes": datetime.strptime("1/" + str(planilla.mes) + "/" + str(planilla.anio), "%d/%m/%Y").weekday()})
 

@@ -1,9 +1,21 @@
+import os
 import unicodedata
 import re
 from django.core.files.storage import default_storage
 
 from partes.models import PermisoEspecial
+import settings
 #import calendar, time
+
+diasDeLaSemana = [
+    {"nombre": "Lunes", "corto": "Lun"},
+    {"nombre": "Martes", "corto": "Mar"},
+    {"nombre": "Miércoles", "corto": "Mié"},
+    {"nombre": "Jueves", "corto": "Jue"},
+    {"nombre": "Viernes", "corto": "Vie"},
+    {"nombre": "Sábado", "corto": "Sáb"},
+    {"nombre": "Domingo", "corto": "Dom"}
+]
 
 def slugify(value, allow_unicode=False):
     """
@@ -23,7 +35,7 @@ def slugify(value, allow_unicode=False):
 
 
 def guardarArchivo(archivo, mes, anio, empleado, indice):
-    carpeta = "adjuntos/"
+    carpeta = os.path.join(settings.BASE_DIR, 'sgpartes/adjuntos/')
     partes_nombre = archivo.name.split(".")
     # nuevo_nombre = []
     # for parte in partes_nombre:
@@ -106,6 +118,7 @@ def etiquetaCodigo(value):
     if value == "unu":
         return "UNU"
 
+    #return value.upper()
     return value
 
 

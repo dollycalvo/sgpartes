@@ -13,7 +13,7 @@
     <input type="hidden" id="hdnAprobar" name="aprobar" value="1">
     <div class="card mb-4">
         <div class="card-header">
-            <h3>APROBACIÓN DE REPORTE</h3>
+            <h3>Sistema de gestión de planillas de horario</h3>
             <h4>{{ nombreMes }} {{ planilla.anio }}</h4>
             <div class="d-flex flex-row mt-4">
                 <h5 class="w-25"><b>Legajo:</b> {{ datosEmpleado.legajo }}</h5>
@@ -43,7 +43,9 @@
                 <tbody>
                     {% for datoDiario in datosDiarios %}
                         <tr>
-                            <td class="text-center">{{ forloop.counter }}</td>
+                            {% with dds=forloop.counter %}
+                            <td class="text-center minw5rem {{ dds|class_dia_semana:primerDiaDelMes}}">{{ dds|dia_semana:primerDiaDelMes }} {{ forloop.counter }}</td>
+                            {% endwith %}
                             <td class="text-center">
                                 {{ datoDiario.codigo|etiqueta_codigo }}
                             </td>

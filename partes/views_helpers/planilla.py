@@ -1,3 +1,5 @@
+import os
+from datetime import datetime
 from partes.views_helpers.common import nombresMeses, redirectToError
 import calendar
 from partes.helper import guardarArchivo, etiquetaCodigo
@@ -62,7 +64,7 @@ def procesarCambiosEnPlanilla(request, id_empleado):
     i = 1
     listaCodigos = request.POST.getlist("codigos")
     for observacion in request.POST.getlist("observaciones"):
-        observaciones_para_email += "\nDía " + str(i) + ": " + etiquetaCodigo(listaCodigos[i - 1]) + ": " + (observacion.strip() if observacion.strip() != "" else SIN_NOVEDAD) 
+        observaciones_para_email += "\nDía " + str(i) + ": " + etiquetaCodigo(listaCodigos[i - 1]) + ": " + (observacion.strip() if observacion.strip() != "" else SIN_NOVEDAD)
         rcIndex = 0
         while rcIndex < len(registrosCoincidentes) and registrosCoincidentes[rcIndex].dia != i:
             rcIndex += 1
@@ -82,38 +84,39 @@ def procesarCambiosEnPlanilla(request, id_empleado):
                 registro.save()
                 nuevosRegistros.append(registro)
             else:
-                # En caso de no existir ni ser creado, hacemos un dummy 
+                # En caso de no existir ni ser creado, hacemos un dummy
                 nuevosRegistros.append(RegistroDiario(dia = i, codigo = "sn", observaciones = ""))
         i += 1
     # Enviamos e-mail
     if statusPlanilla.status == "Presentado":
         empleado = datosEmpleado[0]
         nombre_completo_empleado = empleado.apellidos + ", " + empleado.nombres
-        mensaje_email = "Fecha: " + nombresMeses[int(mes) - 1]["Nombre"] + " " + anio
-        mensaje_email += "\nEmpleado: " + nombre_completo_empleado + " (legajo: " + str(empleado.legajo) + ")"
-        mensaje_email += observaciones_para_email
-        print("Mail a " + empleado.jefe_directo.email)
-        if settings.DEBUG:
-            email = EmailMessage("Planilla presentada: " + nombre_completo_empleado, # asunto
-                                    mensaje_email, # cuerpo del email
-                                # empleado.email,
-                                # [empleado.jefe_directo.email, empleado.email],
-                                "webmaster@cguimaraenz.com", # from
-                                ["webmaster@cguimaraenz.com"] # to
-                                )
-        else:
-            email = EmailMessage("Planilla presentada: " + nombre_completo_empleado, # asunto
-                                    mensaje_email, # cuerpo del email
-                                empleado.email, #from
-                                [empleado.jefe_directo.email, empleado.email], #to
-                                )
-        # Archivos adjuntos        
-        carpeta = "adjuntos/"
-        for adjunto in adjuntos:
-            nombre_archivo = adjunto.nombre_archivo
-            fl_path = carpeta + nombre_archivo
-            email.attach_file(fl_path)
-        email.send()
+        if settings.ENVIAR_EMAIL:
+            mensaje_email = "Fecha: " + nombresMeses[int(mes) - 1]["Nombre"] + " " + anio
+            mensaje_email += "\nEmpleado: " + nombre_completo_empleado + " (legajo: " + str(empleado.legajo) + ")"
+            mensaje_email += observaciones_para_email
+            print("Mail a " + empleado.jefe_directo.email)
+            if settings.DEBUG:
+                email = EmailMessage("Planilla presentada: " + nombre_completo_empleado, # asunto
+                                        mensaje_email, # cuerpo del email
+                                    # empleado.email,
+                                    # [empleado.jefe_directo.email, empleado.email],
+                                    "webmaster@cguimaraenz.com", # from
+                                    ["webmaster@cguimaraenz.com"] # to
+                                    )
+            else:
+                email = EmailMessage("Planilla presentada: " + nombre_completo_empleado, # asunto
+                                        mensaje_email, # cuerpo del email
+                                    empleado.email, #from
+                                    [empleado.jefe_directo.email, empleado.email], #to
+                                    )
+            # Archivos adjuntos
+            carpeta = os.path.join(settings.BASE_DIR, 'sgpartes/adjuntos/')
+            for adjunto in adjuntos:
+                nombre_archivo = adjunto.nombre_archivo
+                fl_path = carpeta + nombre_archivo
+                email.attach_file(fl_path)
+            email.send()
     # Nos preparamos para renderizar la página
     templateParams = {  "accion_submit": acciones_submit[2],
                         "acciones_submit": acciones_submit[0] + "#" + acciones_submit[1],
@@ -127,7 +130,9 @@ def procesarCambiosEnPlanilla(request, id_empleado):
                         "statusPlanilla": statusPlanilla.status,
                         "mostrarMensaje": True,
                         "textoSinNovedad": SIN_NOVEDAD,
-                        "nombresArchivosAdjuntos": adjuntos}
+                        "nombresArchivosAdjuntos": adjuntos,
+                        "primerDiaDelMes": datetime.strptime("1/" + str(planilla.mes) + "/" + str(planilla.anio), "%d/%m/%Y").weekday()
+                    }
     request.session['id_planilla'] = planilla.id
     return render(request, 'planilla.html', templateParams)
 
@@ -175,6 +180,8 @@ def mostrarPlanillaParaVistaEdicion(request, id_empleado = 0, id_planilla = "0")
                         "anioReporte": datosPlanilla.anio,
                         "diasDelMes": dias_del_mes,
                         "textoSinNovedad": SIN_NOVEDAD,
-                        "nombresArchivosAdjuntos": adjuntos}
+                        "nombresArchivosAdjuntos": adjuntos,
+                        "primerDiaDelMes": datetime.strptime("1/" + str(datosPlanilla.mes) + "/" + str(datosPlanilla.anio), "%d/%m/%Y").weekday()
+                    }
     request.session['id_planilla'] = datosPlanilla.id
     return render(request, 'planilla.html', templateParams)
