@@ -25,7 +25,7 @@ SECRET_KEY = 's7(0rj)3^8j6eq7qf6_j%-fq6la5m3q=zm#40^_h7yqjf4+i^v'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['mdcalvo.pythonanywhere.com']
+ALLOWED_HOSTS = ['192.168.2.13','127.0.0.1']
 
 
 # Application definition
@@ -77,7 +77,8 @@ WSGI_APPLICATION = 'sgpartes.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'sgpartes/soportes.db.sqlite3'),
+        #'NAME': os.path.join(BASE_DIR, 'sgpartes/soportes.db.sqlite3'),
+        'NAME': os.path.join(BASE_DIR, 'soportes.db.sqlite3'),
     }
 }
 
@@ -131,7 +132,7 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 # STATIC_ROOT = os.path.join(BASE_DIR, 'static')
-STATIC_ROOT = '/home/mdcalvo/sgpartes/partes/static'
+STATIC_ROOT = '/var/www/html/sgpartes_2/partes/static'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
@@ -144,4 +145,4 @@ EMAIL_HOST_USER = "mdcalvogrycn@gmail.com"
 EMAIL_HOST_PASSWORD = "qwpxyfgdxrxxehzn"
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
-ENVIAR_EMAIL = True
+ENVIAR_EMAIL = False
