@@ -4,7 +4,9 @@ const API_ESTABLECER_FECHA_LIMITE = window.location.origin + "/establecer_fecha_
 const formFechaLimite = document.getElementById("formFechaLimite");
 const ddMesLimite = document.getElementById("mesLimite");
 const ddAnioLimite = document.getElementById("anioLimite");
+const wrapperTxtDiaLimite = document.querySelector(".cargable");
 const txtDiaLimite = document.getElementById("txtDiaLimite");
+const placeholder = txtDiaLimite.placeholder;
 const btnEstablecerFechaLimite = document.getElementById("btnEstablecerFechaLimite");
 const csrfToken = document.cookie
                         .split("; ")
@@ -61,10 +63,22 @@ const csrfToken = document.cookie
 //     });
 // }
 
+function mostrarCargando(show) {
+    if (show === true) {
+        wrapperTxtDiaLimite.setAttribute("cargando", true);
+        txtDiaLimite.value = "";
+        txtDiaLimite.placeholder = "";
+    } else {
+        wrapperTxtDiaLimite.removeAttribute("cargando");
+        txtDiaLimite.placeholder = placeholder;
+    }
+}
+
 
 function recargarFechaLimite() {
     const mes = ddMesLimite.value;
     const anio = ddAnioLimite.value;
+    mostrarCargando(true);
     fetch(API_FECHA_LIMITE,
         {
             method: "POST",
@@ -80,6 +94,7 @@ function recargarFechaLimite() {
         )
         .then(async response => {
             if (response.ok === true) {
+                mostrarCargando(false);
                 return response.json();
             }
             const respuesta = await response.json();
@@ -93,6 +108,7 @@ function recargarFechaLimite() {
             }
         })
         .catch(error => {
+            mostrarCargando(false);
             console.error(error);
         }
     );
