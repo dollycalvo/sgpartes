@@ -209,11 +209,6 @@ def recargar_fecha_limite(request):
     if len(fechaLimite) == 1:
         fechaLimite = fechaLimite[0]
         return JsonResponse({"mes": fechaLimite.mes, "anio": fechaLimite.anio, "dia": fechaLimite.diaLimite})
-        # response = HttpResponse(
-        #     json.dumps({"mes": fechaLimite.mes, "anio": fechaLimite.anio, "dia": fechaLimite.diaLimite}),
-        # )
-        # response.status_code = 200
-        # return response
     else:
         # En caso de no encontrar la fecha limite:
         response = HttpResponse(
