@@ -48,3 +48,9 @@ class RegistroDiario(models.Model):
 class RegeneracionPW(models.Model):
     empleado = models.ForeignKey(Empleado, on_delete=models.DO_NOTHING, default=None)
     codigo = models.CharField(max_length=64)
+
+
+class FechasLimites(models.Model):
+    mes = models.SmallIntegerField(default=0)
+    anio = models.SmallIntegerField(default=0)
+    diaLimite = models.SmallIntegerField(default=0)

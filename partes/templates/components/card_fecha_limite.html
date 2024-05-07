@@ -1,0 +1,48 @@
+{% load static %}
+<div class="card card-filtros">
+    <div class="card-header bg-secondary text-white">
+        Establecer fechas límite de presentación de planillas
+    </div>
+    <div class="card-body filtros-dashboard">
+        <div class="card-body">
+            <h4 class="card-title">Mes y año:</h4>
+            <form id="formFechaLimite">
+                {% csrf_token %}
+                <table class="table table-striped table-bordered">
+                    <tbody>
+                        <tr>
+                            <td>
+                                <label for="mesLimite">Mes:</label>
+                                <select class="w-100" id="mesLimite" name="mesLimite" placeholder="Seleccionar mes" />
+                                    {% for mes in nombresMeses %}
+                                        <option value="{{mes.ID}}" {% if mes.ID == mesActual %}selected{% endif %}>{{ mes.Nombre }}</option>
+                                    {% endfor %}
+                                </select>
+                            </td>
+                            <td>
+                                <label for="anioLimite">Año:</label>
+                                <select class="w-100" id="anioLimite" name="anioLimite" placeholder="Seleccionar año" />
+                                    {% for anio in anios %}
+                                        <option value={{anio}} {% if anio == anioActual %}selected{% endif %}>{{anio}}</option>
+                                    {% endfor %}
+                                </select>
+                            </td>
+                            <td>
+                                <label for="txtDiaLimite">Día límite:</label>
+                                {% if fechaLimite != 0 %}
+                                    <input id="txtDiaLimite" class="w-100" type="number" value={{ fechaLimite }} placeholder="Aún no establecida (por defecto: 25)" />
+                                {% else %}
+                                    <input id="txtDiaLimite" class="w-100" type="number" min="1" max="31" value="" placeholder="Aún no establecida (por defecto: 25)" />
+                                {% endif %}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="text-center">
+                    <button class="btn btn-primary" id="btnEstablecerFechaLimite">Establecer fecha límite</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script type="text/javascript" src="{% static 'js/fecha_limite.js' %}"></script>

@@ -7,6 +7,8 @@ from partes.helper import etiquetaCodigo
 from partes.models import Adjuntos, Planilla, RegistroDiario
 import settings
 
+MSG_EXITO = "exito";
+
 nombresMeses = [{"ID": 1, "Nombre": "Enero"},
                 {"ID": 2, "Nombre": "Febrero"},
                 {"ID": 3, "Nombre": "Marzo"},

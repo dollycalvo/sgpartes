@@ -129,6 +129,13 @@ def tienePermisoEspecialRPA(id_empleado):
     return False
 
 
+def tienePermisoEspecialEFL(id_empleado):
+    rolesEFL = PermisoEspecial.objects.filter(empleado_id = id_empleado, codigo="EFL")
+    if (len(rolesEFL) == 1):
+        return True
+    return False
+
+
 def tienePermisosEspecialesParaDashboard(id_empleado):
     # De momento sólo retornará con este permiso especial, en caso de nuevos permisos especiales
     # podríamos hacer un OR para verificar si tiene alguno que le habilite acceso al dashboard

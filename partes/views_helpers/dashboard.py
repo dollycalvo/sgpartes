@@ -1,17 +1,29 @@
 from itertools import chain
 from partes.forms import FormSeleccionFecha
-from partes.helper import tienePermisoEspecialRPA
-from partes.models import Planilla, Empleado, StatusPlanilla
+from partes.helper import tienePermisoEspecialEFL, tienePermisoEspecialRPA
+from partes.models import FechasLimites, Planilla, Empleado, StatusPlanilla
 from datetime import datetime
 from django.shortcuts import render
 from partes.views_helpers.common import nombresMeses, obtenerPlanillasParaRevisar
 
 
 def cargarPlanillasParaMostrarYCalendario(request):
+    fechaActual = datetime.now()
+    mesActual = fechaActual.month
+    anioActual = fechaActual.year
     # Si la persona tiene el rol especial RPA (Revisión de Planillas Aprobadas), mostramos una tarjeta adicional
     rolRPA = None
     if (tienePermisoEspecialRPA(request.session['id_empleado'])):
         rolRPA = "RPA"
+    rolEFL = None
+    if (tienePermisoEspecialEFL(request.session['id_empleado'])):
+        rolEFL = "EFL"
+        # al tener permisos, cargamos también la fecha límite para mostrarlo
+        fechaLimite = FechasLimites.objects.filter(mes = mesActual, anio = anioActual)        
+        if len(fechaLimite) > 0:
+            fechaLimite = fechaLimite[0]
+        else:
+            fechaLimite = 0
     form = FormSeleccionFecha()
     # Cargamos los datos para alimentar los filtros, excepto Borrador ya que el jefe directo no debería verlo
     statuses = StatusPlanilla.objects.filter(id__gt = 1)
@@ -77,9 +89,6 @@ def cargarPlanillasParaMostrarYCalendario(request):
     # para evitar que un supervisor acceda a una planilla a la cual no está autorizado
     request.session['idsPlanillasParaMostrar'] = soloIDsPlanillas
         
-    fechaActual = datetime.now()
-    mesActual = fechaActual.month
-    anioActual = fechaActual.year
     anios = list(range(anioActual - 3, anioActual + 2))
     mensaje = ""
     if "dashboard_mensaje" in request.session:
@@ -97,4 +106,6 @@ def cargarPlanillasParaMostrarYCalendario(request):
                                                 "statuses": statuses,
                                                 "filtros": filtros,
                                                 "planillasParaRevisar": planillasParaRevisar,
-                                                "rolRPA": rolRPA})
+                                                "rolRPA": rolRPA,
+                                                "rolEFL": rolEFL,
+                                                "fechaLimite": fechaLimite})
