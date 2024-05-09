@@ -1,15 +1,14 @@
 import os
 from datetime import datetime
-from partes.views_helpers.common import nombresMeses, redirectToError
+from partes.views_helpers.common import DIA_LIMITE_PRESENTACION_PLANILLA, excedeDiaLimite, nombresMeses, redirectToError
 import calendar
 from partes.helper import guardarArchivo, etiquetaCodigo
-from partes.models import Adjuntos, Empleado, StatusPlanilla, Planilla, RegistroDiario
+from partes.models import Adjuntos, CampoHistorial, Empleado, FechasLimites, RegistroHistorial, StatusPlanilla, Planilla, RegistroDiario, TipoCambio
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.core.mail import EmailMessage
 
-import settings
-
+from sgpartes import settings
 
 SIN_NOVEDAD = "Sin novedad"
 acciones_submit = ['guardar', 'presentar', 'sin_accion']
@@ -19,6 +18,14 @@ def procesarCambiosEnPlanilla(request, id_empleado):
     mes = request.POST['mesReporte']
     anio = request.POST['anioReporte']
     dias_del_mes = range(1, calendar.monthrange(int(anio), int(mes))[1] + 1)
+    # Obtengo la fecha límite de presentación de planilla para el mes de la planilla
+    fechaLimite = FechasLimites.objects.filter(mes=mes, anio=anio)
+    if len(fechaLimite) == 1:
+        diaLimite = fechaLimite[0].diaLimite
+    else:
+        diaLimite = DIA_LIMITE_PRESENTACION_PLANILLA
+    excedioDiaLimite = excedeDiaLimite(diaLimite, mes, anio)
+            
     if request.POST['accion_submit'] == acciones_submit[1]:
         statusPlanilla = StatusPlanilla.objects.filter(status = "Presentado")[0]
     else:
@@ -27,13 +34,28 @@ def procesarCambiosEnPlanilla(request, id_empleado):
     planillas = Planilla.objects.filter(empleado_id=id_empleado, anio=anio, mes=mes)
     indice_adjunto = 1
     if (len(planillas) == 1):
+        # Existe la planilla ya?
         planilla = planillas[0]
+        # Acá verificamos si hubo cambio de estado y si debería registrar el histórico
+        if planilla.status != statusPlanilla and excedioDiaLimite:
+            nuevoRegistroHistorial = RegistroHistorial(
+                                                        planilla = planilla,
+                                                        fechaHora = datetime.now(),
+                                                        tipo = TipoCambio.objects.get(nombre = "Modificación"),
+                                                        campo = CampoHistorial.objects.get(nombre = "Estado"),
+                                                        diaCambio = "",
+                                                        anterior = planilla.status.status,
+                                                        nuevo = statusPlanilla.status
+                                                      )
+            nuevoRegistroHistorial.save()
         planilla.status = statusPlanilla
         if statusPlanilla.status == "Presentado":
             planilla.observaciones = ""
         # cantidad de adjuntos?
         indice_adjunto = len(Adjuntos.objects.filter(planilla = planilla)) + 1
+        historial = RegistroHistorial.objects.filter(planilla = planilla)
     else:
+        historial = None
         planilla = Planilla(empleado_id = id_empleado,
                             mes = mes,
                             anio = anio,
@@ -132,6 +154,7 @@ def procesarCambiosEnPlanilla(request, id_empleado):
                         "mostrarMensaje": True,
                         "textoSinNovedad": SIN_NOVEDAD,
                         "nombresArchivosAdjuntos": adjuntos,
+                        "historial": historial,
                         "primerDiaDelMes": datetime.strptime("1/" + str(planilla.mes) + "/" + str(planilla.anio), "%d/%m/%Y").weekday()
                     }
     request.session['id_planilla'] = planilla.id
@@ -152,6 +175,7 @@ def mostrarPlanillaParaVistaEdicion(request, id_empleado = 0, id_planilla = "0")
         datosPlanilla = Planilla.objects.filter(id = id_planilla)
     if len(datosPlanilla) == 1:
         datosPlanilla = datosPlanilla[0]
+        historial = RegistroHistorial.objects.filter(planilla = datosPlanilla)
         # obtenemos sus archivos adjuntos
         adjuntos = Adjuntos.objects.filter(planilla_id = datosPlanilla.id)
         datosDiarios = []
@@ -162,6 +186,7 @@ def mostrarPlanillaParaVistaEdicion(request, id_empleado = 0, id_planilla = "0")
         for registro in registrosDiarios:
             datosDiarios[registro.dia - 1] = registro
     else:
+        historial = None
         # datosPlanilla = [0, id_empleado, mes, anio, False]
         dias_del_mes = range(1, calendar.monthrange(int(anio), int(mes))[1] + 1)
         datosPlanilla = Planilla(empleado_id = id_empleado,
@@ -181,6 +206,7 @@ def mostrarPlanillaParaVistaEdicion(request, id_empleado = 0, id_planilla = "0")
                         "anioReporte": datosPlanilla.anio,
                         "diasDelMes": dias_del_mes,
                         "textoSinNovedad": SIN_NOVEDAD,
+                        "historial": historial,
                         "nombresArchivosAdjuntos": adjuntos,
                         "primerDiaDelMes": datetime.strptime("1/" + str(datosPlanilla.mes) + "/" + str(datosPlanilla.anio), "%d/%m/%Y").weekday()
                     }

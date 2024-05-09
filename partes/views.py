@@ -1,5 +1,5 @@
 import os
-import settings
+from sgpartes import settings
 import json
 from partes.helper import tienePermisosEspecialesParaDashboard
 from partes.views_helpers.common import MSG_EXITO, enviarEmailPlanilla, nombresMeses, obtenerPlanillasParaRevisar, redirectToError
