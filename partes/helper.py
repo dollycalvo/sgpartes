@@ -4,7 +4,7 @@ import re
 from django.core.files.storage import default_storage
 
 from partes.models import PermisoEspecial
-import settings
+from sgpartes import settings
 #import calendar, time
 
 diasDeLaSemana = [

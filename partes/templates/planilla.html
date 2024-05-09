@@ -154,6 +154,21 @@
                 {% endif %}
             </div>
             {% endif %}
+            <div class="card mt-4">
+                <h5 class="card-header bg-secondary text-white">Historial de actividades</h5>
+                {% if True %}
+                <div class="card-body">
+                    {% for adjunto in nombresArchivosAdjuntos %}
+                    {{ adjunto }}
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="card-body">
+                    No hay actividades registradas en el historial
+                </div>
+                {% endif %}
+                <input type="file" name="pdfs" id="pdf" multiple>
+            </div>
         </div>
         {% if datosPlanilla.status.status == "Presentado" %}
         <div class="card-footer text-success">

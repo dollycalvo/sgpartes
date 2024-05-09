@@ -48,7 +48,8 @@ def procesarCambiosEnPlanilla(request, id_empleado):
             try:
                 nombre_archivo = guardarArchivo(archivo, mes, anio, str(datosEmpleado[0].legajo) + "_" + datosEmpleado[0].apellidos, indice_adjunto)
                 indice_adjunto += 1
-            except:
+            except Exception as e:
+                print("ERROR: " + repr(e))
                 return redirectToError(request, "Ha ocurrido un error al intentar guardar los archivos. Error GA001")
             if nombre_archivo != "":
                 adjunto = Adjuntos(planilla = planilla, nombre_archivo = nombre_archivo)
