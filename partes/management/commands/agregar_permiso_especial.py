@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from partes.models import Empleado, PermisoEspecial
+from partes.models import PermisoEspecial
 from django.contrib.auth.hashers import make_password
 
 class Command(BaseCommand):
