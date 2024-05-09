@@ -3,3 +3,6 @@
 __pycache__/
 *.py[cod]
 *$py.class
+sgpartes/adjuntos/*
+partes/views_helpers/__pycache__/*.pyc
+partes/migrations/*.py
