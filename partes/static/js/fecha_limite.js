@@ -13,56 +13,6 @@ const csrfToken = document.cookie
                         .find((row) => row.startsWith("csrftoken="))
                         ?.split("=")[1];
 
-// for (const boton of botonesEnviarPorEmail) {
-//     boton.addEventListener("click", e => {
-//         e.preventDefault();
-//         dlgEnviandoEmail.showModal();
-//         const id_planilla = boton.id;
-//         const csrfToken = document.cookie
-//                                 .split("; ")
-//                                 .find((row) => row.startsWith("csrftoken="))
-//                                 ?.split("=")[1];
-//         fetch(API_ENVIAR_MAIL,
-//             {
-//                 method: "POST",
-//                 mode: "cors",
-//                 cache: "no-cache",
-//                 credentials: "same-origin",
-//                 headers: {
-//                   "Content-Type": "application/json",
-//                   "X-CSRFToken": csrfToken
-//                 },
-//                 body: JSON.stringify({id_planilla})
-//             }
-//             )
-//             .then(async response => {
-//                 if (response.ok === true)
-//                     return response.json();
-//                 const respuesta = await response.json();
-//                 return Promise.reject({"message": `Status Code: ${response.status} (${respuesta.mensaje})`});
-//             })
-//             .then(data => {
-//                 dlgEnviandoEmail.close();
-//                 if (data.mensaje == "exito") {
-//                     dlgResultado.innerHTML = "El e-mail se ha enviado correctamente.";
-//                     dlgResultado.classList.add("modal-exito");
-//                 } else {
-//                     dlgResultado.innerHTML = data.mensaje;
-//                     dlgResultado.classList.add("modal-error");
-//                 }
-//                 dlgResultado.showModal();
-//                 setTimeout(cerrarModal, 3000);
-//             })
-//             .catch(error => {
-//                 dlgEnviandoEmail.close();
-//                 dlgResultado.innerHTML = error.message;
-//                 dlgResultado.classList.add("modal-error");
-//                 dlgResultado.showModal();
-//                 setTimeout(cerrarModal, 3000);
-//         });
-//     });
-// }
-
 function mostrarCargando(show) {
     if (show === true) {
         wrapperTxtDiaLimite.setAttribute("cargando", true);
