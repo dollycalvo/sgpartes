@@ -69,5 +69,6 @@ class RegistroHistorial(models.Model):
     fechaHora = models.DateTimeField()
     tipo = models.ForeignKey(TipoCambio, on_delete=models.DO_NOTHING, default=None)
     campo = models.ForeignKey(CampoHistorial, on_delete=models.DO_NOTHING, default=None)
+    diaCambio = models.TextField(default="")    # En caso de que el cambio sea en código u observación, se usará este campo
     anterior = models.TextField(default="")
     nuevo = models.TextField(default="")
