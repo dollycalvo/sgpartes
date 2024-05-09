@@ -5,4 +5,5 @@ __pycache__/
 *$py.class
 sgpartes/adjuntos/*
 partes/views_helpers/__pycache__/*.pyc
+partes/__pycache__/*.pyc
 partes/migrations/*.py
