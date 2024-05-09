@@ -156,11 +156,28 @@
             {% endif %}
             <div class="card mt-4">
                 <h5 class="card-header bg-secondary text-white">Historial de actividades</h5>
-                {% if True %}
+                {% if historial %}
                 <div class="card-body">
-                    {% for adjunto in nombresArchivosAdjuntos %}
-                    {{ adjunto }}
-                    {% endfor %}
+                    <table class="table table-striped table-bordered w-0">
+                        <thead>
+                            <th>Tipo</th>
+                            <th>Campo</th>
+                            <th>Valor anterior</th>
+                            <th>Nuevo valor</th>
+                            <th>Fecha y hora</th>
+                        </thead>
+                        <tbody>
+                        {% for registro in historial %}
+                            <tr>
+                                <td>{{ registro.tipo.nombre }}</td>
+                                <td>{{ registro.campo.nombre }}</td>
+                                <td>{{ registro.anterior }}</td>
+                                <td>{{ registro.nuevo }}</td>
+                                <td>{{ registro.fechaHora }}</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
                 {% else %}
                 <div class="card-body">
