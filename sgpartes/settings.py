@@ -134,3 +134,5 @@ EMAIL_PORT = 587
 EMAIL_HOST_USER = "mdcalvogrycn@gmail.com"
 EMAIL_HOST_PASSWORD = "qwpxyfgdxrxxehzn"
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+ENVIAR_EMAIL = False
