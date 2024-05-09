@@ -1,5 +1,6 @@
 import os
 import calendar
+from datetime import datetime, timedelta
 from django.core.mail import EmailMessage
 from django.http import HttpResponseRedirect
 from partes.helper import etiquetaCodigo
@@ -7,7 +8,9 @@ from partes.helper import etiquetaCodigo
 from partes.models import Adjuntos, Planilla, RegistroDiario
 import settings
 
-MSG_EXITO = "exito";
+MSG_EXITO = "exito"
+
+DIA_LIMITE_PRESENTACION_PLANILLA = 25
 
 nombresMeses = [{"ID": 1, "Nombre": "Enero"},
                 {"ID": 2, "Nombre": "Febrero"},
@@ -87,3 +90,9 @@ def enviarEmailPlanilla(id_planilla, receptores_email, enviar_adjunto = True):
             email.send()
     except:
         return False
+    
+    
+def excedeDiaLimite(diaLimite, mes, anio):
+    hoy = datetime.now()
+    fechaLimite = datetime(int(anio), int(mes), diaLimite) + timedelta(days=1)
+    return (hoy > fechaLimite)
