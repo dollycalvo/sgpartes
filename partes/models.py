@@ -54,3 +54,20 @@ class FechasLimites(models.Model):
     mes = models.SmallIntegerField(default=0)
     anio = models.SmallIntegerField(default=0)
     diaLimite = models.SmallIntegerField(default=0)
+
+
+class TipoCambio(models.Model):
+    nombre = models.TextField(default="")
+    
+    
+class CampoHistorial(models.Model):
+    nombre = models.TextField(default="")
+    
+    
+class RegistroHistorial(models.Model):
+    planilla = models.ForeignKey(Planilla, on_delete=models.DO_NOTHING, default=None)
+    fechaHora = models.DateTimeField()
+    tipo = models.ForeignKey(TipoCambio, on_delete=models.DO_NOTHING, default=None)
+    campo = models.ForeignKey(CampoHistorial, on_delete=models.DO_NOTHING, default=None)
+    anterior = models.TextField(default="")
+    nuevo = models.TextField(default="")
