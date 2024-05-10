@@ -1,6 +1,6 @@
 import os
 from datetime import datetime
-from partes.views_helpers.common import CAMPO_HISTORIAL_ARCHIVO_ADJUNTO, CAMPO_HISTORIAL_CODIGO, CAMPO_HISTORIAL_ESTADO, CAMPO_HISTORIAL_OBSERVACIONES, DIA_LIMITE_PRESENTACION_PLANILLA, STATUS_PLANILLA_APROBADO, STATUS_PLANILLA_BORRADOR, STATUS_PLANILLA_PRESENTADO, TIPO_CAMBIO_INSERCION, TIPO_CAMBIO_MODIFICACION, excedeDiaLimite, nombresMeses, redirectToError
+from partes.views_helpers.common import CAMPO_HISTORIAL_ARCHIVO_ADJUNTO, CAMPO_HISTORIAL_CODIGO, CAMPO_HISTORIAL_ESTADO, CAMPO_HISTORIAL_OBSERVACIONES, DIA_LIMITE_PRESENTACION_PLANILLA, STATUS_PLANILLA_APROBADO, STATUS_PLANILLA_BORRADOR, STATUS_PLANILLA_PRESENTADO, TIPO_CAMBIO_INSERCION, TIPO_CAMBIO_MODIFICACION, excedeDiaLimite, isPlanillaEnRevision, nombresMeses, redirectToError, registroHistorialYEnviarMail
 import calendar
 from partes.helper import guardarArchivo, etiquetaCodigo
 from partes.models import Adjuntos, CampoHistorial, Empleado, FechasLimites, RegistroHistorial, StatusPlanilla, Planilla, RegistroDiario, TipoCambio
@@ -32,21 +32,20 @@ def procesarCambiosEnPlanilla(request, id_empleado):
     if (len(planillas) == 1):
         # Existe la planilla ya?
         planilla = planillas[0]
-        excedioDiaLimite = excedeDiaLimite(diaLimite, mes, anio) and planilla.status.status == STATUS_PLANILLA_PRESENTADO
+        excedioDiaLimite = excedeDiaLimite(diaLimite, mes, anio) and (planilla.status.status != STATUS_PLANILLA_BORRADOR or isPlanillaEnRevision(planilla))
         if request.POST['accion_submit'] == acciones_submit[1]:
             statusPlanilla = StatusPlanilla.objects.filter(status = STATUS_PLANILLA_PRESENTADO).get()
             # Acá verificamos si hubo cambio de estado y si debería registrar el histórico
             if planilla.status != statusPlanilla and excedioDiaLimite:
-                nuevoRegistroHistorial = RegistroHistorial(
-                                                            planilla = planilla,
-                                                            fechaHora = datetime.now(),
-                                                            tipo = TipoCambio.objects.get(nombre = TIPO_CAMBIO_MODIFICACION),
-                                                            campo = CampoHistorial.objects.get(nombre = CAMPO_HISTORIAL_ESTADO),
-                                                            diaCambio = "",
-                                                            anterior = planilla.status.status,
-                                                            nuevo = statusPlanilla.status
-                                                        )
-                nuevoRegistroHistorial.save()
+                registroHistorialYEnviarMail(
+                    request,
+                    planilla,
+                    TipoCambio.objects.get(nombre = TIPO_CAMBIO_MODIFICACION),
+                    CampoHistorial.objects.get(nombre = CAMPO_HISTORIAL_ESTADO),
+                    "",
+                    planilla.status.status,
+                    statusPlanilla.status
+                )
             planilla.status = statusPlanilla
         else:
             statusPlanilla = planilla.status
@@ -67,26 +66,25 @@ def procesarCambiosEnPlanilla(request, id_empleado):
                             status = statusPlanilla)
         # Guardamos los cambios en la nueva
         planilla.save()
-        excedioDiaLimite = excedeDiaLimite(diaLimite, mes, anio) and statusPlanilla.status == STATUS_PLANILLA_PRESENTADO
-        print("QUE ESTADO?", statusPlanilla.status, STATUS_PLANILLA_BORRADOR, str(excedioDiaLimite))
-        if statusPlanilla.status != STATUS_PLANILLA_BORRADOR and excedioDiaLimite:
-            nuevoRegistroHistorial = RegistroHistorial(
-                                                        planilla = planilla,
-                                                        fechaHora = datetime.now(),
-                                                        tipo = TipoCambio.objects.get(nombre = TIPO_CAMBIO_MODIFICACION),
-                                                        campo = CampoHistorial.objects.get(nombre = CAMPO_HISTORIAL_ESTADO),
-                                                        diaCambio = "",
-                                                        anterior = STATUS_PLANILLA_BORRADOR,
-                                                        nuevo = planilla.status.status
-                                                    )
-            nuevoRegistroHistorial.save()
+        if excedioDiaLimite is None:
+            excedioDiaLimite = excedeDiaLimite(diaLimite, mes, anio) and (planilla.status.status != STATUS_PLANILLA_BORRADOR or isPlanillaEnRevision(planilla))
+        if (statusPlanilla.status != STATUS_PLANILLA_BORRADOR or isPlanillaEnRevision(planilla)) and excedioDiaLimite:
+            registroHistorialYEnviarMail(
+                request,
+                planilla,
+                TipoCambio.objects.get(nombre = TIPO_CAMBIO_MODIFICACION),
+                CampoHistorial.objects.get(nombre = CAMPO_HISTORIAL_ESTADO),
+                "",
+                STATUS_PLANILLA_BORRADOR,
+                planilla.status.status
+            )
             historial = RegistroHistorial.objects.filter(planilla = planilla).order_by('-fechaHora')
         else:
             historial = None
     # Tenemos archivo adjunto?
     datosEmpleado = Empleado.objects.filter(id = id_empleado)
     if excedioDiaLimite is None:
-        excedioDiaLimite = excedeDiaLimite(diaLimite, mes, anio) and planilla.status.status == STATUS_PLANILLA_PRESENTADO
+        excedioDiaLimite = excedeDiaLimite(diaLimite, mes, anio) and (planilla.status.status != STATUS_PLANILLA_BORRADOR or isPlanillaEnRevision(planilla))
     if "pdfs" in request.FILES:
         for archivo in request.FILES.getlist("pdfs"):
             nombre_archivo = ""
@@ -94,16 +92,15 @@ def procesarCambiosEnPlanilla(request, id_empleado):
                 nombre_archivo = guardarArchivo(archivo, mes, anio, str(datosEmpleado[0].legajo) + "_" + datosEmpleado[0].apellidos, indice_adjunto)
                 indice_adjunto += 1
                 if excedioDiaLimite or planilla.status.status == STATUS_PLANILLA_APROBADO:
-                    nuevoRegistroHistorial = RegistroHistorial(
-                                                                planilla = planilla,
-                                                                fechaHora = datetime.now(),
-                                                                tipo = TipoCambio.objects.get(nombre = TIPO_CAMBIO_INSERCION),
-                                                                campo = CampoHistorial.objects.get(nombre = CAMPO_HISTORIAL_ARCHIVO_ADJUNTO),
-                                                                diaCambio = "",
-                                                                anterior = "Sin archivo",
-                                                                nuevo = "Nombre archivo: " + nombre_archivo
-                                                            )
-                    nuevoRegistroHistorial.save()
+                    registroHistorialYEnviarMail(
+                        request,
+                        planilla,
+                        TipoCambio.objects.get(nombre = TIPO_CAMBIO_INSERCION),
+                        CampoHistorial.objects.get(nombre = CAMPO_HISTORIAL_ARCHIVO_ADJUNTO),
+                        "",
+                        "Sin archivo",
+                        "Nombre archivo: " + nombre_archivo
+                    )
             except Exception as e:
                 print("ERROR: " + repr(e))
                 return redirectToError(request, "Ha ocurrido un error al intentar guardar los archivos. Error GA001")
@@ -130,27 +127,25 @@ def procesarCambiosEnPlanilla(request, id_empleado):
             registro = registrosCoincidentes[rcIndex]
             if excedioDiaLimite or planilla.status.status == STATUS_PLANILLA_APROBADO:
                 if registro.codigo != listaCodigos[i - 1]:
-                    nuevoRegistroHistorial = RegistroHistorial(
-                                                                planilla = planilla,
-                                                                fechaHora = datetime.now(),
-                                                                tipo = TipoCambio.objects.get(nombre = TIPO_CAMBIO_MODIFICACION),
-                                                                campo = CampoHistorial.objects.get(nombre = CAMPO_HISTORIAL_CODIGO),
-                                                                diaCambio = str(i),
-                                                                anterior = registro.codigo,
-                                                                nuevo = listaCodigos[i - 1]
-                                                            )
-                    nuevoRegistroHistorial.save()
+                    registroHistorialYEnviarMail(
+                        request,
+                        planilla,
+                        TipoCambio.objects.get(nombre = TIPO_CAMBIO_MODIFICACION),
+                        CampoHistorial.objects.get(nombre = CAMPO_HISTORIAL_CODIGO),
+                        str(i),
+                        registro.codigo,
+                        listaCodigos[i - 1]
+                    )
                 if registro.observaciones != observacion.strip():
-                    nuevoRegistroHistorial = RegistroHistorial(
-                                                                planilla = planilla,
-                                                                fechaHora = datetime.now(),
-                                                                tipo = TipoCambio.objects.get(nombre = TIPO_CAMBIO_MODIFICACION),
-                                                                campo = CampoHistorial.objects.get(nombre = CAMPO_HISTORIAL_OBSERVACIONES),
-                                                                diaCambio = str(i),
-                                                                anterior = registro.observaciones,
-                                                                nuevo = observacion.strip()
-                                                            )
-                    nuevoRegistroHistorial.save()
+                    registroHistorialYEnviarMail(
+                        request,
+                        planilla,
+                        TipoCambio.objects.get(nombre = TIPO_CAMBIO_MODIFICACION),
+                        CampoHistorial.objects.get(nombre = CAMPO_HISTORIAL_OBSERVACIONES),
+                        str(i),
+                        registro.observaciones,
+                        observacion.strip()
+                    )
             registro.codigo = listaCodigos[i - 1]
             registro.observaciones = observacion
             registro.save()
@@ -158,27 +153,25 @@ def procesarCambiosEnPlanilla(request, id_empleado):
         else: # Sino, creamos uno nuevo siempre y cuando sea sin novedad
             if (listaCodigos[i - 1] != "sn"):
                 if excedioDiaLimite or planilla.status.status == STATUS_PLANILLA_APROBADO:
-                    nuevoRegistroHistorial = RegistroHistorial(
-                                                                planilla = planilla,
-                                                                fechaHora = datetime.now(),
-                                                                tipo = TipoCambio.objects.get(nombre = TIPO_CAMBIO_MODIFICACION),
-                                                                campo = CampoHistorial.objects.get(nombre = CAMPO_HISTORIAL_CODIGO),
-                                                                diaCambio = str(i),
-                                                                anterior = "S/N",
-                                                                nuevo = listaCodigos[i - 1]
-                                                            )
-                    nuevoRegistroHistorial.save()
+                    registroHistorialYEnviarMail(
+                        request,
+                        planilla,
+                        TipoCambio.objects.get(nombre = TIPO_CAMBIO_MODIFICACION),
+                        CampoHistorial.objects.get(nombre = CAMPO_HISTORIAL_CODIGO),
+                        str(i),
+                        "S/N",
+                        listaCodigos[i - 1]
+                    )
                     if observacion.strip() != "":
-                        nuevoRegistroHistorial = RegistroHistorial(
-                                                                    planilla = planilla,
-                                                                    fechaHora = datetime.now(),
-                                                                    tipo = TipoCambio.objects.get(nombre = TIPO_CAMBIO_MODIFICACION),
-                                                                    campo = CampoHistorial.objects.get(nombre = CAMPO_HISTORIAL_OBSERVACIONES),
-                                                                    diaCambio = str(i),
-                                                                    anterior = "",
-                                                                    nuevo = observacion.strip()
-                                                                )
-                        nuevoRegistroHistorial.save()
+                        registroHistorialYEnviarMail(
+                            request,
+                            planilla,
+                            TipoCambio.objects.get(nombre = TIPO_CAMBIO_MODIFICACION),
+                            CampoHistorial.objects.get(nombre = CAMPO_HISTORIAL_OBSERVACIONES),
+                            str(i),
+                            "",
+                            observacion.strip()
+                        )
                 registro = RegistroDiario(planilla_id = planilla.id,
                                         dia = i, # día
                                         codigo = listaCodigos[i - 1],
@@ -190,7 +183,7 @@ def procesarCambiosEnPlanilla(request, id_empleado):
                 nuevosRegistros.append(RegistroDiario(dia = i, codigo = "sn", observaciones = ""))
         i += 1
     # Enviamos e-mail
-    if statusPlanilla.status == "Presentado":
+    if statusPlanilla.status == STATUS_PLANILLA_PRESENTADO and request.POST['accion_submit'] == acciones_submit[1]:
         empleado = datosEmpleado[0]
         nombre_completo_empleado = empleado.apellidos + ", " + empleado.nombres
         if settings.ENVIAR_EMAIL:
@@ -254,7 +247,7 @@ def mostrarPlanillaParaVistaEdicion(request, id_empleado = 0, id_planilla = "0")
         datosPlanilla = Planilla.objects.filter(id = id_planilla)
     if len(datosPlanilla) == 1:
         datosPlanilla = datosPlanilla[0]
-        historial = RegistroHistorial.objects.filter(planilla = datosPlanilla)
+        historial = RegistroHistorial.objects.filter(planilla = datosPlanilla).order_by('-fechaHora')
         # obtenemos sus archivos adjuntos
         adjuntos = Adjuntos.objects.filter(planilla_id = datosPlanilla.id)
         datosDiarios = []
@@ -271,10 +264,10 @@ def mostrarPlanillaParaVistaEdicion(request, id_empleado = 0, id_planilla = "0")
         datosPlanilla = Planilla(empleado_id = id_empleado,
                             mes = mes,
                             anio = anio,
-                            status = StatusPlanilla.objects.filter(status = "Borrador")[0])
+                            status = StatusPlanilla.objects.filter(status = STATUS_PLANILLA_BORRADOR).get())
         datosDiarios = [None] * len(dias_del_mes)
         adjuntos = None
-    datosEmpleado = Empleado.objects.filter(id = id_empleado)[0]
+    datosEmpleado = Empleado.objects.filter(id = id_empleado).get()
     templateParams = {  "accion_submit": accion_submit,
                         "acciones_submit": acciones_submit[0] + "#" + acciones_submit[1],
                         "datosEmpleado": datosEmpleado,
