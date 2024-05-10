@@ -11,6 +11,8 @@ const spansFachadaSelects = document.querySelectorAll(".spanFachadaSelect");
 const selectsCodigos = document.getElementsByName("codigos");
 const SIN_NOVEDAD = "Sin novedad";
 const S_N = "sn";
+const STATUS_PLANILLA = {borrador: "Borrador", presentado: "Presentado", aprobado: "Aprobado"};
+const statusPlanilla = document.getElementById("hdnStatusPlanilla").value;
 
 btnLimpiarForm.addEventListener("click", () => {
     if (confirm("¿Confirma que desea limpiar el formulario? Se eliminarán todos los comentarios y el archivo adjunto.")) {
@@ -64,19 +66,24 @@ function fileInputOpen() {
 
 function archivosAdjuntado(archivos) {
     for (let archivo of archivos) {
-        areaAdjunto.innerHTML = componenteArchivoAdjunto(archivo.name) + areaAdjunto.innerHTML;
+        areaAdjunto.insertBefore(componenteArchivoAdjunto(archivo.name), dummyAdjuntarArchivo);
     }
     pdfInput.files = archivos;
-    btnPresentarPlanilla.removeAttribute("disabled");
+    if (statusPlanilla == STATUS_PLANILLA.borrador) {
+        btnPresentarPlanilla.removeAttribute("disabled");
+    }
 }
 
 function componenteArchivoAdjunto(nombre) {
-    return `
-        <div id="wrapperNombreArchivo">
-            <i class='bi bi-file-earmark-pdf'></i>
-            <div id="nombreArchivo">${nombre}</div>
-        </div>
-    `;
+    const div = document.createElement("div");
+    div.className = "wrapperNombreArchivo";
+    const i = document.createElement("i");
+    i.className = "bi bi-file-earmark-pdf";
+    div.appendChild(i);
+    const innerDiv = document.createElement("div");
+    innerDiv.textContent = nombre;
+    div.appendChild(innerDiv);
+    return div;
 }
 
 function archivoEliminado() {
