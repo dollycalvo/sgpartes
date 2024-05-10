@@ -1,6 +1,6 @@
 from django import template
 from partes.helper import diasDeLaSemana, etiquetaCodigo
-from partes.views_helpers.common import DIA_LIMITE_PRESENTACION_PLANILLA
+from partes.views_helpers.common import ACLARACION_VACIO, DIA_LIMITE_PRESENTACION_PLANILLA
 
 register = template.Library()
 
@@ -33,3 +33,20 @@ def concat(txt1, txt2):
 def concatDiaLimite(txt1):
     """Concatena dos strings"""
     return str(txt1) + str(DIA_LIMITE_PRESENTACION_PLANILLA)
+
+
+@register.filter
+def agregarDiaHistorial(campo, dia):
+    """Al mostrar el historial, si es un campo código u observaciones, le adosa el día"""
+    if dia != "":
+        return campo + ", día " + dia
+    else:
+        return campo
+    
+    
+@register.filter
+def placeholderVacio(texto):
+    """Transforma texto vacío en el placeholder (vacío)"""
+    if texto.strip() == "":
+        return ACLARACION_VACIO
+    return texto.strip()
