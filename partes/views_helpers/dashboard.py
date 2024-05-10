@@ -1,4 +1,3 @@
-from itertools import chain
 from partes.forms import FormSeleccionFecha
 from partes.helper import tienePermisoEspecialEFL, tienePermisoEspecialRPA
 from partes.models import FechasLimites, Planilla, Empleado, StatusPlanilla
@@ -8,6 +7,7 @@ from partes.views_helpers.common import nombresMeses, obtenerPlanillasParaRevisa
 
 
 def cargarPlanillasParaMostrarYCalendario(request):
+    fechaLimite = None
     fechaActual = datetime.now()
     mesActual = fechaActual.month
     anioActual = fechaActual.year
