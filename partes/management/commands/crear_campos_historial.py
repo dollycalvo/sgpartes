@@ -2,12 +2,14 @@ from django.core.management.base import BaseCommand
 from partes.models import CampoHistorial, TipoCambio
 from django.contrib.auth.hashers import make_password
 
+from partes.views_helpers.common import CAMPO_HISTORIAL_ARCHIVO_ADJUNTO, CAMPO_HISTORIAL_CODIGO, CAMPO_HISTORIAL_ESTADO, CAMPO_HISTORIAL_OBSERVACIONES, CAMPO_HISTORIAL_REVISION, TIPO_CAMBIO_ELIMINACION, TIPO_CAMBIO_INSERCION, TIPO_CAMBIO_MODIFICACION
+
 class Command(BaseCommand):
     help = 'Agrega los nombres de los campos y los tipos de cambio de historial'
 
     def handle(self, *args, **options):
         camposExistentes = CampoHistorial.objects.all()
-        nuevosCampos = ["Código", "Observaciones", "Archivo adjunto", "Estado", "Observaciones para revisión"]
+        nuevosCampos = [CAMPO_HISTORIAL_CODIGO, CAMPO_HISTORIAL_OBSERVACIONES, CAMPO_HISTORIAL_ARCHIVO_ADJUNTO, CAMPO_HISTORIAL_ESTADO, CAMPO_HISTORIAL_REVISION]
         if len(camposExistentes) == 0:  # Creamos los nuevos
             for nuevoCampo in nuevosCampos:
                 campo = CampoHistorial(nombre = nuevoCampo)
@@ -21,7 +23,7 @@ class Command(BaseCommand):
             
 
         tiposExistentes = TipoCambio.objects.all()
-        nuevosTiposCambio = ["Inserción", "Eliminación", "Modificación"]
+        nuevosTiposCambio = [TIPO_CAMBIO_INSERCION, TIPO_CAMBIO_ELIMINACION, TIPO_CAMBIO_MODIFICACION]
         if len(tiposExistentes) == 0: # Creamos nuevos tipos
             for nuevoTipo in nuevosTiposCambio:
                 tipo = TipoCambio(nombre = nuevoTipo)
