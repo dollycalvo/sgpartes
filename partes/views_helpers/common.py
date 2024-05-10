@@ -5,8 +5,8 @@ from django.core.mail import EmailMessage
 from django.http import HttpResponseRedirect
 from partes.helper import etiquetaCodigo
 
-from partes.models import Adjuntos, Planilla, RegistroDiario
-import settings
+from partes.models import Adjuntos, Empleado, Planilla, RegistroDiario, RegistroHistorial
+from sgpartes import settings
 
 TIPO_CAMBIO_INSERCION = "Inserción"
 TIPO_CAMBIO_ELIMINACION = "Eliminación"
@@ -112,3 +112,63 @@ def excedeDiaLimite(diaLimite, mes, anio):
     hoy = datetime.now()
     fechaLimite = datetime(int(anio), int(mes), diaLimite) + timedelta(days=1)
     return (hoy > fechaLimite)
+
+
+def registroHistorialYEnviarMail(request, planilla, tipo, campo, diaCambio, anterior, nuevo, enviarMail = True):
+    try:
+        fechaHora = datetime.now()
+        nuevoRegistroHistorial = RegistroHistorial(
+                            planilla = planilla,
+                            fechaHora = fechaHora,
+                            tipo = tipo,
+                            campo = campo,
+                            diaCambio = diaCambio,
+                            anterior = anterior,
+                            nuevo = nuevo
+        )
+        nuevoRegistroHistorial.save()
+        # Enviamos el email
+        if enviarMail and settings.ENVIAR_EMAIL:
+            nombre_completo_empleado = planilla.empleado.apellidos + ", " + planilla.empleado.nombres
+            if diaCambio != "":
+                campo = campo.nombre + ", día " + diaCambio
+            else:
+                campo = campo.nombre
+            cuerpo_email = "Cambios en la planilla:"
+            cuerpo_email += "\n\nEmpleado: " + nombre_completo_empleado + " (legajo: " + str(planilla.empleado.legajo) + ")"
+            cuerpo_email += "\nFecha y hora del cambio: " + str(fechaHora)
+            cuerpo_email += "\nFecha de la planilla: " + nombresMeses[planilla.mes - 1]["Nombre"] + " " + str(planilla.anio)
+            cuerpo_email += "\nTipo de cambio: " + tipo.nombre
+            cuerpo_email += "\nCampo: " + campo
+            cuerpo_email += "\nValor anterior: \"" + anterior + "\""
+            cuerpo_email += "\nNuevo valor: \"" + nuevo + "\""
+            if settings.DEBUG:
+                email = EmailMessage("Cambios en la planilla: " + nombre_completo_empleado, # asunto
+                                    cuerpo_email, # cuerpo del email
+                                    # empleado.email,
+                                    # [empleado.jefe_directo.email, empleado.email],
+                                    "webmaster@cguimaraenz.com", # from
+                                    ["webmaster@cguimaraenz.com"] # to
+                                    )
+            else:
+                secretaria = Empleado.objects.filter(legajo = 20343).get()
+                email = EmailMessage("Cambios en la planilla: " + nombre_completo_empleado, # asunto
+                                    cuerpo_email, # cuerpo del email
+                                    planilla.empleado.email, #from
+                                    [secretaria.email], #to
+                                    )
+            # # Archivos adjuntos
+            # carpeta = os.path.join(settings.BASE_DIR, 'sgpartes/adjuntos/')
+            # for adjunto in adjuntos:
+            #     nombre_archivo = adjunto.nombre_archivo
+            #     fl_path = carpeta + nombre_archivo
+            #     email.attach_file(fl_path)
+            email.send()
+    except Exception as e:
+        print("ERROR: " + repr(e))
+        return redirectToError(request, "Ha ocurrido un error al intentar guardar el historial y enviar el e-mail. Error GHEM001")
+    
+   
+# Identificamos si una planilla está en revisión al estar en BORRADOR y tener OBSERVACIONES 
+def isPlanillaEnRevision(planilla):
+    return planilla.status.status == STATUS_PLANILLA_BORRADOR and planilla.observaciones.strip() != ""
