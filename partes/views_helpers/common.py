@@ -8,6 +8,22 @@ from partes.helper import etiquetaCodigo
 from partes.models import Adjuntos, Planilla, RegistroDiario
 import settings
 
+TIPO_CAMBIO_INSERCION = "Inserción"
+TIPO_CAMBIO_ELIMINACION = "Eliminación"
+TIPO_CAMBIO_MODIFICACION = "Modificación"
+
+CAMPO_HISTORIAL_CODIGO = "Código"
+CAMPO_HISTORIAL_OBSERVACIONES = "Observaciones"
+CAMPO_HISTORIAL_ARCHIVO_ADJUNTO = "Archivo adjunto"
+CAMPO_HISTORIAL_ESTADO = "Estado"
+CAMPO_HISTORIAL_REVISION = "Observaciones para revisión"
+
+STATUS_PLANILLA_BORRADOR = "Borrador"
+STATUS_PLANILLA_PRESENTADO = "Presentado"
+STATUS_PLANILLA_APROBADO = "Aprobado"
+
+ACLARACION_VACIO = "(vacío)"
+
 MSG_EXITO = "exito"
 
 DIA_LIMITE_PRESENTACION_PLANILLA = 25
