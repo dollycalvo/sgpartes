@@ -556,7 +556,7 @@ input[type=file] {
     display: none;
 }
 
-#wrapperNombreArchivo {
+.wrapperNombreArchivo {
     padding: 0.5rem 1rem;
     border: 2px solid transparent;
     width: -webkit-fit-content;
@@ -704,7 +704,7 @@ dialog::backdrop {
 }
 
 .spanFachadaSelect {
-    font-size: 0.9rem;
+    font-size: 0.8rem;
     width: 1.9rem;
     display: inline-block;
     box-sizing: border-box;
