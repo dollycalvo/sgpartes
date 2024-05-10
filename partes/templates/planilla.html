@@ -12,6 +12,7 @@
     <input type="hidden" opciones="{{ acciones_submit }}" name="accion_submit" id="hdnAccionSubmit" value="{{ accion_submit }}">
     <input type="hidden" name="mesReporte" value="{{ mesReporte }}">
     <input type="hidden" name="anioReporte" value="{{ anioReporte }}">
+    <input type="hidden" id="hdnStatusPlanilla" value="{{statusPlanilla}}">
     {% if mostrarMensaje %}
     <div class="alert alert-success auto-hide-5s" role="alert">
         {% if statusPlanilla == "Presentado" %}
@@ -57,7 +58,7 @@
                             <td class="text-center minw5rem {{ dds|class_dia_semana:primerDiaDelMes}}">{{ dds|dia_semana:primerDiaDelMes }} {{ forloop.counter }}</td>
                             {% endwith %}
                             <td class="text-center">
-                                {% if datosPlanilla.status.status == "Borrador" %}
+                                {% comment %} {% if statusPlanilla == "Borrador" %} {% endcomment %}
                                 <span class="spanFachadaSelect">{% firstof datoDiario.codigo|etiqueta_codigo "S/N" %}</span>
                                 <select class="w-1rem input-registro-diario" name="codigos">
                                     <option value="sn" {% if datoDiario.codigo == "sn" %}{{"selected"}}{%endif%} data-codigo="S/N">S/N - Sin novedad</option>
@@ -96,16 +97,16 @@
                                     <option value="UNT" {% if datoDiario.codigo == "UNT" %}{{"selected"}}{%endif%} data-codigo="UNT">UNT - Licencia examen terciario</option>
                                     <option value="UNU" {% if datoDiario.codigo == "UNU" %}{{"selected"}}{%endif%} data-codigo="UNU">UNU - Licencia examen universitario</option>
                                 </select>
-                                {% else %}
+                                {% comment %} {% else %}
                                 {{ datoDiario.codigo|etiqueta_codigo }}
-                                {% endif %}
+                                {% endif %} {% endcomment %}
                             </td>
                             <td>
-                                {% if datosPlanilla.status.status == "Borrador" %}
+                                {% comment %} {% if statusPlanilla == "Borrador" %} {% endcomment %}
                                 <input class="w-100 input-registro-diario" placeholder="{{ textoSinNovedad }}" type="text" name="observaciones" id="observacion_{{i}}" value="{{datoDiario.observaciones}}">
-                                {% else %}
+                                {% comment %} {% else %}
                                 {% if datoDiario.observaciones == "" %}{{ textoSinNovedad }}{% else %}{{ datoDiario.observaciones }}{% endif %}
-                                {% endif %}
+                                {% endif %} {% endcomment %}
                             </td>
                         </tr>
                     {% endfor %}
@@ -117,21 +118,19 @@
                 <div class="card-body" id="area-adjunto" contiene-archivo="true">
                     {% for adjunto in nombresArchivosAdjuntos %}
                     <a href="download/{{ request.session.id_empleado }}/{{ adjunto.id }}">
-                        <div id="wrapperNombreArchivo">
+                        <div class="wrapperNombreArchivo">
                             <i class='bi bi-file-earmark-pdf'></i>
                             <div id="nombreArchivo">{{ adjunto.nombre_archivo }}</div>
                         </div>
                     </a>
                     {% endfor %}
-                    {% if datosPlanilla.status.status == "Borrador" %}
                     <div id="dummyAdjuntarArchivo" class="filter-full-grayscale opacity05">
                         <i class='bi bi-file-earmark-pdf'></i>
                         <div>Adjuntar nuevo</div>
                     </div>
-                    {% endif %}
                 </div>
                 {% else %}
-                    {% if datosPlanilla.status.status == "Borrador" %}
+                    {% if statusPlanilla == "Borrador" %}
                     <div class="card-body" id="area-adjunto">
                         <div id="dummyAdjuntarArchivo" class="filter-full-grayscale opacity05">
                             <i class='bi bi-file-earmark-pdf'></i>
@@ -143,17 +142,15 @@
                 <input type="file" name="pdfs" id="pdf" multiple>
             </div>
             <br>
-            {% if datosPlanilla.status.status == "Borrador" %}
             <div class="d-flex flex-row w-100 justify-content-center">
                 <button id="btnLimpiarForm" class="btn btn-danger" type="button">Limpiar formulario</button>
                 <button id="btnGuardarCambios" class="btn btn-primary ml-1rem" type="submit">Guardar cambios</button>
-                {% if not nombresArchivosAdjuntos %}
+                {% if not nombresArchivosAdjuntos or statusPlanilla != "Borrador" %}
                     <button id="btnPresentarPlanilla" class="btn btn-success ml-1rem" type="button" disabled>Presentar planilla</button>
                 {% else %}
                     <button id="btnPresentarPlanilla" class="btn btn-success ml-1rem" type="button">Presentar planilla</button>
                 {% endif %}
             </div>
-            {% endif %}
             <div class="card mt-4">
                 <h5 class="card-header bg-secondary text-white">Historial de actividades</h5>
                 {% if historial %}
@@ -170,9 +167,9 @@
                         {% for registro in historial %}
                             <tr>
                                 <td>{{ registro.tipo.nombre }}</td>
-                                <td>{{ registro.campo.nombre }}</td>
-                                <td>{{ registro.anterior }}</td>
-                                <td>{{ registro.nuevo }}</td>
+                                <td>{{ registro.campo.nombre|agregarDiaHistorial:registro.diaCambio }}</td>
+                                <td>{{ registro.anterior|placeholderVacio }}</td>
+                                <td>{{ registro.nuevo|placeholderVacio }}</td>
                                 <td>{{ registro.fechaHora }}</td>
                             </tr>
                         {% endfor %}
@@ -187,12 +184,15 @@
                 <input type="file" name="pdfs" id="pdf" multiple>
             </div>
         </div>
-        {% if datosPlanilla.status.status == "Presentado" %}
+        {% if statusPlanilla == "Presentado" %}
         <div class="card-footer text-success">
             Estado: Presentado
-        {% else %}
+        {% elif statusPlanilla == "Borrador" %}
         <div class="card-footer text-danger">
             Estado: Borrador
+        {% else %}
+        <div class="card-footer text-danger">
+            Estado: Aprobado
         {% endif %}
         </div>
     </div>
