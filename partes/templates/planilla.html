@@ -117,7 +117,7 @@
                 {% if nombresArchivosAdjuntos %}
                 <div class="card-body" id="area-adjunto" contiene-archivo="true">
                     {% for adjunto in nombresArchivosAdjuntos %}
-                    <div class="wrapperNombreArchivo">
+                    <div class="wrapperNombreArchivo" id="old_{{ adjunto.nombre_archivo }}">
                         <i class='bi bi-file-earmark-pdf'></i>
                         <a href="download/{{ request.session.id_empleado }}/{{ adjunto.id }}">
                             {{ adjunto.nombre_archivo }}

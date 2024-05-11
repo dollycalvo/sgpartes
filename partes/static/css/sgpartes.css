@@ -557,12 +557,41 @@ input[type=file] {
 }
 
 .wrapperNombreArchivo {
+    display: flex;
+    flex-direction: column;
     padding: 0.5rem 1rem;
     border: 2px solid transparent;
     width: -webkit-fit-content;
     width: -moz-fit-content;
     width: fit-content;
     text-align: center;
+    position: relative;
+    border-radius: 7px;
+}
+
+.wrapperNombreArchivo:hover {
+    background-color: #ccc;
+}
+
+.wrapperNombreArchivo:hover > .wrapperArchivoCerrar {
+    display: block;
+    cursor: pointer;
+}
+
+.wrapperArchivoCerrar {
+    position: absolute;
+    display: none;
+    right: 0.2rem;
+    top: 0.2rem;
+    height: 1.4rem;
+    aspect-ratio: 1;
+    font-weight: bold;
+    border-radius: 5px;
+    background-color: #dc3545;
+    box-shadow: 1px 1px 3px #333;
+    color: white;
+    text-align: center;
+    line-height: 1.2rem;
 }
 
 button[disabled] {

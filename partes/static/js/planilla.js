@@ -13,6 +13,9 @@ const SIN_NOVEDAD = "Sin novedad";
 const S_N = "sn";
 const STATUS_PLANILLA = {borrador: "Borrador", presentado: "Presentado", aprobado: "Aprobado"};
 const statusPlanilla = document.getElementById("hdnStatusPlanilla").value;
+let indiceArchivo = 0;
+// Este array tendrá los índices de los archivos que se vayan eliminando, y previo a submit se eliminarán
+const archivosEliminados = []; 
 
 btnLimpiarForm.addEventListener("click", () => {
     if (confirm("¿Confirma que desea limpiar el formulario? Se eliminarán todos los comentarios y el archivo adjunto.")) {
@@ -20,19 +23,21 @@ btnLimpiarForm.addEventListener("click", () => {
         inputs.forEach(input => input.value = "");
         const selects = document.querySelectorAll("select.input-registro-diario");
         selects.forEach(sel => sel.value = S_N);
-        archivoEliminado();
+        todosArchivosEliminados();
     }
 });
 
 btnGuardarCambios.addEventListener("click", event => {
     event.preventDefault();
     hdnAccionSubmit.value = opcionesAccionesSubmit[0];
+    procesarArchivosAdjuntos();
     formPlanilla.submit();
 });
 
 btnPresentarPlanilla.addEventListener("click", () => {
     if (confirm("¿Confirma que desea presentar la planilla?\nUna vez presentada, los datos se enviarán a su supervisor y no podrá ser modificada.")) {
         hdnAccionSubmit.value = opcionesAccionesSubmit[1];
+        procesarArchivosAdjuntos();
         formPlanilla.submit();
     }
 });
@@ -75,18 +80,38 @@ function archivosAdjuntado(archivos) {
 }
 
 function componenteArchivoAdjunto(nombre) {
+    // Div wrapper
     const div = document.createElement("div");
     div.className = "wrapperNombreArchivo";
+    div.id = "new_" + indiceArchivo++;
+    // Icono PDF
     const i = document.createElement("i");
     i.className = "bi bi-file-earmark-pdf";
     div.appendChild(i);
+    // Nombre del archivo, no es anchor porque no necesito descargarlo
     const innerDiv = document.createElement("div");
     innerDiv.textContent = nombre;
     div.appendChild(innerDiv);
+    // Botón eliminar
+    const btnCerrar = document.createElement("div");
+    btnCerrar.addEventListener("click", event => {
+        if (confirm(`¿Confirmás que deseás eliminar el archivo "${nombre}"?`)) {
+            document.getElementById(event.target.parentNode.id).remove();
+            // Lo quitamos del input
+            for (let i = 0; i < pdfInput.files.length; i++) {
+                if (pdfInput.files[i].name === nombre) {
+                    archivosEliminados.push(i);
+                }
+            }
+        }
+    });
+    btnCerrar.innerHTML = "&times;";
+    btnCerrar.className = "wrapperArchivoCerrar";
+    div.appendChild(btnCerrar);
     return div;
 }
 
-function archivoEliminado() {
+function todosArchivosEliminados() {
     const wrapperNombreArchivo = document.getElementById("wrapperNombreArchivo");
     wrapperNombreArchivo.classList.add("d-none");
     dummyAdjuntarArchivo.classList.remove("d-none");
@@ -106,3 +131,19 @@ selectsCodigos.forEach((select, index) => {
         spansFachadaSelects[index].textContent = event.target[event.target.selectedIndex].getAttribute("data-codigo");
     });
 });
+
+function eliminarArchivo(event) {
+    event.stopPropagation();
+    alert("click");
+}
+
+function procesarArchivosAdjuntos() {
+    const dt = new DataTransfer();
+    const { files } = pdfInput;
+    for (let i = 0; i < files.length; i++) {
+        if (! archivosEliminados.includes(i)) {
+            dt.items.add(files[i]);
+        }
+    }
+    pdfInput.files = dt.files;
+}

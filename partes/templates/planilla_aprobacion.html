@@ -60,12 +60,12 @@
                 <h5 class="card-header bg-secondary text-white">Archivo adjunto</h5>
                 <div class="card-body" id="area-adjunto" contiene-archivo="true">
                     {% for adjunto in adjuntos %}
-                    <a href="download/{{ request.session.id_empleado }}/{{ adjunto.id }}">
-                        <div id="wrapperNombreArchivo">
-                            <i class='bi bi-file-earmark-pdf'></i>
-                            <div id="nombreArchivo">{{ adjunto.nombre_archivo }}</div>
-                        </div>
-                    </a>
+                    <div class="wrapperNombreArchivo">
+                        <i class='bi bi-file-earmark-pdf'></i>
+                        <a href="download/{{ request.session.id_empleado }}/{{ adjunto.id }}">
+                            {{ adjunto.nombre_archivo }}
+                        </a>
+                    </div>
                     {% endfor %}
                 </div>
             </div>
