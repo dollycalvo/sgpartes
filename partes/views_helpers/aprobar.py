@@ -2,7 +2,7 @@ import calendar
 from datetime import datetime
 from partes.views_helpers.common import CAMPO_HISTORIAL_ESTADO, CAMPO_HISTORIAL_REVISION, STATUS_PLANILLA_APROBADO, STATUS_PLANILLA_BORRADOR, STATUS_PLANILLA_PRESENTADO, TIPO_CAMBIO_MODIFICACION, enviarEmailPlanilla, nombresMeses, redirectToError, registroHistorialYEnviarMail
 from partes.helper import etiquetaCodigo
-from partes.models import Adjuntos, CampoHistorial, StatusPlanilla, Planilla, RegistroDiario, TipoCambio
+from partes.models import Adjuntos, CampoHistorial, RegistroHistorial, StatusPlanilla, Planilla, RegistroDiario, TipoCambio
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.core.mail import EmailMessage
@@ -106,6 +106,8 @@ def mostrarPlanillaAprobacion(request):
             return render(request, "error.html", {"mensaje": mensaje_error})
         # Si tenemos la planilla:
         planilla = planillas[0]
+        # Historial
+        historial = RegistroHistorial.objects.filter(planilla = planilla).order_by('-fechaHora')
         # Adjuntos
         adjuntos = Adjuntos.objects.filter(planilla = planilla)
         # Verificamos que el status sea sólo PRESENTADO
@@ -134,5 +136,6 @@ def mostrarPlanillaAprobacion(request):
                                                             "adjuntos": adjuntos,
                                                             "datosDiarios": datosDiarios,
                                                             "datosEmpleado": planilla.empleado,
+                                                            "historial": historial,
                                                             "primerDiaDelMes": datetime.strptime("1/" + str(planilla.mes) + "/" + str(planilla.anio), "%d/%m/%Y").weekday()})
 

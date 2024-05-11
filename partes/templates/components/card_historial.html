@@ -1,0 +1,34 @@
+{% load filters %}
+
+<div class="card mt-4">
+    <h5 class="card-header bg-secondary text-white">Historial de actividades</h5>
+    {% if historial %}
+    <div class="card-body">
+        <table class="table table-striped table-bordered w-0">
+            <thead>
+                <th>Tipo</th>
+                <th>Campo</th>
+                <th>Valor anterior</th>
+                <th>Nuevo valor</th>
+                <th>Fecha y hora</th>
+            </thead>
+            <tbody>
+            {% for registro in historial %}
+                <tr>
+                    <td>{{ registro.tipo.nombre }}</td>
+                    <td>{{ registro.campo.nombre|agregarDiaHistorial:registro.diaCambio }}</td>
+                    <td>{{ registro.anterior|placeholderVacio }}</td>
+                    <td>{{ registro.nuevo|placeholderVacio }}</td>
+                    <td>{{ registro.fechaHora }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="card-body">
+        No hay actividades registradas en el historial
+    </div>
+    {% endif %}
+    <input type="file" name="pdfs" id="pdf" multiple>
+</div>
