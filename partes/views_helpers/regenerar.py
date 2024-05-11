@@ -5,7 +5,7 @@ from django.shortcuts import render
 import hashlib
 from datetime import datetime
 
-import settings
+from sgpartes import settings
 
 
 def generarCodigo(request, acciones):
