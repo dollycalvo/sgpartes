@@ -602,12 +602,12 @@ input[type=file] {
             box-shadow: 0 0 5px var(--color-sombra);
 }
 
-.wrapperNombreArchivo:hover > .wrapperArchivoCerrar {
+.wrapperNombreArchivo:hover > .wrapperArchivoEliminar {
     display: block;
     cursor: pointer;
 }
 
-.wrapperArchivoCerrar {
+.wrapperArchivoEliminar {
     position: absolute;
     display: none;
     right: 0.2rem;

@@ -4,8 +4,8 @@ from datetime import datetime, timedelta
 from django.core.mail import EmailMessage
 from django.http import HttpResponseRedirect
 from partes.helper import etiquetaCodigo
-
-from partes.models import Adjuntos, Empleado, Planilla, RegistroDiario, RegistroHistorial
+from django.core.files.storage import default_storage
+from partes.models import Adjuntos, CampoHistorial, Empleado, Planilla, RegistroDiario, RegistroHistorial, TipoCambio
 from sgpartes import settings
 
 TIPO_CAMBIO_INSERCION = "Inserción"
@@ -172,3 +172,37 @@ def registroHistorialYEnviarMail(request, planilla, tipo, campo, diaCambio, ante
 # Identificamos si una planilla está en revisión al estar en BORRADOR y tener OBSERVACIONES 
 def isPlanillaEnRevision(planilla):
     return planilla.status.status == STATUS_PLANILLA_BORRADOR and planilla.observaciones.strip() != ""
+
+
+# Recibimos uno o varios nombres de archivo, y los eliminamos del filesystem y de la base de datos
+def eliminarArchivosExistentes(request, planilla, archivos, registrarHistorial):
+    if not planilla:
+        return False
+    try:
+        for archivo in archivos:
+            # Descomponemos el nombre de archivo para obtener datos de planilla y empleado
+            partesNombreArchivo = archivo.split("_")
+            if (partesNombreArchivo[0] != str(planilla.empleado.legajo) or 
+                partesNombreArchivo[2] != str(planilla.mes) or 
+                partesNombreArchivo[3] != str(planilla.anio)):
+                return False    # Posible ataque para eliminar un archivo de otro usuario o de otra planilla
+            # Sino, continuamos eliminando de la BD
+            Adjuntos.objects.filter(planilla = planilla, nombre_archivo = archivo).delete()
+            # Y eliminamos el archivo del filesystem
+            carpeta = os.path.join(settings.BASE_DIR, 'sgpartes/adjuntos/')
+            file_path = os.path.join(carpeta, archivo)
+            default_storage.delete(file_path)
+            # Por último, lo agrego al historial
+            if registrarHistorial:
+                registroHistorialYEnviarMail(
+                    request,
+                    planilla,
+                    TipoCambio.objects.get(nombre = TIPO_CAMBIO_INSERCION),
+                    CampoHistorial.objects.get(nombre = CAMPO_HISTORIAL_ARCHIVO_ADJUNTO),
+                    "",
+                    "Nombre archivo: " + archivo,
+                    "Eliminado"
+                )        
+        return True
+    except:
+        return False

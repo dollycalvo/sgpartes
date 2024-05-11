@@ -1,8 +1,8 @@
-const formPlanilla = document.querySelector("#formPlanilla");
-const btnLimpiarForm = document.querySelector("#btnLimpiarForm");
-const btnGuardarCambios = document.querySelector("#btnGuardarCambios");
-const btnPresentarPlanilla = document.querySelector("#btnPresentarPlanilla");
-const hdnAccionSubmit = document.querySelector("#hdnAccionSubmit");
+const formPlanilla = document.getElementById("formPlanilla");
+const btnLimpiarForm = document.getElementById("btnLimpiarForm");
+const btnGuardarCambios = document.getElementById("btnGuardarCambios");
+const btnPresentarPlanilla = document.getElementById("btnPresentarPlanilla");
+const hdnAccionSubmit = document.getElementById("hdnAccionSubmit");
 const opcionesAccionesSubmit = hdnAccionSubmit.getAttribute("opciones").split("#");
 const dummyAdjuntarArchivo = document.getElementById("dummyAdjuntarArchivo");
 const areaAdjunto = document.getElementById("area-adjunto");
@@ -16,6 +16,8 @@ const statusPlanilla = document.getElementById("hdnStatusPlanilla").value;
 let indiceArchivo = 0;
 // Este array tendrá los índices de los archivos que se vayan eliminando, y previo a submit se eliminarán
 const archivosEliminados = []; 
+const botonesEliminar = document.querySelectorAll(".wrapperArchivoEliminar");
+const HIDDEN_ARCHIVO_ELIMINADO_NAME = "hdnArchivosEliminados";  // Campos a utilizar cuando recibamos en el backend
 
 btnLimpiarForm.addEventListener("click", () => {
     if (confirm("¿Confirma que desea limpiar el formulario? Se eliminarán todos los comentarios y el archivo adjunto.")) {
@@ -93,9 +95,9 @@ function componenteArchivoAdjunto(nombre) {
     innerDiv.textContent = nombre;
     div.appendChild(innerDiv);
     // Botón eliminar
-    const btnCerrar = document.createElement("div");
-    btnCerrar.addEventListener("click", event => {
-        if (confirm(`¿Confirmás que deseás eliminar el archivo "${nombre}"?`)) {
+    const btnEliminar = document.createElement("div");
+    btnEliminar.addEventListener("click", event => {
+        if (confirm(`¿Confirma que desea eliminar el archivo "${nombre}"?`)) {
             document.getElementById(event.target.parentNode.id).remove();
             // Lo quitamos del input
             for (let i = 0; i < pdfInput.files.length; i++) {
@@ -105,9 +107,9 @@ function componenteArchivoAdjunto(nombre) {
             }
         }
     });
-    btnCerrar.innerHTML = "&times;";
-    btnCerrar.className = "wrapperArchivoCerrar";
-    div.appendChild(btnCerrar);
+    btnEliminar.innerHTML = "&times;";
+    btnEliminar.className = "wrapperArchivoEliminar";
+    div.appendChild(btnEliminar);
     return div;
 }
 
@@ -147,3 +149,18 @@ function procesarArchivosAdjuntos() {
     }
     pdfInput.files = dt.files;
 }
+
+botonesEliminar.forEach(boton => {
+    boton.addEventListener("click", event => {
+        const archivo = {nombre: event.target.parentNode.id.slice(4), id: event.target.parentNode.id};
+        if (confirm(`¿Confirma que desea eliminar el archivo "${archivo.nombre}"?`)) {
+            document.getElementById(archivo.id).remove();
+            // Creamos un campo hidden para enviar
+            const hidden = document.createElement('input');
+            hidden.type = "hidden";
+            hidden.name = HIDDEN_ARCHIVO_ELIMINADO_NAME;
+            hidden.value = archivo.nombre;
+            formPlanilla.appendChild(hidden);
+        }
+    });
+});
