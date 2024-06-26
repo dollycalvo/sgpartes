@@ -5,7 +5,7 @@ from django.shortcuts import render
 import hashlib
 from datetime import datetime
 
-import settings
+from sgpartes import settings
 
 
 def generarCodigo(request, acciones):
@@ -27,26 +27,27 @@ def generarCodigo(request, acciones):
         nuevo_codigo = hashlib.sha256(str2hash.encode()).hexdigest()
         regPW = RegeneracionPW(empleado_id = empleado.id, codigo = nuevo_codigo)
         regPW.save()
-        # Enviamos el e-mail
-        base_url = request.build_absolute_uri('/')[:-1].strip("/")
-        cuerpo_email = "Estimado(a) " + empleado.nombres + " " + empleado.apellidos + ",\n"
-        cuerpo_email += "por favor, ingrese al siguiente link (si no funciona, copie y pegue en su navegador), "
-        cuerpo_email += "e ingrese su e-mail o legajo, nueva contraseña y confirmación.\n\n" + base_url
-        cuerpo_email += "/regenerar?codigo=" + str(regPW.codigo) + "\n\nAdministradores del Sistema"
-        if settings.DEBUG:
-            send_mail(
-                "Instrucciones para regenerar su contraseña",
-                cuerpo_email,
-                'webmaster@cguimaraenz.com',
-                ['webmaster@cguimaraenz.com'],
-                fail_silently=False)
-        else:
-            send_mail(
-                "Instrucciones para regenerar su contraseña",
-                cuerpo_email,
-                'webmaster@cguimaraenz.com',
-                [empleado.email],
-                fail_silently=False)
+        if settings.ENVIAR_EMAIL:
+            # Enviamos el e-mail
+            base_url = request.build_absolute_uri('/')[:-1].strip("/")
+            cuerpo_email = "Estimado(a) " + empleado.nombres + " " + empleado.apellidos + ",\n"
+            cuerpo_email += "por favor, ingrese al siguiente link (si no funciona, copie y pegue en su navegador), "
+            cuerpo_email += "e ingrese su e-mail o legajo, nueva contraseña y confirmación.\n\n" + base_url
+            cuerpo_email += "/regenerar?codigo=" + str(regPW.codigo) + "\n\nAdministradores del Sistema"
+            if settings.DEBUG:
+                send_mail(
+                    "Instrucciones para regenerar su contraseña",
+                    cuerpo_email,
+                    'webmaster@cguimaraenz.com',
+                    ['webmaster@cguimaraenz.com'],
+                    fail_silently=False)
+            else:
+                send_mail(
+                    "Instrucciones para regenerar su contraseña",
+                    cuerpo_email,
+                    'mdcalvogrycn@gmail.com',
+                    [empleado.email],
+                    fail_silently=False)
         # Y redireccionamos con el mensaje de éxito
         mensaje = "Se ha envíado un correo electrónico a su casilla con información para regenerar su contraseña"
         return render(request, "regenerar.html", {"mensaje": mensaje})

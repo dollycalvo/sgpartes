@@ -13,7 +13,7 @@
     <input type="hidden" id="hdnAprobar" name="aprobar" value="1">
     <div class="card mb-4">
         <div class="card-header">
-            <h3>APROBACIÓN DE REPORTE</h3>
+            <h3>Sistema de gestión de planillas de horario</h3>
             <h4>{{ nombreMes }} {{ planilla.anio }}</h4>
             <div class="d-flex flex-row mt-4">
                 <h5 class="w-25"><b>Legajo:</b> {{ datosEmpleado.legajo }}</h5>
@@ -43,7 +43,9 @@
                 <tbody>
                     {% for datoDiario in datosDiarios %}
                         <tr>
-                            <td class="text-center">{{ forloop.counter }}</td>
+                            {% with dds=forloop.counter %}
+                            <td class="text-center minw5rem {{ dds|class_dia_semana:primerDiaDelMes}}">{{ dds|dia_semana:primerDiaDelMes }} {{ forloop.counter }}</td>
+                            {% endwith %}
                             <td class="text-center">
                                 {{ datoDiario.codigo|etiqueta_codigo }}
                             </td>
@@ -58,12 +60,12 @@
                 <h5 class="card-header bg-secondary text-white">Archivo adjunto</h5>
                 <div class="card-body" id="area-adjunto" contiene-archivo="true">
                     {% for adjunto in adjuntos %}
-                    <a href="download/{{ request.session.id_empleado }}/{{ adjunto.id }}">
-                        <div id="wrapperNombreArchivo">
-                            <i class='bi bi-file-earmark-pdf'></i>
-                            <div id="nombreArchivo">{{ adjunto.nombre_archivo }}</div>
-                        </div>
-                    </a>
+                    <div class="wrapperNombreArchivo">
+                        <i class='bi bi-file-earmark-pdf'></i>
+                        <a href="download/{{ request.session.id_empleado }}/{{ adjunto.id }}">
+                            {{ adjunto.nombre_archivo }}
+                        </a>
+                    </div>
                     {% endfor %}
                 </div>
             </div>
@@ -79,6 +81,7 @@
                 <button id="btnAprobar" class="btn btn-success ml-1rem" type="submit">Aprobar</button>
                 <button id="btnRevisar" class="btn btn-danger ml-1rem" type="button">Revisar</button>
             </div>
+            {% include "components/card_historial.html" %}
         </div>
         <div class="card-footer text-danger">
             Estado: Pendiente de aprobación
@@ -94,6 +97,7 @@
                 <button id="btnRevisar" class="btn btn-danger ml-1rem" type="button">Revisar</button>
                 <button id="btnEnviar" class="btn btn-primary ml-1rem" type="button">Enviar por e-mail</button>
             </div>
+            {% include "components/card_historial.html" %}
         </div>
         <div class="card-footer text-success">
             Estado: Aprobado

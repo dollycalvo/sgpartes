@@ -48,3 +48,27 @@ class RegistroDiario(models.Model):
 class RegeneracionPW(models.Model):
     empleado = models.ForeignKey(Empleado, on_delete=models.DO_NOTHING, default=None)
     codigo = models.CharField(max_length=64)
+
+
+class FechasLimites(models.Model):
+    mes = models.SmallIntegerField(default=0)
+    anio = models.SmallIntegerField(default=0)
+    diaLimite = models.SmallIntegerField(default=0)
+
+
+class TipoCambio(models.Model):
+    nombre = models.TextField(default="")
+    
+    
+class CampoHistorial(models.Model):
+    nombre = models.TextField(default="")
+    
+    
+class RegistroHistorial(models.Model):
+    planilla = models.ForeignKey(Planilla, on_delete=models.DO_NOTHING, default=None)
+    fechaHora = models.DateTimeField()
+    tipo = models.ForeignKey(TipoCambio, on_delete=models.DO_NOTHING, default=None)
+    campo = models.ForeignKey(CampoHistorial, on_delete=models.DO_NOTHING, default=None)
+    diaCambio = models.TextField(default="")    # En caso de que el cambio sea en código u observación, se usará este campo
+    anterior = models.TextField(default="")
+    nuevo = models.TextField(default="")

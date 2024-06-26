@@ -12,6 +12,7 @@
     <input type="hidden" opciones="{{ acciones_submit }}" name="accion_submit" id="hdnAccionSubmit" value="{{ accion_submit }}">
     <input type="hidden" name="mesReporte" value="{{ mesReporte }}">
     <input type="hidden" name="anioReporte" value="{{ anioReporte }}">
+    <input type="hidden" id="hdnStatusPlanilla" value="{{statusPlanilla}}">
     {% if mostrarMensaje %}
     <div class="alert alert-success auto-hide-5s" role="alert">
         {% if statusPlanilla == "Presentado" %}
@@ -23,7 +24,7 @@
     {% endif %}
     <div class="card mb-4">
         <div class="card-header">
-            <h3>REPORTE HORARIO</h3>
+            <h3>Planillas de horario</h3>
             <h4>{{ nombreMesReporte }} {{ anioReporte }}</h4>
             <div class="d-flex flex-row mt-4">
                 <h5 class="w-25"><b>Legajo:</b> {{ datosEmpleado.legajo }}</h5>
@@ -53,9 +54,11 @@
                 <tbody>
                     {% for datoDiario in datosDiarios %}
                         <tr>
-                            <td class="text-center">{{ forloop.counter }}</td>
+                            {% with dds=forloop.counter %}
+                            <td class="text-center minw5rem {{ dds|class_dia_semana:primerDiaDelMes}}">{{ dds|dia_semana:primerDiaDelMes }} {{ forloop.counter }}</td>
+                            {% endwith %}
                             <td class="text-center">
-                                {% if datosPlanilla.status.status == "Borrador" %}
+                                {% comment %} {% if statusPlanilla == "Borrador" %} {% endcomment %}
                                 <span class="spanFachadaSelect">{% firstof datoDiario.codigo|etiqueta_codigo "S/N" %}</span>
                                 <select class="w-1rem input-registro-diario" name="codigos">
                                     <option value="sn" {% if datoDiario.codigo == "sn" %}{{"selected"}}{%endif%} data-codigo="S/N">S/N - Sin novedad</option>
@@ -63,7 +66,7 @@
                                     <option value="+" {% if datoDiario.codigo == "+" %}{{"selected"}}{%endif%} data-codigo="+">+ - Adhesión a paros</option>
                                     <option value="D" {% if datoDiario.codigo == "D" %}{{"selected"}}{%endif%} data-codigo="D">D - Donación de sangre</option>
                                     <option value="E" {% if datoDiario.codigo == "E" %}{{"selected"}}{%endif%} data-codigo="E">E - 4º A Enfermedad común</option>
-                                    <option value="sa" {% if datoDiario.codigo == "sa" %}{{"selected"}}{%endif%} data-codigo="SA">SA - Licencia médica</option>
+                                    <option value="SA" {% if datoDiario.codigo == "SA" %}{{"selected"}}{%endif%} data-codigo="SA">SA - Licencia médica</option>
                                     <option value="H" {% if datoDiario.codigo == "H" %}{{"selected"}}{%endif%} data-codigo="H">H - Atención de hijos menores</option>
                                     <option value="L" {% if datoDiario.codigo == "L" %}{{"selected"}}{%endif%} data-codigo="L">L - Enfermedad largo tratamiento</option>
                                     <option value="M" {% if datoDiario.codigo == "M" %}{{"selected"}}{%endif%} data-codigo="M">M - Maternidad</option>
@@ -73,7 +76,7 @@
                                     <option value="W" {% if datoDiario.codigo == "W" %}{{"selected"}}{%endif%} data-codigo="W">W - 9º A Sin goce de haberes</option>
                                     <option value="Y" {% if datoDiario.codigo == "Y" %}{{"selected"}}{%endif%} data-codigo="Y">Y - Mesas examinadoras</option>
                                     <option value="Z" {% if datoDiario.codigo == "Z" %}{{"selected"}}{%endif%} data-codigo="Z">Z - Franco compensatorio</option>
-                                    <option value="cs" {% if datoDiario.codigo == "cs" %}{{"selected"}}{%endif%} data-codigo="CS">CS - Comisión de Servicio</option>
+                                    <option value="CS" {% if datoDiario.codigo == "CS" %}{{"selected"}}{%endif%} data-codigo="CS">CS - Comisión de Servicio</option>
                                     <option value="FR" {% if datoDiario.codigo == "FR" %}{{"selected"}}{%endif%} data-codigo="FR">FR - Festividad religiosa</option>
                                     <option value="JA" {% if datoDiario.codigo == "JA" %}{{"selected"}}{%endif%} data-codigo="JA">JA - Matrimonio</option>
                                     <option value="JH" {% if datoDiario.codigo == "JH" %}{{"selected"}}{%endif%} data-codigo="JH">JH - Matrimonio hijo agente</option>
@@ -94,16 +97,16 @@
                                     <option value="UNT" {% if datoDiario.codigo == "UNT" %}{{"selected"}}{%endif%} data-codigo="UNT">UNT - Licencia examen terciario</option>
                                     <option value="UNU" {% if datoDiario.codigo == "UNU" %}{{"selected"}}{%endif%} data-codigo="UNU">UNU - Licencia examen universitario</option>
                                 </select>
-                                {% else %}
+                                {% comment %} {% else %}
                                 {{ datoDiario.codigo|etiqueta_codigo }}
-                                {% endif %}
+                                {% endif %} {% endcomment %}
                             </td>
                             <td>
-                                {% if datosPlanilla.status.status == "Borrador" %}
+                                {% comment %} {% if statusPlanilla == "Borrador" %} {% endcomment %}
                                 <input class="w-100 input-registro-diario" placeholder="{{ textoSinNovedad }}" type="text" name="observaciones" id="observacion_{{i}}" value="{{datoDiario.observaciones}}">
-                                {% else %}
+                                {% comment %} {% else %}
                                 {% if datoDiario.observaciones == "" %}{{ textoSinNovedad }}{% else %}{{ datoDiario.observaciones }}{% endif %}
-                                {% endif %}
+                                {% endif %} {% endcomment %}
                             </td>
                         </tr>
                     {% endfor %}
@@ -114,22 +117,21 @@
                 {% if nombresArchivosAdjuntos %}
                 <div class="card-body" id="area-adjunto" contiene-archivo="true">
                     {% for adjunto in nombresArchivosAdjuntos %}
-                    <a href="download/{{ request.session.id_empleado }}/{{ adjunto.id }}">
-                        <div id="wrapperNombreArchivo">
-                            <i class='bi bi-file-earmark-pdf'></i>
-                            <div id="nombreArchivo">{{ adjunto.nombre_archivo }}</div>
-                        </div>
-                    </a>
+                    <div class="wrapperNombreArchivo" id="old_{{ adjunto.nombre_archivo }}">
+                        <i class='bi bi-file-earmark-pdf'></i>
+                        <a href="download/{{ request.session.id_empleado }}/{{ adjunto.id }}">
+                            {{ adjunto.nombre_archivo }}
+                        </a>
+                        <div class="wrapperArchivoEliminar">&times;</div>
+                    </div>
                     {% endfor %}
-                    {% if datosPlanilla.status.status == "Borrador" %}
                     <div id="dummyAdjuntarArchivo" class="filter-full-grayscale opacity05">
                         <i class='bi bi-file-earmark-pdf'></i>
                         <div>Adjuntar nuevo</div>
                     </div>
-                    {% endif %}
                 </div>
                 {% else %}
-                    {% if datosPlanilla.status.status == "Borrador" %}
+                    {% if statusPlanilla == "Borrador" %}
                     <div class="card-body" id="area-adjunto">
                         <div id="dummyAdjuntarArchivo" class="filter-full-grayscale opacity05">
                             <i class='bi bi-file-earmark-pdf'></i>
@@ -141,24 +143,26 @@
                 <input type="file" name="pdfs" id="pdf" multiple>
             </div>
             <br>
-            {% if datosPlanilla.status.status == "Borrador" %}
             <div class="d-flex flex-row w-100 justify-content-center">
                 <button id="btnLimpiarForm" class="btn btn-danger" type="button">Limpiar formulario</button>
                 <button id="btnGuardarCambios" class="btn btn-primary ml-1rem" type="submit">Guardar cambios</button>
-                {% if nombreArchivoAdjunto == "" %}
+                {% if not nombresArchivosAdjuntos or statusPlanilla != "Borrador" %}
                     <button id="btnPresentarPlanilla" class="btn btn-success ml-1rem" type="button" disabled>Presentar planilla</button>
                 {% else %}
                     <button id="btnPresentarPlanilla" class="btn btn-success ml-1rem" type="button">Presentar planilla</button>
                 {% endif %}
             </div>
-            {% endif %}
+            {% include "components/card_historial.html" %}
         </div>
-        {% if datosPlanilla.status.status == "Presentado" %}
+        {% if statusPlanilla == "Presentado" %}
         <div class="card-footer text-success">
             Estado: Presentado
-        {% else %}
+        {% elif statusPlanilla == "Borrador" %}
         <div class="card-footer text-danger">
             Estado: Borrador
+        {% else %}
+        <div class="card-footer text-danger">
+            Estado: Aprobado
         {% endif %}
         </div>
     </div>

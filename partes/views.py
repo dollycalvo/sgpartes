@@ -1,6 +1,8 @@
+import os
+from sgpartes import settings
 import json
 from partes.helper import tienePermisosEspecialesParaDashboard
-from partes.views_helpers.common import enviarEmailPlanilla, nombresMeses, obtenerPlanillasParaRevisar, redirectToError
+from partes.views_helpers.common import MSG_EXITO, enviarEmailPlanilla, nombresMeses, obtenerPlanillasParaRevisar, redirectToError
 from partes.views_helpers.regenerar import generarCodigo, crearNuevoPassword
 from partes.views_helpers.dashboard import cargarPlanillasParaMostrarYCalendario
 from partes.views_helpers.planilla import mostrarPlanillaParaVistaEdicion, procesarCambiosEnPlanilla
@@ -9,7 +11,7 @@ from partes.views_helpers.login import procesarLogout, buscarUsuario
 from django.http import HttpResponse, JsonResponse
 import mimetypes
 from datetime import datetime
-from partes.models import Adjuntos, Planilla
+from partes.models import Adjuntos, Planilla, FechasLimites
 from partes.forms import FormSeleccionFecha
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
@@ -40,7 +42,7 @@ def seleccionfecha(request):
     # Cláusula de guarda
     if 'usuario' not in request.session:
         return redirectToError(request, "Se requiere iniciar sesión para acceder a esta sección.")
-    
+
     if request.method == 'POST':
         form = FormSeleccionFecha(request.POST)
         if form.is_valid():
@@ -54,10 +56,10 @@ def seleccionfecha(request):
     anioActual = fechaActual.year
     anios = list(range(anioActual - 3, anioActual + 2))
     planillasParaRevisar = obtenerPlanillasParaRevisar(request.session['id_empleado'])
-    return render(request, 'seleccionfecha.html', {"form": form, 
-                                                   "anios": anios, 
-                                                   "nombresMeses": nombresMeses, 
-                                                   "mesActual": mesActual, 
+    return render(request, 'seleccionfecha.html', {"form": form,
+                                                   "anios": anios,
+                                                   "nombresMeses": nombresMeses,
+                                                   "mesActual": mesActual,
                                                    "anioActual": anioActual,
                                                    "planillasParaRevisar": planillasParaRevisar})
 
@@ -122,7 +124,7 @@ def dashboard(request):
     # Cláusula de guarda
     if 'puesto' not in request.session or (request.session['puesto'] == "Agente" and not tienePermisosEspecialesParaDashboard(request.session['id_empleado'])):
         return redirectToError(request, "No tienes acceso a este contenido. Si se trata de un error, contacta al administrador del sistema.")
-    
+
     if request.method == 'POST':
         # Si existe filtroEmpleado, hacemos la búsqueda
         if 'filtroEmpleado' in request.POST:
@@ -165,7 +167,7 @@ def download_file(request, eid, fid):
         nombre_archivo = Adjuntos.objects.get(id = fid).nombre_archivo
     except:
         return redirectToError(request, "Ha ocurrido un error al intentar descargar el archivo adjunto. Error FD002")
-    carpeta = "adjuntos/"
+    carpeta = os.path.join(settings.BASE_DIR, 'sgpartes/adjuntos/')
     fl_path = carpeta + nombre_archivo
     print(fl_path)
     try:
@@ -184,7 +186,7 @@ def enviar_mail(request):
     if len(planilla) == 1:
         planilla = planilla[0]
         # Enviamos el email
-        if enviarEmailPlanilla(planilla.id, ['mdcalvo@gmail.com'], True) == False:
+        if enviarEmailPlanilla(planilla.id, ['mdcalvogrycn@gmail.com'], True) == False:
             response = HttpResponse(
                 json.dumps({"mensaje": "Ha ocurrido un error al intentar enviar el e-mail"}),
             )
@@ -198,3 +200,50 @@ def enviar_mail(request):
         response.status_code = 404
         return response
     return JsonResponse({"mensaje": "exito"})
+
+
+def recargar_fecha_limite(request):
+    mes = json.loads(request.body)["mes"]
+    anio = json.loads(request.body)["anio"]
+    fechaLimite = FechasLimites.objects.filter(mes = mes, anio = anio)
+    if len(fechaLimite) == 1:
+        fechaLimite = fechaLimite[0]
+        return JsonResponse({"mes": fechaLimite.mes, "anio": fechaLimite.anio, "dia": fechaLimite.diaLimite})
+    else:
+        # En caso de no encontrar la fecha limite:
+        response = HttpResponse(
+            json.dumps({"mensaje": "No hay fecha establecida"}),
+        )
+        response.status_code = 200
+        return response
+    
+    
+def establecer_fecha_limite(request):
+    mes = json.loads(request.body)["mes"]
+    anio = json.loads(request.body)["anio"]
+    diaLimite = json.loads(request.body)["diaLimite"]
+    fechaLimite = FechasLimites.objects.filter(mes = mes, anio = anio)
+    if len(fechaLimite) == 1:
+        # actualizamos si ya existe
+        fechaLimite = fechaLimite[0]
+        fechaLimite.diaLimite = diaLimite
+        try:
+            fechaLimite.save()
+        except():
+            response = HttpResponse(
+                json.dumps({"mensaje": "Error al guardar la fecha"}),
+            )
+            response.status_code = 500
+            return response
+        return JsonResponse({"mensaje": MSG_EXITO})
+    else:
+        try:
+            fechaLimite = FechasLimites(diaLimite = diaLimite, mes = mes, anio = anio)
+            fechaLimite.save()
+        except():
+            response = HttpResponse(
+                json.dumps({"mensaje": "Error al guardar la fecha"}),
+            )
+            response.status_code = 500
+            return response
+        return JsonResponse({"mensaje": "exito"})

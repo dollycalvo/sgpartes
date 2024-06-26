@@ -12,6 +12,11 @@
     </div>
     {% endif %}
 
+    {% if rolEFL and rolEFL == "EFL" %}
+        {% include 'components/card_fecha_limite.html' %}
+        <br><br>
+    {% endif %}
+
     {% if request.session.puesto != "Agente" %}
         {% include 'components/card_busqueda_planillas.html' %}
         <br><br>

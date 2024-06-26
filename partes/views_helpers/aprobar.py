@@ -1,12 +1,13 @@
 import calendar
-from partes.views_helpers.common import enviarEmailPlanilla, nombresMeses, redirectToError
+from datetime import datetime
+from partes.views_helpers.common import CAMPO_HISTORIAL_ESTADO, CAMPO_HISTORIAL_REVISION, STATUS_PLANILLA_APROBADO, STATUS_PLANILLA_BORRADOR, STATUS_PLANILLA_PRESENTADO, TIPO_CAMBIO_MODIFICACION, enviarEmailPlanilla, nombresMeses, redirectToError, registroHistorialYEnviarMail
 from partes.helper import etiquetaCodigo
-from partes.models import Adjuntos, StatusPlanilla, Planilla, RegistroDiario
+from partes.models import Adjuntos, CampoHistorial, RegistroHistorial, StatusPlanilla, Planilla, RegistroDiario, TipoCambio
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.core.mail import EmailMessage
 
-import settings
+from sgpartes import settings
 
 
 def aprobarPlanilla(request):
@@ -18,6 +19,16 @@ def aprobarPlanilla(request):
     statusAprobado = StatusPlanilla.objects.filter(status = "Aprobado")[0]
     planilla.status = statusAprobado
     planilla.save()
+    registroHistorialYEnviarMail(
+        request,
+        planilla,
+        TipoCambio.objects.get(nombre = TIPO_CAMBIO_MODIFICACION),
+        CampoHistorial.objects.get(nombre = CAMPO_HISTORIAL_ESTADO),
+        "",
+        STATUS_PLANILLA_PRESENTADO,
+        STATUS_PLANILLA_APROBADO,
+        False
+    )
     # Enviamos el email
     enviarEmailPlanilla(planilla.id, [planilla.empleado.jefe_directo.email], True)
     request.session['dashboard_mensaje'] = "La planilla ha sido aprobada"
@@ -38,6 +49,26 @@ def revisarPlanilla(request):
         observaciones = "Por favor contacte a su jefe directo para conocer las razones de la revisión."
     planilla.observaciones = observaciones
     planilla.save()
+    registroHistorialYEnviarMail(
+        request,
+        planilla,
+        TipoCambio.objects.get(nombre = TIPO_CAMBIO_MODIFICACION),
+        CampoHistorial.objects.get(nombre = CAMPO_HISTORIAL_REVISION),
+        "",
+        "",
+        observaciones,
+        False
+    )
+    registroHistorialYEnviarMail(
+        request,
+        planilla,
+        TipoCambio.objects.get(nombre = TIPO_CAMBIO_MODIFICACION),
+        CampoHistorial.objects.get(nombre = CAMPO_HISTORIAL_ESTADO),
+        "",
+        STATUS_PLANILLA_PRESENTADO,
+        STATUS_PLANILLA_BORRADOR,
+        False
+    )
     # Enviar mail de confirmación de aprobación
     empleado = planilla.empleado
     nombre_completo_empleado = empleado.apellidos + ", " + empleado.nombres
@@ -45,19 +76,20 @@ def revisarPlanilla(request):
     mensaje_email += "\nEmpleado: " + nombre_completo_empleado + " (legajo: " + str(empleado.legajo) + ")"
     mensaje_email += "\nObservaciones: " + observaciones
     print("Mail al agente indicando que se envía a revisión la planilla")
-    if settings.DEBUG:
-        email = EmailMessage("Planilla devuelta para revisión: " + nombre_completo_empleado, # asunto
-                                mensaje_email, # cuerpo del email
-                                "webmaster@cguimaraenz.com", # from
-                                ["webmaster@cguimaraenz.com"] # to
-                                )
-    else:
-        email = EmailMessage("Planilla devuelta para revisión: " + nombre_completo_empleado, # asunto
-                                mensaje_email, # cuerpo del email
-                                "webmaster@cguimaraenz.com", # from
-                                [empleado.email] # to
-                                )
-    email.send()
+    if settings.ENVIAR_EMAIL:
+        if settings.DEBUG:
+            email = EmailMessage("Planilla devuelta para revisión: " + nombre_completo_empleado, # asunto
+                                    mensaje_email, # cuerpo del email
+                                    "webmaster@cguimaraenz.com", # from
+                                    ["webmaster@cguimaraenz.com"] # to
+                                    )
+        else:
+            email = EmailMessage("Planilla devuelta para revisión: " + nombre_completo_empleado, # asunto
+                                    mensaje_email, # cuerpo del email
+                                    "mdcalvogrycn@gmail.com", # from
+                                    [empleado.email] # to
+                                    )
+        email.send()
     request.session['dashboard_mensaje'] = "La planilla ha sido devuelta para revisión"
     return HttpResponseRedirect("/dashboard")
 
@@ -74,10 +106,12 @@ def mostrarPlanillaAprobacion(request):
             return render(request, "error.html", {"mensaje": mensaje_error})
         # Si tenemos la planilla:
         planilla = planillas[0]
+        # Historial
+        historial = RegistroHistorial.objects.filter(planilla = planilla).order_by('-fechaHora')
         # Adjuntos
         adjuntos = Adjuntos.objects.filter(planilla = planilla)
         # Verificamos que el status sea sólo PRESENTADO
-        if planilla.status.status == "Borrador":
+        if planilla.status.status == STATUS_PLANILLA_BORRADOR:
             mensaje_error = "La planilla aún no se ha presentado."
             return render(request, "error.html", {"mensaje": mensaje_error})
         # Continuamos tomando los registros diarios
@@ -101,5 +135,7 @@ def mostrarPlanillaAprobacion(request):
                                                             "planilla": planilla,
                                                             "adjuntos": adjuntos,
                                                             "datosDiarios": datosDiarios,
-                                                            "datosEmpleado": planilla.empleado})
+                                                            "datosEmpleado": planilla.empleado,
+                                                            "historial": historial,
+                                                            "primerDiaDelMes": datetime.strptime("1/" + str(planilla.mes) + "/" + str(planilla.anio), "%d/%m/%Y").weekday()})
 
