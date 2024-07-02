@@ -8,6 +8,8 @@
     --color-bordes: #231f20;
     --color-persona: #ffffff;
     --color-sombra: #333;
+    --color-success: #198754;
+    --color-danger: #dc3545;
 }
 
 /* DISPOSITIVOS MOVILES */
@@ -806,14 +808,75 @@ dialog::backdrop {
     position: relative;
 }
 
-.cargable[cargando=true]::after {
-    content: "Cargando...";
+.cargable::after {
     position: absolute;
     width: 100%;
     height: 1rem;
     font-size: 1rem;
-    color: #ff0033;
-    top: 2.2rem;
+    top: 2rem;
     left: 0.8rem;
     z-index: 99999;
+}
+
+.cargable[cargando=true]::after {
+    content: "Cargando...";
+    color: #ff0033;
+}
+
+#wrapperInputDiaLimite {
+    position: relative;
+}
+
+#wrapperInputDiaLimite::after {
+    position: absolute;
+    width: 100%;
+    height: 1.5rem;
+    font-size: 1rem;
+    left: 0;
+    top: 0;
+    border-radius: 5px;
+    text-align: center;
+    z-index: 99999;
+}
+
+#wrapperInputDiaLimite[success=true]::after {
+    content: "¡Fecha establecida!";
+    color: white;
+    background-color: var(--color-success);
+}
+
+#wrapperInputDiaLimite[guardando=true]::after {
+    content: "Guardando...";
+    color: white;
+    background-color: var(--color-celeste);
+}
+
+#wrapperInputDiaLimite[error=true]::after {
+    content: "¡Error!";
+    color: white;
+    background-color: var(--color-danger);
+}
+
+.h1rem5 {
+    height: 1.5rem;
+}
+
+#wrapperDiaLimite {
+    position: relative;
+}
+
+#wrapperDiaLimite::after {
+    content: "¡Fecha establecida!";
+    color: white;
+    display: none;
+    text-align: center;
+    position: absolute;
+    padding: 0 0.5rem;
+    width: 100%;
+    height: 1.5rem;
+    top: 0;
+    left: 0;
+    z-index: 99999;
+    background-color: var(--color-success);
+    border-radius: 5px;
 }

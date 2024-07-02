@@ -23,7 +23,7 @@ def cargarPlanillasParaMostrarYCalendario(request):
         if len(fechaLimite) > 0:
             fechaLimite = fechaLimite[0]
         else:
-            fechaLimite = 0
+            fechaLimite = None
     form = FormSeleccionFecha()
     # Cargamos los datos para alimentar los filtros, excepto Borrador ya que el jefe directo no debería verlo
     statuses = StatusPlanilla.objects.filter(id__gt = 1)

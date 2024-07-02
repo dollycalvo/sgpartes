@@ -6,6 +6,7 @@ const ddMesLimite = document.getElementById("mesLimite");
 const ddAnioLimite = document.getElementById("anioLimite");
 const wrapperTxtDiaLimite = document.querySelector(".cargable");
 const txtDiaLimite = document.getElementById("txtDiaLimite");
+const wrapperInputDiaLimite = document.getElementById("wrapperInputDiaLimite");
 const placeholder = txtDiaLimite.placeholder;
 const btnEstablecerFechaLimite = document.getElementById("btnEstablecerFechaLimite");
 const csrfToken = document.cookie
@@ -24,6 +25,27 @@ function mostrarCargando(show) {
     }
 }
 
+function mostrarSuccess() {
+    wrapperInputDiaLimite.setAttribute("success", true);
+    setTimeout(() => {
+        wrapperInputDiaLimite.removeAttribute("success");
+    }, 2000);
+}
+
+function mostrarGuardando(mostrar) {
+    if (mostrar === false) {
+        wrapperInputDiaLimite.removeAttribute("guardando");
+    } else {
+        wrapperInputDiaLimite.setAttribute("guardando", true);
+    }
+}
+
+function mostrarError() {
+    wrapperInputDiaLimite.setAttribute("error", true);
+    setTimeout(() => {
+        wrapperInputDiaLimite.removeAttribute("error");
+    }, 2000);
+}
 
 function recargarFechaLimite() {
     const mes = ddMesLimite.value;
@@ -73,6 +95,7 @@ ddAnioLimite.addEventListener("change", event => {
 });
 
 function establecerFechaLimite() {
+    mostrarGuardando(true);
     const diaLimite = txtDiaLimite.value.trim();
     const mes = ddMesLimite.value;
     const anio = ddAnioLimite.value;
@@ -97,9 +120,13 @@ function establecerFechaLimite() {
         })
         .then(data => {
             console.log(data);
+            mostrarGuardando(false);
+            mostrarSuccess();
         })
         .catch(error => {
             console.error(error);
+            mostrarGuardando(false);
+            mostrarError();
         }
     );
 }

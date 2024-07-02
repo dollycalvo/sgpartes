@@ -31,11 +31,13 @@
                             </td>
                             <td class="cargable">
                                 <label for="txtDiaLimite">Día límite:</label>
-                                {% if fechaLimite.diaLimite != 0 %}
-                                    <input id="txtDiaLimite" class="cargable w-100" type="number" value={{ fechaLimite.diaLimite }} placeholder="{{"Aún no establecida (por defecto: "|concatDiaLimite|concat:")"}}" />
-                                {% else %}
-                                    <input id="txtDiaLimite" class="cargable w-100" type="number" min="1" max="31" value="" placeholder="{{"Aún no establecida (por defecto: "|concatDiaLimite|concat:")"}}" />
-                                {% endif %}
+                                <div id="wrapperInputDiaLimite">
+                                    {% if fechaLimite.diaLimite != None %}
+                                        <input id="txtDiaLimite" class="cargable w-100 h1rem5" type="number" value={{ fechaLimite.diaLimite }} placeholder="{{"Por defecto: "|concatDiaLimite}}" />
+                                    {% else %}
+                                        <input id="txtDiaLimite" class="cargable w-100 h1rem5" type="number" min="1" max="31" value="" placeholder="{{"Por defecto: "|concatDiaLimite}}" />
+                                    {% endif %}
+                                </div>
                             </td>
                         </tr>
                     </tbody>
